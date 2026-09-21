@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.env
+.venv/
+.vscode/
+.DS_Store
+*.log
+*.pyc
+*.py
+
+# Java Scripts
+
+# Data temp files
+*.tmp
+Test/
+Help/

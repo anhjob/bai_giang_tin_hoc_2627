@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Trắc nghiệm Bài 2. Thông tin trong giải quyết vấn đề (Tin học 9)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #F2F5FB;
+    --card: #FFFFFF;
+    --ink: #16203A;
+    --muted: #55627F;
+    --line: #CBD5EA;
+    --blue: #2450E6;
+    --on-blue: #FFFFFF;
+    --btn-edge: #14318F;
+    --sun: #FFC940;
+    --on-sun: #16203A;
+    --ok: #0F7A55;
+    --ok-bg: #DDF4E8;
+    --bad: #BE2E29;
+    --bad-bg: #FCE5E3;
+    --on-strong: #FFFFFF;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #0F1730;
+      --card: #172244;
+      --ink: #EAF0FF;
+      --muted: #A5B2D3;
+      --line: #2C3A66;
+      --blue: #7C9BFF;
+      --on-blue: #0F1730;
+      --btn-edge: #4A63B8;
+      --ok: #5FD3A4;
+      --ok-bg: #12382D;
+      --bad: #FF8C86;
+      --bad-bg: #4A1F22;
+      --on-strong: #0F1730;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #0F1730;
+    --card: #172244;
+    --ink: #EAF0FF;
+    --muted: #A5B2D3;
+    --line: #2C3A66;
+    --blue: #7C9BFF;
+    --on-blue: #0F1730;
+    --btn-edge: #4A63B8;
+    --ok: #5FD3A4;
+    --ok-bg: #12382D;
+    --bad: #FF8C86;
+    --bad-bg: #4A1F22;
+    --on-strong: #0F1730;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Be Vietnam Pro", system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 1rem;
+    line-height: 1.6;
+    -webkit-text-size-adjust: 100%;
+  }
+  .wrap {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: clamp(14px, 4vw, 40px) clamp(12px, 4vw, 24px) 48px;
+  }
+  .panel {
+    background: var(--card);
+    border: 2px solid var(--line);
+    border-radius: 22px;
+    padding: clamp(20px, 5vw, 36px);
+  }
+  [hidden] { display: none !important; }
+
+  .head { margin: 0 0 18px; padding: 0 4px; }
+  h1 {
+    margin: 0 0 6px;
+    font-size: clamp(1.5rem, 5.5vw, 2.25rem);
+    line-height: 1.2;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+  }
+  h2 { margin: 0; font-weight: 700; line-height: 1.45; }
+  h2:focus, h3:focus { outline: none; }
+  .sub { margin: 0; color: var(--muted); font-size: .95rem; }
+
+  .facts { list-style: none; margin: 0 0 28px; padding: 0; display: grid; gap: 10px; }
+  .facts li { padding: 4px 0 4px 14px; border-left: 5px solid var(--sun); }
+
+  /* Buttons */
+  .btn {
+    font: inherit;
+    font-weight: 700;
+    color: var(--on-blue);
+    background: var(--blue);
+    border: 0;
+    border-radius: 12px;
+    padding: 12px 24px;
+    min-height: 48px;
+    cursor: pointer;
+    box-shadow: 0 4px 0 var(--btn-edge);
+    transition: transform .08s ease, box-shadow .08s ease;
+  }
+  .btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--btn-edge); }
+  button:focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; }
+
+  /* Progress track */
+  .track { display: flex; list-style: none; margin: 0 0 22px; padding: 0; }
+  .track li { flex: 1; position: relative; display: flex; justify-content: center; }
+  .track li::before {
+    content: "";
+    position: absolute;
+    top: 15px; left: -50%;
+    width: 100%; height: 3px;
+    background: var(--line);
+  }
+  .track li:first-child::before { display: none; }
+  .track li.reached::before { background: var(--blue); }
+  .node {
+    position: relative; z-index: 1;
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    display: grid; place-items: center;
+    font-size: .875rem; font-weight: 700;
+    background: var(--card);
+    border: 2px solid var(--line);
+    color: var(--muted);
+  }
+  .track li.now .node { background: var(--sun); border-color: var(--ink); color: var(--on-sun); }
+  .track li.ok .node { background: var(--ok); border-color: var(--ok); color: var(--on-strong); }
+  .track li.bad .node { background: var(--bad); border-color: var(--bad); color: var(--on-strong); }
+
+  .count { margin: 0 0 6px; color: var(--muted); font-size: .9rem; font-weight: 500; }
+  #qtext { font-size: clamp(1.2rem, 4.2vw, 1.5rem); margin-bottom: 20px; }
+
+  /* Options */
+  .opts { display: grid; gap: 12px; }
+  .opt {
+    display: flex; align-items: flex-start; gap: 12px;
+    width: 100%;
+    text-align: left;
+    font: inherit;
+    color: var(--ink);
+    background: var(--card);
+    border: 2px solid var(--line);
+    border-radius: 14px;
+    padding: 13px 14px;
+    cursor: pointer;
+    transition: border-color .12s ease, background-color .12s ease;
+  }
+  .opt:hover:not(:disabled) { border-color: var(--blue); }
+  .opt:disabled { cursor: default; color: var(--ink); }
+  .badge {
+    flex: none;
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    display: grid; place-items: center;
+    font-weight: 700; font-size: .9rem;
+    background: var(--paper);
+    border: 2px solid var(--line);
+  }
+  .otext { flex: 1; padding-top: 2px; }
+  .mark { flex: none; width: 24px; text-align: center; font-weight: 800; font-size: 1.1rem; padding-top: 1px; }
+  .opt.ok { border-color: var(--ok); background: var(--ok-bg); }
+  .opt.ok .badge { background: var(--ok); border-color: var(--ok); color: var(--on-strong); }
+  .opt.ok .mark { color: var(--ok); }
+  .opt.bad { border-color: var(--bad); background: var(--bad-bg); }
+  .opt.bad .badge { background: var(--bad); border-color: var(--bad); color: var(--on-strong); }
+  .opt.bad .mark { color: var(--bad); }
+  .opt.dim { opacity: .6; }
+
+  /* Feedback */
+  .fb {
+    margin-top: 18px;
+    padding: 14px 16px;
+    border-radius: 14px;
+    border-left: 6px solid var(--line);
+    animation: rise .2s ease-out;
+  }
+  .fb:empty { display: none; }
+  .fb.ok { background: var(--ok-bg); border-left-color: var(--ok); }
+  .fb.bad { background: var(--bad-bg); border-left-color: var(--bad); }
+  .fb strong { display: block; font-size: 1.05rem; margin-bottom: 2px; }
+  .fb p { margin: 6px 0 0; }
+  .actions { margin-top: 20px; display: flex; justify-content: flex-end; }
+  @keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  /* Result */
+  .score { display: flex; align-items: baseline; gap: 12px; margin: 4px 0 8px; flex-wrap: wrap; }
+  .score .n {
+    font-size: clamp(4rem, 20vw, 6.5rem);
+    font-weight: 800; line-height: 1;
+    background: var(--sun); color: var(--on-sun);
+    border-radius: 20px;
+    padding: 6px 26px 10px;
+  }
+  .score .d { font-size: 1.4rem; font-weight: 700; color: var(--muted); }
+  .rsub { margin: 0 0 6px; font-weight: 700; font-size: 1.1rem; }
+  .rmsg { margin: 0 0 26px; color: var(--muted); }
+  h3 { margin: 0 0 12px; font-size: 1.1rem; }
+  .review { list-style: none; margin: 0 0 28px; padding: 0; display: grid; gap: 12px; }
+  .rv { border: 2px solid var(--line); border-left-width: 6px; border-radius: 14px; padding: 12px 14px; }
+  .rv.ok { border-left-color: var(--ok); }
+  .rv.bad { border-left-color: var(--bad); }
+  .rv-s { font-weight: 700; font-size: .9rem; }
+  .rv.ok .rv-s { color: var(--ok); }
+  .rv.bad .rv-s { color: var(--bad); }
+  .rv p { margin: 4px 0 0; }
+  .rv .rv-q { font-weight: 500; }
+  .rv .rv-a { color: var(--muted); font-size: .95rem; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .fb { animation: none; }
+    .btn, .opt { transition: none; }
+  }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header class="head">
+    <h1>Bài 2. Thông tin trong giải quyết vấn đề</h1>
+    <p class="sub">Trắc nghiệm Tin học 9, sách Kết nối tri thức với cuộc sống</p>
+  </header>
+  <div class="panel">
+
+    <!-- Màn hình bắt đầu -->
+    <section id="start">
+      <ul class="facts">
+        <li>Gồm 5 câu, mỗi câu chọn 1 đáp án.</li>
+        <li>Chọn xong là em xem được đáp án đúng và lời giải thích ngay.</li>
+        <li>Câu hỏi và các đáp án được xáo trộn ngẫu nhiên cho mỗi lần làm bài.</li>
+      </ul>
+      <button id="btnStart" class="btn" type="button">Bắt đầu làm bài</button>
+    </section>
+
+    <!-- Màn hình làm bài -->
+    <section id="quiz" hidden>
+      <ol id="track" class="track" aria-label="Tiến độ làm bài"></ol>
+      <p id="count" class="count"></p>
+      <h2 id="qtext" tabindex="-1"></h2>
+      <div id="opts" class="opts" role="group" aria-labelledby="qtext"></div>
+      <div id="fb" class="fb" aria-live="polite"></div>
+      <div class="actions">
+        <button id="btnNext" class="btn" type="button" hidden>Câu tiếp theo</button>
+      </div>
+    </section>
+
+    <!-- Màn hình tổng kết -->
+    <section id="result" hidden>
+      <h2 id="rtitle" tabindex="-1">Kết quả của em</h2>
+      <div class="score"><span class="n" id="rscore"></span><span class="d">/ 10 điểm</span></div>
+      <p class="rsub" id="rsub"></p>
+      <p class="rmsg" id="rmsg"></p>
+      <h3>Xem lại từng câu</h3>
+      <ol id="review" class="review"></ol>
+      <button id="btnRetry" class="btn" type="button">Làm lại với đề mới xáo trộn</button>
+    </section>
+
+  </div>
+</main>
+
+<script>
+(function () {
+  "use strict";
+
+  var LETTERS = ["A", "B", "C", "D"];
+
+  var BANK = [
+    {
+      q: "Trong quá trình giải quyết vấn đề, thông tin có vai trò nào sau đây?",
+      options: [
+        { t: "Là cơ sở để hiểu rõ vấn đề, lựa chọn giải pháp và đưa ra quyết định phù hợp.", ok: true },
+        { t: "Chỉ cần đến sau khi vấn đề đã được giải quyết xong, để ghi vào báo cáo." },
+        { t: "Không ảnh hưởng đến kết quả vì kết quả chỉ phụ thuộc vào may mắn." },
+        { t: "Chỉ có tác dụng làm cho bài trình bày trông đẹp mắt hơn." }
+      ],
+      why: "Muốn giải quyết một vấn đề, ta cần thông tin để hiểu vấn đề, cân nhắc các phương án rồi chọn giải pháp. Thông tin càng phù hợp thì quyết định càng có cơ sở."
+    },
+    {
+      q: "Bạn Lan muốn biết tháng này mình đã chi tiêu tổng cộng bao nhiêu tiền. Đâu là thông tin đầu vào của vấn đề này?",
+      options: [
+        { t: "Danh sách các khoản chi trong tháng.", ok: true },
+        { t: "Tổng số tiền đã chi trong tháng." },
+        { t: "Nhận xét của bạn bè về cách chi tiêu của Lan." },
+        { t: "Màu bìa của cuốn sổ ghi chép." }
+      ],
+      why: "Thông tin đầu vào là thông tin đã có, được dùng để xử lý. Ở đây đó là danh sách các khoản chi. Tổng số tiền là kết quả (thông tin đầu ra) có được sau khi xử lý."
+    },
+    {
+      q: "Một thông tin được gọi là đầy đủ khi nào?",
+      options: [
+        { t: "Khi có đủ nội dung cần thiết để hiểu và giải quyết vấn đề.", ok: true },
+        { t: "Khi thông tin có thật nhiều chữ và hình ảnh minh họa." },
+        { t: "Khi có rất nhiều người cùng chia sẻ thông tin đó." },
+        { t: "Khi thông tin luôn được trình bày dưới dạng con số." }
+      ],
+      why: "Tính đầy đủ nói về việc thông tin có bao quát những nội dung cần thiết hay không. Nhiều chữ, nhiều người chia sẻ hay có số liệu chưa chắc đã đủ ý."
+    },
+    {
+      q: "Em cần số liệu dân số Việt Nam để làm bài thuyết trình. Nguồn nào sau đây đáng tin cậy nhất?",
+      options: [
+        { t: "Trang thông tin chính thức của cơ quan thống kê nhà nước.", ok: true },
+        { t: "Tin nhắn được chuyển tiếp trong nhóm chat, không rõ ai là người viết." },
+        { t: "Bài đăng ẩn danh trên mạng xã hội có rất nhiều lượt thích." },
+        { t: "Số liệu mà một bạn trong lớp nhớ lại." }
+      ],
+      why: "Nguồn chính thức, có cơ quan chịu trách nhiệm thường cho thông tin chính xác và đáng tin cậy hơn. Số lượt thích hay lời truyền miệng không bảo đảm thông tin đúng."
+    },
+    {
+      q: "Sáng mai Nam đi học bằng xe buýt nhưng lại xem bảng giờ xe của năm ngoái. Thông tin Nam dùng chưa đáp ứng tiêu chí nào?",
+      options: [
+        { t: "Tính kịp thời (thông tin còn mới, phù hợp thời điểm).", ok: true },
+        { t: "Tính thẩm mỹ (bảng giờ xe phải được trình bày đẹp)." },
+        { t: "Tính số lượng (bảng phải liệt kê thật nhiều tuyến xe)." },
+        { t: "Tính nhỏ gọn (tệp chứa bảng phải có dung lượng thấp)." }
+      ],
+      why: "Bảng giờ xe cũ có thể đã thay đổi nên không còn phù hợp với hôm nay. Thông tin muốn giúp ra quyết định tốt thì phải kịp thời, tức là còn mới và đúng thời điểm."
+    }
+  ];
+
+  // Xáo trộn ngẫu nhiên (Fisher–Yates)
+  function rnd(n) {
+    if (window.crypto && window.crypto.getRandomValues) {
+      var b = new Uint32Array(1);
+      window.crypto.getRandomValues(b);
+      return b[0] % n;
+    }
+    return Math.floor(Math.random() * n);
+  }
+  function shuffle(arr) {
+    var r = arr.slice();
+    for (var i = r.length - 1; i > 0; i--) {
+      var j = rnd(i + 1);
+      var t = r[i]; r[i] = r[j]; r[j] = t;
+    }
+    return r;
+  }
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text !== undefined) e.textContent = text;
+    return e;
+  }
+  function $(id) { return document.getElementById(id); }
+
+  var sStart = $("start"), sQuiz = $("quiz"), sResult = $("result");
+  var elTrack = $("track"), elCount = $("count"), elQ = $("qtext");
+  var elOpts = $("opts"), elFb = $("fb"), btnNext = $("btnNext");
+
+  var quiz = [], idx = 0, results = [], answered = false;
+
+  function show(section) {
+    sStart.hidden = section !== sStart;
+    sQuiz.hidden = section !== sQuiz;
+    sResult.hidden = section !== sResult;
+    window.scrollTo(0, 0);
+  }
+
+  function startQuiz() {
+    quiz = shuffle(BANK).map(function (q) {
+      return { q: q.q, why: q.why, options: shuffle(q.options) };
+    });
+    idx = 0;
+    results = [];
+    show(sQuiz);
+    renderQuestion();
+  }
+
+  function renderTrack() {
+    elTrack.replaceChildren();
+    quiz.forEach(function (_, i) {
+      var li = el("li");
+      if (i <= idx) li.classList.add("reached");
+      if (results[i]) li.classList.add(results[i].ok ? "ok" : "bad");
+      else if (i === idx) li.classList.add("now");
+      var label = "Câu " + (i + 1);
+      if (results[i]) label += results[i].ok ? ": đúng" : ": sai";
+      li.setAttribute("aria-label", label);
+      li.appendChild(el("span", "node", String(i + 1)));
+      elTrack.appendChild(li);
+    });
+  }
+
+  function renderQuestion() {
+    var q = quiz[idx];
+    answered = false;
+    elCount.textContent = "Câu " + (idx + 1) + " trên " + quiz.length;
+    elQ.textContent = q.q;
+    elOpts.replaceChildren();
+    q.options.forEach(function (o, i) {
+      var b = el("button", "opt");
+      b.type = "button";
+      var mark = el("span", "mark");
+      mark.setAttribute("aria-hidden", "true");
+      b.appendChild(el("span", "badge", LETTERS[i]));
+      b.appendChild(el("span", "otext", o.t));
+      b.appendChild(mark);
+      b.addEventListener("click", function () { choose(i); });
+      elOpts.appendChild(b);
+    });
+    elFb.className = "fb";
+    elFb.replaceChildren();
+    btnNext.hidden = true;
+    renderTrack();
+    elQ.focus({ preventScroll: true });
+  }
+
+  function choose(i) {
+    if (answered) return;
+    answered = true;
+    var q = quiz[idx];
+    var ok = !!q.options[i].ok;
+    var correctIdx = q.options.findIndex(function (o) { return o.ok; });
+    results.push({ ok: ok, chosen: i });
+
+    Array.prototype.forEach.call(elOpts.children, function (b, k) {
+      b.disabled = true;
+      var mark = b.querySelector(".mark");
+      if (k === correctIdx) { b.classList.add("ok"); mark.textContent = "✓"; }
+      else if (k === i) { b.classList.add("bad"); mark.textContent = "✗"; }
+      else { b.classList.add("dim"); }
+    });
+
+    elFb.className = "fb " + (ok ? "ok" : "bad");
+    elFb.replaceChildren();
+    elFb.appendChild(el("strong", "", ok ? "Chính xác!" : "Chưa đúng."));
+    if (!ok) {
+      elFb.appendChild(el("p", "", "Đáp án đúng là " + LETTERS[correctIdx] + ". " + q.options[correctIdx].t));
+    }
+    elFb.appendChild(el("p", "", q.why));
+
+    btnNext.textContent = idx === quiz.length - 1 ? "Xem kết quả" : "Câu tiếp theo";
+    btnNext.hidden = false;
+    renderTrack();
+    btnNext.focus();
+  }
+
+  function next() {
+    if (!answered) return;
+    if (idx >= quiz.length - 1) { showResult(); return; }
+    idx++;
+    renderQuestion();
+  }
+
+  function showResult() {
+    var correct = results.filter(function (r) { return r.ok; }).length;
+    var total = quiz.length;
+    var score = correct * (10 / total);
+
+    $("rscore").textContent = String(Number.isInteger(score) ? score : score.toFixed(1));
+    $("rsub").textContent = "Em trả lời đúng " + correct + " trên " + total + " câu.";
+
+    var msg;
+    if (correct === total) msg = "Xuất sắc! Em nắm rất vững kiến thức của bài này.";
+    else if (correct === total - 1) msg = "Rất tốt! Em chỉ cần xem lại câu chưa đúng là hoàn hảo.";
+    else if (correct >= 3) msg = "Khá ổn. Hãy đọc lại phần giải thích ở các câu sai để nhớ chắc hơn.";
+    else msg = "Em cần ôn lại bài. Hãy đọc lại Bài 2 trong sách giáo khoa rồi làm lại nhé.";
+    $("rmsg").textContent = msg;
+
+    var list = $("review");
+    list.replaceChildren();
+    quiz.forEach(function (q, i) {
+      var r = results[i];
+      var li = el("li", "rv " + (r.ok ? "ok" : "bad"));
+      li.appendChild(el("span", "rv-s", "Câu " + (i + 1) + ": " + (r.ok ? "Đúng" : "Sai")));
+      li.appendChild(el("p", "rv-q", q.q));
+      li.appendChild(el("p", "rv-a", "Em chọn: " + LETTERS[r.chosen] + ". " + q.options[r.chosen].t));
+      if (!r.ok) {
+        var c = q.options.findIndex(function (o) { return o.ok; });
+        li.appendChild(el("p", "rv-a", "Đáp án đúng: " + LETTERS[c] + ". " + q.options[c].t));
+      }
+      list.appendChild(li);
+    });
+
+    show(sResult);
+    $("rtitle").focus({ preventScroll: true });
+  }
+
+  $("btnStart").addEventListener("click", startQuiz);
+  btnNext.addEventListener("click", next);
+  $("btnRetry").addEventListener("click", startQuiz);
+})();
+</script>
+</body>
+</html>

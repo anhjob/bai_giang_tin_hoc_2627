@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trắc nghiệm Tin học 7 – Bài 2. Phần mềm máy tính</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #14213d;
+    --ink-soft: #465272;
+    --sky: #cfe8ff;
+    --panel: #ffffff;
+    --line: #cbd8ee;
+    --blue: #2f6bff;
+    --blue-tint: #eaf1ff;
+    --sun: #ffc933;
+    --sun-deep: #ffb800;
+    --pink: #e8478b;
+    --teal: #0fa3a3;
+    --amber: #f5a300;
+    --ok: #12805a;
+    --ok-tint: #e1f7ec;
+    --bad: #c73838;
+    --bad-tint: #fdeaea;
+    --font: "Be Vietnam Pro", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; }
+  body {
+    font-family: var(--font);
+    color: var(--ink);
+    background: var(--sky);
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 28px 16px 40px;
+    line-height: 1.55;
+    font-size: 17px;
+  }
+
+  /* ---- Cửa sổ ứng dụng ---- */
+  .window {
+    width: 100%;
+    max-width: 720px;
+    background: var(--panel);
+    border: 2px solid var(--ink);
+    border-radius: 16px;
+    box-shadow: 8px 8px 0 var(--ink);
+    overflow: hidden;
+  }
+  .titlebar {
+    display: flex; align-items: center; gap: 14px;
+    padding: 10px 16px;
+    background: var(--blue);
+    border-bottom: 2px solid var(--ink);
+    color: #fff;
+    font-size: 14px; font-weight: 700;
+  }
+  .dots { display: flex; gap: 7px; }
+  .dots i { width: 13px; height: 13px; border-radius: 50%; display: block; border: 1.5px solid var(--ink); }
+  .dots i:nth-child(1) { background: #ff6b6b; }
+  .dots i:nth-child(2) { background: var(--sun); }
+  .dots i:nth-child(3) { background: #4ade80; }
+
+  .screen { display: none; padding: 28px 28px 30px; }
+  .screen.active { display: block; }
+
+  h1, h2, h3, p { margin: 0; }
+  h1 { font-size: clamp(26px, 5.5vw, 36px); line-height: 1.2; font-weight: 800; letter-spacing: -0.01em; }
+  h2 { font-size: clamp(20px, 4.2vw, 25px); line-height: 1.35; font-weight: 700; }
+
+  /* ---- Nút ---- */
+  .btn {
+    font-family: inherit; font-size: 17px; font-weight: 800;
+    color: var(--ink);
+    background: var(--sun);
+    border: 2px solid var(--ink);
+    border-radius: 12px;
+    padding: 12px 26px;
+    cursor: pointer;
+    box-shadow: 3px 3px 0 var(--ink);
+    transition: transform .08s ease, box-shadow .08s ease, background .15s ease;
+  }
+  .btn:hover { background: var(--sun-deep); }
+  .btn:active { transform: translate(3px, 3px); box-shadow: 0 0 0 var(--ink); }
+  :focus-visible { outline: 3px solid var(--pink); outline-offset: 3px; }
+
+  /* ---- Màn hình bắt đầu ---- */
+  .intro-lead { margin-top: 14px; color: var(--ink-soft); max-width: 46ch; }
+  .facts { display: flex; flex-wrap: wrap; gap: 10px; margin: 22px 0 28px; padding: 0; list-style: none; }
+  .facts li {
+    border: 2px solid var(--ink);
+    border-radius: 999px;
+    padding: 5px 16px;
+    font-size: 15px; font-weight: 700;
+  }
+  .facts li:nth-child(1) { background: #d7e5ff; }
+  .facts li:nth-child(2) { background: #ffe3ef; }
+  .facts li:nth-child(3) { background: #fff0bd; }
+  .facts li:nth-child(4) { background: #c9f3ef; }
+
+  /* ---- Màn hình câu hỏi ---- */
+  .progress-row { display: flex; align-items: center; gap: 14px; margin-bottom: 22px; }
+  .progress-text { font-weight: 800; font-size: 15px; white-space: nowrap; }
+  .progress-track {
+    flex: 1; height: 14px; background: var(--blue-tint);
+    border: 2px solid var(--ink); border-radius: 999px; overflow: hidden;
+  }
+  .progress-fill { height: 100%; width: 0; background: var(--teal); transition: width .35s ease; }
+  .live-score { font-size: 15px; font-weight: 700; white-space: nowrap; color: var(--ink-soft); }
+
+  .options { display: grid; gap: 12px; margin-top: 22px; }
+  .option {
+    display: flex; align-items: flex-start; gap: 14px;
+    width: 100%; text-align: left;
+    font-family: inherit; font-size: 17px; color: var(--ink);
+    background: #fff;
+    border: 2px solid var(--line);
+    border-radius: 12px;
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: border-color .15s ease, background .15s ease;
+  }
+  .option:hover:not(:disabled) { border-color: var(--ink); background: #f6f9ff; }
+  .option:disabled { cursor: default; }
+  .option .letter {
+    flex: none; width: 34px; height: 34px;
+    display: grid; place-items: center;
+    border-radius: 9px;
+    border: 2px solid var(--ink);
+    font-weight: 800; font-size: 15px; color: #fff;
+  }
+  .letter.l0 { background: var(--blue); }
+  .letter.l1 { background: var(--pink); }
+  .letter.l2 { background: var(--amber); color: var(--ink); }
+  .letter.l3 { background: var(--teal); }
+  .option .text { padding-top: 4px; }
+  .option.correct { border-color: var(--ok); background: var(--ok-tint); }
+  .option.correct .letter { background: var(--ok); color: #fff; }
+  .option.wrong { border-color: var(--bad); background: var(--bad-tint); }
+  .option.wrong .letter { background: var(--bad); color: #fff; }
+  .option.dim { opacity: .55; }
+
+  /* ---- Phản hồi ---- */
+  .feedback { display: none; margin-top: 20px; border-radius: 12px; padding: 16px 18px; border: 2px solid var(--ink); }
+  .feedback.show { display: block; animation: pop .25s ease; }
+  .feedback.ok { background: var(--ok-tint); border-color: var(--ok); }
+  .feedback.no { background: var(--bad-tint); border-color: var(--bad); }
+  .feedback .verdict { font-weight: 800; font-size: 18px; margin-bottom: 6px; }
+  .feedback.ok .verdict { color: var(--ok); }
+  .feedback.no .verdict { color: var(--bad); }
+  .feedback p + p { margin-top: 8px; }
+  .feedback .explain { font-size: 16px; }
+
+  .actions { display: flex; justify-content: flex-end; margin-top: 22px; min-height: 54px; }
+  .actions .btn { display: none; }
+  .actions .btn.show { display: inline-block; }
+
+  /* ---- Màn hình tổng kết ---- */
+  .result-top { display: flex; align-items: center; gap: 26px; flex-wrap: wrap; }
+  .ring { position: relative; width: 160px; height: 160px; flex: none; }
+  .ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .ring .bg { fill: none; stroke: var(--blue-tint); stroke-width: 15; }
+  .ring .fg {
+    fill: none; stroke: var(--blue); stroke-width: 15; stroke-linecap: round;
+    stroke-dasharray: 402.12; stroke-dashoffset: 402.12;
+    transition: stroke-dashoffset 1s cubic-bezier(.2,.8,.2,1);
+  }
+  .ring .num {
+    position: absolute; inset: 0; display: grid; place-content: center; text-align: center;
+    font-weight: 800; font-size: 44px; line-height: 1;
+  }
+  .ring .num small { display: block; margin-top: 4px; font-size: 14px; font-weight: 700; color: var(--ink-soft); }
+  .result-msg h2 { margin-bottom: 6px; }
+  .result-msg p { color: var(--ink-soft); max-width: 34ch; }
+  .correct-count {
+    display: inline-block; margin-top: 12px;
+    background: #fff0bd; border: 2px solid var(--ink); border-radius: 999px;
+    padding: 3px 14px; font-weight: 800; font-size: 15px;
+  }
+
+  .review-heading { margin-top: 26px; font-size: 18px; font-weight: 800; }
+  .review { list-style: none; margin: 12px 0 26px; padding: 0; display: grid; gap: 10px; }
+  .review li {
+    display: flex; gap: 12px; align-items: flex-start;
+    padding: 12px 14px; border: 2px solid var(--line); border-radius: 12px; font-size: 15.5px;
+  }
+  .review li.ok { border-color: #9fdcc0; background: #f4fcf8; }
+  .review li.no { border-color: #f0b3b3; background: #fff7f7; }
+  .review .mark {
+    flex: none; width: 28px; height: 28px; border-radius: 50%;
+    display: grid; place-items: center; color: #fff; font-weight: 800; font-size: 14px;
+  }
+  .review .mark.ok { background: var(--ok); }
+  .review .mark.no { background: var(--bad); }
+  .review .answer { display: block; margin-top: 3px; color: var(--ink-soft); font-size: 14.5px; }
+
+  @keyframes pop { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  @media (max-width: 520px) {
+    body { font-size: 16px; padding: 16px 10px 30px; }
+    .screen { padding: 22px 16px 24px; }
+    .window { box-shadow: 5px 5px 0 var(--ink); }
+    .option { font-size: 16px; padding: 11px 12px; }
+    .live-score { display: none; }
+    .btn { width: 100%; }
+    .actions { justify-content: stretch; }
+    .actions .btn.show { width: 100%; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<main class="window" aria-label="Bài trắc nghiệm">
+  <div class="titlebar" aria-hidden="true">
+    <div class="dots"><i></i><i></i><i></i></div>
+    <span>Tin học 7 – Bài 2. Phần mềm máy tính</span>
+  </div>
+
+  <!-- Màn hình bắt đầu -->
+  <section class="screen active" id="screen-start">
+    <h1>Trắc nghiệm: Phần mềm máy tính</h1>
+    <p class="intro-lead">Kiểm tra xem em đã hiểu phần mềm là gì, có những loại nào và hệ điều hành làm nhiệm vụ gì. Chọn một đáp án, em sẽ biết ngay đúng hay sai và vì sao.</p>
+    <ul class="facts">
+      <li>5 câu hỏi</li>
+      <li>Thang điểm 10</li>
+      <li>Có giải thích sau mỗi câu</li>
+      <li>Mỗi bạn một đề riêng</li>
+    </ul>
+    <button class="btn" id="btn-start" type="button">Bắt đầu làm bài</button>
+  </section>
+
+  <!-- Màn hình câu hỏi -->
+  <section class="screen" id="screen-quiz" aria-live="polite">
+    <div class="progress-row">
+      <span class="progress-text" id="progress-text">Câu 1/5</span>
+      <div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="5" aria-valuenow="0" id="progress-bar">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+      <span class="live-score" id="live-score">Đúng: 0</span>
+    </div>
+
+    <h2 id="question-text"></h2>
+    <div class="options" id="options" role="group" aria-labelledby="question-text"></div>
+
+    <div class="feedback" id="feedback" role="status"></div>
+
+    <div class="actions">
+      <button class="btn" id="btn-next" type="button">Câu tiếp theo</button>
+    </div>
+  </section>
+
+  <!-- Màn hình tổng kết -->
+  <section class="screen" id="screen-result">
+    <div class="result-top">
+      <div class="ring" aria-hidden="true">
+        <svg viewBox="0 0 150 150">
+          <circle class="bg" cx="75" cy="75" r="64"></circle>
+          <circle class="fg" id="ring-fg" cx="75" cy="75" r="64"></circle>
+        </svg>
+        <div class="num"><span id="result-score">0</span><small>trên 10 điểm</small></div>
+      </div>
+      <div class="result-msg">
+        <h2 id="result-title"></h2>
+        <p id="result-desc"></p>
+        <span class="correct-count" id="result-count"></span>
+      </div>
+    </div>
+
+    <h3 class="review-heading">Xem lại từng câu</h3>
+    <ul class="review" id="review"></ul>
+
+    <button class="btn" id="btn-retry" type="button">Làm lại</button>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+
+  // Mỗi phương án có cờ ok (đúng) và note (lí do sai). Thứ tự dưới đây chỉ là bản gốc,
+  // khi làm bài sẽ được xáo trộn ngẫu nhiên.
+  var BANK = [
+    {
+      q: "Phần mềm máy tính là gì?",
+      options: [
+        { t: "Các bộ phận vật lí như màn hình, bàn phím, chuột.", note: "Đó là phần cứng – những thứ em có thể nhìn thấy và chạm vào." },
+        { t: "Tập hợp các lệnh, chương trình giúp máy tính thực hiện công việc.", ok: true },
+        { t: "Thiết bị dùng để đưa thông tin vào máy tính.", note: "Đó là thiết bị vào (như bàn phím, chuột), thuộc phần cứng." },
+        { t: "Bộ nhớ dùng để lưu trữ dữ liệu lâu dài.", note: "Đó là thiết bị lưu trữ (như ổ cứng, USB), cũng thuộc phần cứng." }
+      ],
+      explain: "Phần mềm là các chương trình (tập hợp lệnh) điều khiển máy tính làm việc. Máy tính cần cả phần cứng lẫn phần mềm mới hoạt động được, giống như cơ thể cần cả thân thể lẫn bộ não."
+    },
+    {
+      q: "Phần mềm nào dưới đây là hệ điều hành?",
+      options: [
+        { t: "Microsoft Word", note: "Word là phần mềm ứng dụng dùng để soạn thảo văn bản." },
+        { t: "Google Chrome", note: "Chrome là phần mềm ứng dụng dùng để duyệt web." },
+        { t: "Paint", note: "Paint là phần mềm ứng dụng dùng để vẽ hình đơn giản." },
+        { t: "Windows", ok: true }
+      ],
+      explain: "Windows là hệ điều hành – một phần mềm hệ thống. Các hệ điều hành thường gặp khác là Linux, macOS (trên máy tính) và Android, iOS (trên điện thoại)."
+    },
+    {
+      q: "Nhóm nào dưới đây gồm toàn phần mềm ứng dụng?",
+      options: [
+        { t: "Microsoft Word, Google Chrome, Paint", ok: true },
+        { t: "Windows, Android, Linux", note: "Cả ba đều là hệ điều hành, thuộc phần mềm hệ thống." },
+        { t: "Windows, Microsoft Word, Paint", note: "Windows là hệ điều hành nên không thuộc nhóm phần mềm ứng dụng." },
+        { t: "Linux, Google Chrome, Paint", note: "Linux là hệ điều hành nên không thuộc nhóm phần mềm ứng dụng." }
+      ],
+      explain: "Phần mềm ứng dụng giúp người dùng làm những việc cụ thể như soạn văn bản (Word), duyệt web (Chrome), vẽ hình (Paint). Chỉ cần có một hệ điều hành lẫn trong nhóm thì nhóm đó không còn toàn là phần mềm ứng dụng."
+    },
+    {
+      q: "Hệ điều hành có vai trò nào sau đây?",
+      options: [
+        { t: "Chỉ dùng để soạn thảo văn bản.", note: "Soạn thảo văn bản là việc của phần mềm ứng dụng như Word." },
+        { t: "Thay thế cho các thiết bị phần cứng của máy tính.", note: "Phần mềm không thể thay thế phần cứng, hai phần này phải phối hợp với nhau." },
+        { t: "Quản lí phần cứng, phần mềm và tạo môi trường để các phần mềm khác chạy.", ok: true },
+        { t: "Chỉ dùng để truy cập Internet.", note: "Truy cập Internet là việc của trình duyệt web, một phần mềm ứng dụng." }
+      ],
+      explain: "Hệ điều hành là phần mềm quan trọng nhất của máy tính: nó điều khiển và quản lí phần cứng, quản lí các phần mềm khác và là nền để các phần mềm ứng dụng hoạt động. Không có hệ điều hành, máy tính không thể dùng bình thường."
+    },
+    {
+      q: "An muốn vẽ một bức tranh minh họa cho bài thuyết trình. Bạn An nên dùng loại phần mềm nào?",
+      options: [
+        { t: "Trình duyệt web", note: "Trình duyệt web dùng để xem trang web, không phải để vẽ tranh." },
+        { t: "Phần mềm đồ họa, ví dụ Paint", ok: true },
+        { t: "Phần mềm nghe nhạc", note: "Phần mềm nghe nhạc chỉ dùng để phát âm thanh." },
+        { t: "Hệ điều hành", note: "Hệ điều hành quản lí máy tính, chứ không dùng trực tiếp để vẽ tranh." }
+      ],
+      explain: "Muốn vẽ tranh cần phần mềm ứng dụng về đồ họa như Paint. Khi chọn phần mềm, em hãy xác định công việc cần làm trước rồi tìm phần mềm ứng dụng phù hợp với công việc đó."
+    }
+  ];
+
+  var LETTERS = ["A", "B", "C", "D"];
+  var total = BANK.length;
+  var POINTS_PER_Q = 10 / total;
+
+  var quiz = [];      // bộ đề đã xáo trộn cho lần làm bài hiện tại
+  var current = 0;
+  var correctCount = 0;
+  var answered = false;
+
+  var $ = function (id) { return document.getElementById(id); };
+  var screens = { start: $("screen-start"), quiz: $("screen-quiz"), result: $("screen-result") };
+
+  // Xáo trộn Fisher–Yates
+  function shuffle(arr) {
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+
+  function buildQuiz() {
+    return shuffle(BANK).map(function (item) {
+      var opts = shuffle(item.options);
+      var answerIdx = 0;
+      opts.forEach(function (o, i) { if (o.ok) answerIdx = i; });
+      return { q: item.q, options: opts, answer: answerIdx, explain: item.explain, pick: null };
+    });
+  }
+
+  function show(name) {
+    Object.keys(screens).forEach(function (k) {
+      screens[k].classList.toggle("active", k === name);
+    });
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }
+
+  function startQuiz() {
+    quiz = buildQuiz();
+    current = 0;
+    correctCount = 0;
+    show("quiz");
+    renderQuestion();
+  }
+
+  function renderQuestion() {
+    var item = quiz[current];
+    answered = false;
+
+    $("progress-text").textContent = "Câu " + (current + 1) + "/" + total;
+    $("progress-fill").style.width = (current / total * 100) + "%";
+    $("progress-bar").setAttribute("aria-valuenow", String(current));
+    $("live-score").textContent = "Đúng: " + correctCount;
+    $("question-text").textContent = item.q;
+
+    var box = $("options");
+    box.innerHTML = "";
+    item.options.forEach(function (opt, i) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "option";
+      b.innerHTML = '<span class="letter l' + i + '"></span><span class="text"></span>';
+      b.querySelector(".letter").textContent = LETTERS[i];
+      b.querySelector(".text").textContent = opt.t;
+      b.addEventListener("click", function () { choose(i); });
+      box.appendChild(b);
+    });
+
+    var fb = $("feedback");
+    fb.className = "feedback";
+    fb.innerHTML = "";
+
+    var next = $("btn-next");
+    next.classList.remove("show");
+    next.textContent = current === total - 1 ? "Xem kết quả" : "Câu tiếp theo";
+  }
+
+  function lowerFirst(s) { return s.charAt(0).toLowerCase() + s.slice(1); }
+
+  function choose(i) {
+    if (answered) return;   // đã chọn thì khóa, không đổi được
+    answered = true;
+
+    var item = quiz[current];
+    var isRight = i === item.answer;
+    item.pick = i;
+    if (isRight) correctCount++;
+
+    $("options").querySelectorAll(".option").forEach(function (b, idx) {
+      b.disabled = true;
+      if (idx === item.answer) b.classList.add("correct");
+      else if (idx === i) b.classList.add("wrong");
+      else b.classList.add("dim");
+    });
+
+    var fb = $("feedback");
+    fb.className = "feedback show " + (isRight ? "ok" : "no");
+    fb.innerHTML = "";
+
+    var verdict = document.createElement("div");
+    verdict.className = "verdict";
+    verdict.textContent = isRight
+      ? "Chính xác! Em làm đúng câu này."
+      : "Chưa đúng rồi. Đáp án đúng là " + LETTERS[item.answer] + ".";
+    fb.appendChild(verdict);
+
+    if (!isRight && item.options[i].note) {
+      var why = document.createElement("p");
+      why.textContent = "Đáp án " + LETTERS[i] + " chưa đúng vì: " + lowerFirst(item.options[i].note);
+      fb.appendChild(why);
+    }
+
+    var ex = document.createElement("p");
+    ex.className = "explain";
+    ex.textContent = item.explain;
+    fb.appendChild(ex);
+
+    $("live-score").textContent = "Đúng: " + correctCount;
+    $("progress-fill").style.width = ((current + 1) / total * 100) + "%";
+    $("btn-next").classList.add("show");
+    $("btn-next").focus({ preventScroll: true });
+    fb.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+
+  function next() {
+    if (!answered) return;
+    if (current < total - 1) {
+      current++;
+      renderQuestion();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } else {
+      showResult();
+    }
+  }
+
+  function formatScore(n) {
+    return (Math.round(n * 10) / 10).toString().replace(".", ",");
+  }
+
+  function showResult() {
+    show("result");
+    var score10 = correctCount * POINTS_PER_Q;
+
+    $("result-score").textContent = formatScore(score10);
+    $("result-count").textContent = "Đúng " + correctCount + "/" + total + " câu";
+
+    var title, desc, color;
+    if (correctCount === total) {
+      title = "Xuất sắc! Điểm tuyệt đối 🎉";
+      desc = "Em nắm rất chắc kiến thức về phần mềm máy tính. Hãy thử giải thích cho bạn cùng lớp nhé.";
+      color = "#12805a";
+    } else if (correctCount === 4) {
+      title = "Rất tốt! 👏";
+      desc = "Em chỉ còn sai một câu. Xem lại phần giải thích bên dưới là em sẽ nắm vững hơn.";
+      color = "#12805a";
+    } else if (correctCount === 3) {
+      title = "Khá tốt, cố gắng thêm nhé 💪";
+      desc = "Em đã hiểu phần lớn bài. Đọc lại các câu sai bên dưới rồi làm lại để đạt điểm cao hơn.";
+      color = "#2f6bff";
+    } else {
+      title = "Em cần ôn lại bài một chút 📘";
+      desc = "Đừng lo, hãy đọc lại Bài 2 trong sách giáo khoa và xem lại các câu bên dưới rồi thử lần nữa nhé.";
+      color = "#c73838";
+    }
+    $("result-title").textContent = title;
+    $("result-desc").textContent = desc;
+
+    var ring = $("ring-fg");
+    var circumference = 402.12;
+    ring.style.strokeDashoffset = String(circumference);
+    ring.style.stroke = color;
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        ring.style.strokeDashoffset = String(circumference * (1 - correctCount / total));
+      });
+    });
+
+    var list = $("review");
+    list.innerHTML = "";
+    quiz.forEach(function (item, idx) {
+      var ok = item.pick === item.answer;
+      var li = document.createElement("li");
+      li.className = ok ? "ok" : "no";
+
+      var mark = document.createElement("span");
+      mark.className = "mark " + (ok ? "ok" : "no");
+      mark.textContent = ok ? "✓" : "✗";
+      mark.setAttribute("aria-label", ok ? "Đúng" : "Sai");
+
+      var body = document.createElement("div");
+      var q = document.createElement("span");
+      q.textContent = "Câu " + (idx + 1) + ". " + item.q;
+      var a = document.createElement("span");
+      a.className = "answer";
+      var right = item.options[item.answer].t;
+      a.textContent = ok
+        ? "Em chọn đúng: " + right
+        : "Em chọn: " + item.options[item.pick].t + " — Đáp án đúng: " + right;
+      body.appendChild(q);
+      body.appendChild(a);
+
+      li.appendChild(mark);
+      li.appendChild(body);
+      list.appendChild(li);
+    });
+  }
+
+  $("btn-start").addEventListener("click", startQuiz);
+  $("btn-next").addEventListener("click", next);
+  $("btn-retry").addEventListener("click", startQuiz);   // xáo trộn lại đề mới
+
+  // Phím tắt: A–D (hoặc 1–4) để chọn đáp án
+  document.addEventListener("keydown", function (e) {
+    if (!screens.quiz.classList.contains("active")) return;
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    var map = { a: 0, b: 1, c: 2, d: 3, "1": 0, "2": 1, "3": 2, "4": 3 };
+    var k = e.key.toLowerCase();
+    if (!answered && Object.prototype.hasOwnProperty.call(map, k)) choose(map[k]);
+  });
+})();
+</script>
+</body>
+</html>

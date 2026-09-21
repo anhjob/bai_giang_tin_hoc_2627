@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trắc nghiệm Tin học 7 – Bài 1. Thiết bị vào - ra</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F3F6FC; --surface:#FFFFFF; --ink:#16294D; --muted:#55627F; --line:#D3DBEC;
+  --primary:#4B4FD8; --primary-shadow:#3034A8; --primary-ink:#FFFFFF;
+  --in:#0B8A7B; --in-soft:#DDF5F1;
+  --out:#C55F0B; --out-soft:#FDEBD8;
+  --right:#17803D; --right-soft:#DCF3E3;
+  --wrong:#C23636; --wrong-soft:#FBE2E2;
+  --star:#F5B301; --star-off:#D3DBEC;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1730; --surface:#172346; --ink:#EAF0FF; --muted:#A5B2D2; --line:#2B3A66;
+    --primary:#8E92FF; --primary-shadow:#5559C9; --primary-ink:#0E1730;
+    --in:#3FD0BE; --in-soft:#123A3C;
+    --out:#FFA24D; --out-soft:#45301A;
+    --right:#5CD68A; --right-soft:#153B27;
+    --wrong:#FF8A8A; --wrong-soft:#452021;
+    --star:#FFC933; --star-off:#2B3A66;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1730; --surface:#172346; --ink:#EAF0FF; --muted:#A5B2D2; --line:#2B3A66;
+  --primary:#8E92FF; --primary-shadow:#5559C9; --primary-ink:#0E1730;
+  --in:#3FD0BE; --in-soft:#123A3C;
+  --out:#FFA24D; --out-soft:#45301A;
+  --right:#5CD68A; --right-soft:#153B27;
+  --wrong:#FF8A8A; --wrong-soft:#452021;
+  --star:#FFC933; --star-off:#2B3A66;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; min-height:100vh; background:var(--bg); color:var(--ink);
+  font-family:"Nunito","Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+  font-size:18px; line-height:1.55;
+}
+h1,h2,h3,.display{font-family:"Baloo 2","Trebuchet MS","Segoe UI",system-ui,sans-serif; line-height:1.15; margin:0}
+.wrap{max-width:720px; margin:0 auto; padding:20px 16px 48px}
+.card{background:var(--surface); border:2px solid var(--line); border-radius:22px; padding:24px 20px}
+.hidden{display:none !important}
+:focus-visible{outline:3px solid var(--primary); outline-offset:3px}
+
+/* Buttons */
+.btn{
+  font:inherit; font-family:"Baloo 2","Trebuchet MS",system-ui,sans-serif; font-weight:800; font-size:1.15rem;
+  background:var(--primary); color:var(--primary-ink); border:0; border-radius:14px;
+  padding:12px 28px; min-height:52px; cursor:pointer; box-shadow:0 4px 0 var(--primary-shadow);
+  transition:transform .08s ease, box-shadow .08s ease;
+}
+.btn:hover{transform:translateY(1px); box-shadow:0 3px 0 var(--primary-shadow)}
+.btn:active{transform:translateY(4px); box-shadow:0 0 0 var(--primary-shadow)}
+.btn.ghost{background:transparent; color:var(--primary); border:2px solid var(--primary); box-shadow:none}
+
+/* Header tên bài */
+.site-head{display:flex; align-items:center; gap:12px; flex-wrap:wrap; background:var(--primary); color:var(--primary-ink); border-radius:18px; padding:12px 16px; margin-bottom:14px}
+.site-head .chip{background:var(--primary-ink); color:var(--primary); font-weight:800; border-radius:999px; padding:2px 12px; font-size:.9rem}
+.site-head .title{font-size:1.3rem; font-weight:800}
+
+/* Start screen */
+.course{color:var(--muted); font-weight:700; font-size:.95rem; margin:0 0 6px}
+.start h1{font-size:clamp(2rem,7vw,3rem); font-weight:800}
+.start .lead{color:var(--muted); margin:10px 0 24px; max-width:46ch}
+.flow{display:flex; align-items:stretch; gap:10px; margin:0 0 26px}
+.node{flex:1; border-radius:18px; padding:14px 12px; text-align:center; border:2px solid transparent}
+.node .emo{font-size:2rem; line-height:1.2; display:block}
+.node b{display:block; font-family:"Baloo 2","Trebuchet MS",sans-serif; font-size:1.05rem; line-height:1.2; margin-top:4px}
+.node small{display:block; font-size:.85rem; line-height:1.3; margin-top:2px}
+.node.in{background:var(--in-soft); border-color:var(--in); color:var(--ink)}
+.node.in b{color:var(--in)}
+.node.pc{background:var(--surface); border-color:var(--line)}
+.node.out{background:var(--out-soft); border-color:var(--out); color:var(--ink)}
+.node.out b{color:var(--out)}
+.arrow{align-self:center; flex:0 0 28px; color:var(--muted)}
+.arrow svg{width:28px; height:28px; display:block}
+.facts{display:flex; gap:10px; flex-wrap:wrap; margin:0 0 24px; padding:0; list-style:none}
+.facts li{background:var(--bg); border:2px solid var(--line); border-radius:999px; padding:4px 14px; font-weight:700; font-size:.95rem}
+
+/* Quiz */
+.topbar{display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; font-weight:800}
+.topbar .count{font-family:"Baloo 2","Trebuchet MS",sans-serif; font-size:1.1rem}
+.topbar .score{color:var(--muted); font-size:.95rem}
+.progress{display:flex; gap:6px; margin-bottom:18px}
+.progress span{flex:1; height:10px; border-radius:999px; background:var(--line)}
+.progress span.done{background:var(--primary)}
+.progress span.current{background:var(--primary); opacity:.45}
+.question{font-size:clamp(1.35rem,4.8vw,1.75rem); font-weight:800; margin-bottom:18px}
+.options{display:grid; gap:12px; margin:0; padding:0; list-style:none}
+.opt{
+  width:100%; display:flex; align-items:center; gap:14px; text-align:left;
+  font:inherit; font-weight:700; color:var(--ink); background:var(--surface);
+  border:2px solid var(--line); border-radius:16px; padding:12px 14px; min-height:60px; cursor:pointer;
+  transition:border-color .12s ease, background .12s ease;
+}
+.opt:hover:not(:disabled){border-color:var(--primary)}
+.opt:disabled{cursor:default}
+.opt .badge{
+  flex:0 0 38px; height:38px; border-radius:50%; display:grid; place-items:center;
+  background:var(--bg); border:2px solid var(--line); font-family:"Baloo 2","Trebuchet MS",sans-serif; font-weight:800; font-size:1.05rem;
+}
+.opt .label{flex:1}
+.opt .mark{flex:0 0 auto; font-weight:800; font-size:.9rem}
+.opt.right{background:var(--right-soft); border-color:var(--right)}
+.opt.right .badge{background:var(--right); border-color:var(--right); color:var(--surface)}
+.opt.right .mark{color:var(--right)}
+.opt.wrong{background:var(--wrong-soft); border-color:var(--wrong)}
+.opt.wrong .badge{background:var(--wrong); border-color:var(--wrong); color:var(--surface)}
+.opt.wrong .mark{color:var(--wrong)}
+.opt.dim{opacity:.6}
+.feedback{margin-top:18px; border-radius:16px; padding:14px 16px; border-left:8px solid var(--line); background:var(--bg)}
+.feedback.ok{border-left-color:var(--right); background:var(--right-soft)}
+.feedback.no{border-left-color:var(--wrong); background:var(--wrong-soft)}
+.feedback h3{font-size:1.25rem; font-weight:800; margin-bottom:4px}
+.feedback.ok h3{color:var(--right)}
+.feedback.no h3{color:var(--wrong)}
+.feedback p{margin:4px 0 0}
+.nextrow{margin-top:18px; display:flex; justify-content:flex-end}
+
+/* Result */
+.result{text-align:center}
+.result .stars{display:flex; justify-content:center; gap:6px; margin-bottom:6px}
+.result .stars svg{width:44px; height:44px}
+.result .big{font-family:"Baloo 2","Trebuchet MS",sans-serif; font-weight:800; font-size:clamp(3.5rem,16vw,5.5rem); line-height:1}
+.result .big small{font-size:.45em; color:var(--muted)}
+.result .msg{font-size:1.4rem; font-weight:800; margin:10px 0 4px}
+.result .sub{color:var(--muted); margin:0 auto 22px; max-width:44ch}
+.review{list-style:none; margin:0 0 24px; padding:0; text-align:left; display:grid; gap:10px}
+.review li{display:flex; gap:12px; align-items:flex-start; border:2px solid var(--line); border-radius:14px; padding:10px 12px; background:var(--surface)}
+.review .tag{flex:0 0 auto; font-weight:800; font-size:.85rem; border-radius:999px; padding:2px 10px; margin-top:2px}
+.review .tag.ok{background:var(--right-soft); color:var(--right)}
+.review .tag.no{background:var(--wrong-soft); color:var(--wrong)}
+.review .qtxt{font-weight:700; line-height:1.35}
+.review .detail{display:block; font-weight:400; color:var(--muted); font-size:.92rem; margin-top:2px}
+
+@media (max-width:560px){
+  body{font-size:17px}
+  .card{padding:20px 14px}
+  .flow{flex-direction:column}
+  .arrow{transform:rotate(90deg); flex:0 0 auto; margin:-2px auto}
+  .btn{width:100%}
+  .nextrow{justify-content:stretch}
+}
+@media (prefers-reduced-motion: reduce){
+  *{transition:none !important; animation:none !important}
+}
+@keyframes pop{from{transform:scale(.6); opacity:0} to{transform:scale(1); opacity:1}}
+.result .stars svg{animation:pop .35s ease both}
+.result .stars svg:nth-child(2){animation-delay:.08s}
+.result .stars svg:nth-child(3){animation-delay:.16s}
+.result .stars svg:nth-child(4){animation-delay:.24s}
+.result .stars svg:nth-child(5){animation-delay:.32s}
+</style>
+</head>
+<body>
+<main class="wrap">
+
+  <header class="site-head hidden" id="head">
+    <span class="chip">Tin học 7</span>
+    <p class="display title" style="margin:0">Bài 1. Thiết bị vào - ra</p>
+  </header>
+
+  <!-- Màn hình mở đầu -->
+  <section id="start" class="card start" aria-labelledby="start-title">
+    <p class="course">Tin học 7</p>
+    <h1 id="start-title">Bài 1. Thiết bị vào - ra</h1>
+    <p class="lead">Em đã nhận ra đâu là thiết bị đưa thông tin vào máy tính, đâu là thiết bị đưa thông tin ra chưa? Làm thử 2 câu hỏi nhé.</p>
+
+    <div class="flow" aria-hidden="true">
+      <div class="node in"><span class="emo">⌨️ 🖱️</span><b>Thiết bị vào</b><small>đưa thông tin vào</small></div>
+      <div class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13 6l6 6-6 6"/></svg></div>
+      <div class="node pc"><span class="emo">💻</span><b>Máy tính</b><small>xử lý thông tin</small></div>
+      <div class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13 6l6 6-6 6"/></svg></div>
+      <div class="node out"><span class="emo">🖥️ 🔊</span><b>Thiết bị ra</b><small>đưa thông tin ra</small></div>
+    </div>
+
+    <ul class="facts">
+      <li>2 câu hỏi ngẫu nhiên</li>
+      <li>Mỗi câu 1 đáp án đúng</li>
+      <li>Có giải thích ngay</li>
+      <li>Mỗi lần một bộ khác nhau</li>
+    </ul>
+    <button class="btn" id="btn-start" type="button">Bắt đầu làm bài</button>
+  </section>
+
+  <!-- Màn hình câu hỏi -->
+  <section id="quiz" class="card hidden" aria-live="off">
+    <div class="topbar">
+      <span class="count" id="count"></span>
+      <span class="score" id="live-score"></span>
+    </div>
+    <div class="progress" id="progress" aria-hidden="true"></div>
+    <h2 class="question" id="question"></h2>
+    <ul class="options" id="options"></ul>
+    <div id="feedback" class="feedback hidden" role="status" aria-live="polite"></div>
+    <div class="nextrow hidden" id="nextrow">
+      <button class="btn" id="btn-next" type="button">Câu tiếp theo</button>
+    </div>
+  </section>
+
+  <!-- Màn hình tổng kết -->
+  <section id="result" class="card result hidden" aria-labelledby="result-title">
+    <h2 class="display" id="result-title" style="font-size:1.3rem;color:var(--muted);font-weight:600">Kết quả của em</h2>
+    <div class="stars" id="stars" aria-hidden="true"></div>
+    <div class="big" id="big"></div>
+    <p class="msg" id="msg"></p>
+    <p class="sub" id="sub"></p>
+    <ul class="review" id="review"></ul>
+    <button class="btn" id="btn-retry" type="button">Làm lại</button>
+  </section>
+
+</main>
+
+<script>
+(function(){
+  var BANK = [
+    {
+      q: "Thiết bị nào sau đây là thiết bị vào?",
+      opts: [
+        {t:"Màn hình", n:"Màn hình hiển thị kết quả cho em xem, nên là thiết bị ra."},
+        {t:"Máy in", n:"Máy in đưa thông tin ra giấy, nên là thiết bị ra."},
+        {t:"Bàn phím", n:""},
+        {t:"Loa", n:"Loa phát âm thanh ra, nên là thiết bị ra."}
+      ],
+      a: 2,
+      why: "Bàn phím giúp em gõ chữ và số để đưa thông tin vào máy tính, nên bàn phím là thiết bị vào."
+    },
+    {
+      q: "Thiết bị nào sau đây là thiết bị ra?",
+      opts: [
+        {t:"Chuột", n:"Chuột dùng để điều khiển và chọn đối tượng trên màn hình, nên là thiết bị vào."},
+        {t:"Loa", n:""},
+        {t:"Micrô", n:"Micrô thu âm thanh đưa vào máy tính, nên là thiết bị vào."},
+        {t:"Máy quét", n:"Máy quét đưa hình ảnh, tài liệu vào máy tính, nên là thiết bị vào."}
+      ],
+      a: 1,
+      why: "Loa đưa âm thanh từ máy tính ra cho em nghe, nên loa là thiết bị ra."
+    },
+    {
+      q: "Máy quét (scanner) dùng để làm gì?",
+      opts: [
+        {t:"Đưa hình ảnh, tài liệu giấy vào máy tính", n:""},
+        {t:"In tài liệu từ máy tính ra giấy", n:"Việc này là của máy in, không phải máy quét."},
+        {t:"Phát nhạc cho em nghe", n:"Việc này là của loa hoặc tai nghe."},
+        {t:"Hiển thị hình ảnh lên tường", n:"Việc này là của máy chiếu."}
+      ],
+      a: 0,
+      why: "Máy quét chuyển hình ảnh, giấy tờ thành dữ liệu số để lưu trong máy tính. Vì đưa thông tin vào máy tính, máy quét là thiết bị vào."
+    },
+    {
+      q: "Nhóm nào sau đây gồm toàn thiết bị vào?",
+      opts: [
+        {t:"Chuột, màn hình, loa", n:"Màn hình và loa là thiết bị ra."},
+        {t:"Máy in, máy quét, bàn phím", n:"Máy in là thiết bị ra."},
+        {t:"Bàn phím, chuột, micrô", n:""},
+        {t:"Loa, micrô, máy chiếu", n:"Loa và máy chiếu là thiết bị ra."}
+      ],
+      a: 2,
+      why: "Bàn phím nhận chữ, chuột nhận thao tác, micrô nhận âm thanh. Cả ba đều đưa thông tin vào máy tính."
+    },
+    {
+      q: "Em muốn nói để máy tính ghi lại thành văn bản, rồi in bài ra giấy. Em cần những thiết bị nào?",
+      opts: [
+        {t:"Loa và máy quét", n:"Loa là thiết bị ra và máy quét không thu giọng nói, nên chưa phù hợp."},
+        {t:"Chuột và màn hình", n:"Hai thiết bị này không thu được giọng nói và không in được ra giấy."},
+        {t:"Webcam và loa", n:"Webcam thu hình ảnh, loa phát âm thanh, không có thiết bị nào thu giọng nói để ghi chữ hoặc in giấy."},
+        {t:"Micrô và máy in", n:""}
+      ],
+      a: 3,
+      why: "Micrô (thiết bị vào) thu giọng nói của em, còn máy in (thiết bị ra) đưa bài ra giấy."
+    }
+  ];
+
+  var QUIZ_SIZE = 2; // số câu hỏi được chọn ngẫu nhiên trong ngân hàng câu hỏi
+  var QUESTIONS = [];
+
+  function shuffle(arr){
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--){
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+  function buildDeck(){
+    return shuffle(BANK).slice(0, QUIZ_SIZE).map(function(item){
+      var order = shuffle(item.opts.map(function(o, i){ return i; }));
+      return {
+        q: item.q,
+        why: item.why,
+        opts: order.map(function(i){ return item.opts[i]; }),
+        a: order.indexOf(item.a)
+      };
+    });
+  }
+
+  var LETTERS = ["A","B","C","D"];
+  var idx = 0, score = 0, answered = false, answers = [];
+
+  function $(id){ return document.getElementById(id); }
+  function show(id){ ["start","quiz","result"].forEach(function(s){ $(s).classList.toggle("hidden", s !== id); }); $("head").classList.toggle("hidden", id === "start"); window.scrollTo(0,0); }
+
+  function renderProgress(){
+    var html = "";
+    for (var i=0;i<QUESTIONS.length;i++){
+      html += '<span class="' + (i < idx ? "done" : (i === idx ? "current" : "")) + '"></span>';
+    }
+    $("progress").innerHTML = html;
+  }
+
+  function renderQuestion(){
+    answered = false;
+    var item = QUESTIONS[idx];
+    $("count").textContent = "Câu " + (idx+1) + "/" + QUESTIONS.length;
+    $("live-score").textContent = "Đúng: " + score;
+    $("question").textContent = item.q;
+    renderProgress();
+    var ul = $("options");
+    ul.innerHTML = "";
+    item.opts.forEach(function(o, i){
+      var li = document.createElement("li");
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "opt";
+      b.setAttribute("data-i", i);
+      b.innerHTML = '<span class="badge">' + LETTERS[i] + '</span><span class="label"></span><span class="mark"></span>';
+      b.querySelector(".label").textContent = o.t;
+      b.addEventListener("click", function(){ choose(i); });
+      li.appendChild(b);
+      ul.appendChild(li);
+    });
+    $("feedback").className = "feedback hidden";
+    $("feedback").innerHTML = "";
+    $("nextrow").classList.add("hidden");
+    $("btn-next").textContent = (idx === QUESTIONS.length - 1) ? "Xem kết quả" : "Câu tiếp theo";
+  }
+
+  function choose(i){
+    if (answered) return;
+    answered = true;
+    var item = QUESTIONS[idx];
+    var ok = (i === item.a);
+    if (ok) score++;
+    answers.push({chosen:i, ok:ok});
+
+    var btns = $("options").querySelectorAll(".opt");
+    btns.forEach(function(b, k){
+      b.disabled = true;
+      if (k === item.a){
+        b.classList.add("right");
+        b.querySelector(".mark").textContent = "✓ Đúng";
+      } else if (k === i){
+        b.classList.add("wrong");
+        b.querySelector(".mark").textContent = "✗ Sai";
+      } else {
+        b.classList.add("dim");
+      }
+    });
+
+    var fb = $("feedback");
+    fb.className = "feedback " + (ok ? "ok" : "no");
+    var html = "";
+    if (ok){
+      html += "<h3>Chính xác!</h3>";
+    } else {
+      html += "<h3>Chưa đúng rồi</h3>";
+      var note = item.opts[i].n;
+      html += "<p>Em chọn " + LETTERS[i] + ". " + esc(item.opts[i].t) + (note ? ": " + esc(note) : ".") + "</p>";
+      html += "<p><b>Đáp án đúng là " + LETTERS[item.a] + ". " + esc(item.opts[item.a].t) + ".</b></p>";
+    }
+    html += "<p>" + esc(item.why) + "</p>";
+    fb.innerHTML = html;
+
+    $("live-score").textContent = "Đúng: " + score;
+    $("nextrow").classList.remove("hidden");
+    $("btn-next").focus();
+  }
+
+  function esc(s){
+    return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  }
+
+  function starSvg(on){
+    return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3 6.1 20.6l1.3-6.6L2.5 9.4l6.6-.8z" fill="' + (on ? "var(--star)" : "var(--star-off)") + '"/></svg>';
+  }
+
+  function finish(){
+    var total = QUESTIONS.length;
+    var stars = "";
+    for (var i=0;i<total;i++) stars += starSvg(i < score);
+    $("stars").innerHTML = stars;
+    $("big").innerHTML = score + "<small>/" + total + "</small>";
+
+    var msg, sub;
+    if (score === total){ msg = "Xuất sắc!"; sub = "Em phân biệt thiết bị vào và thiết bị ra rất chắc. Bấm \"Làm lại\" để thử một bộ câu hỏi khác nhé."; }
+    else if (score > 0){ msg = "Khá tốt!"; sub = "Em đã đúng một phần. Xem lại câu sai ở dưới rồi bấm \"Làm lại\" để thử tiếp."; }
+    else { msg = "Cần ôn thêm một chút"; sub = "Hãy đọc lại bài, nhớ rằng thiết bị vào đưa thông tin vào máy tính, thiết bị ra đưa thông tin ra. Sau đó làm lại nhé."; }
+    $("msg").textContent = msg;
+    $("sub").textContent = sub;
+
+    var rv = "";
+    QUESTIONS.forEach(function(item, k){
+      var a = answers[k];
+      rv += '<li><span class="tag ' + (a.ok ? "ok" : "no") + '">' + (a.ok ? "Đúng" : "Sai") + '</span><span class="qtxt">Câu ' + (k+1) + ". " + esc(item.q);
+      if (!a.ok){
+        rv += '<span class="detail">Em chọn: ' + esc(item.opts[a.chosen].t) + '. Đáp án đúng: ' + esc(item.opts[item.a].t) + '.</span>';
+      } else {
+        rv += '<span class="detail">Đáp án: ' + esc(item.opts[item.a].t) + '.</span>';
+      }
+      rv += "</span></li>";
+    });
+    $("review").innerHTML = rv;
+    show("result");        
+    $("btn-retry").focus({preventScroll:true});    
+    parent.postMessage("quiz-completed", "*");
+  }
+
+  function next(){
+    if (idx < QUESTIONS.length - 1){
+      idx++;
+      renderQuestion();
+      window.scrollTo(0,0);
+    } else {
+      finish();
+    }
+  }
+
+  function reset(){
+    QUESTIONS = buildDeck();
+    idx = 0; score = 0; answers = []; answered = false;
+    renderQuestion();
+    show("quiz");
+  }
+
+  $("btn-start").addEventListener("click", reset);
+  $("btn-next").addEventListener("click", next);
+  $("btn-retry").addEventListener("click", reset);
+})();
+</script>
+</body>
+</html>

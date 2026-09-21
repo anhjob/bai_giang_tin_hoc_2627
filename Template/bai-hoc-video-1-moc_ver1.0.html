@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Bài học video tương tác</title>
+<style>
+  :root {
+    --primary: #2563eb;
+    --primary-dark: #1d4ed8;
+    --bg: #f3f4f6;
+    --card: #ffffff;
+    --text: #1f2937;
+    --muted: #6b7280;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 16px;
+  }
+  .wrap { max-width: 900px; margin: 0 auto; }
+  h1 { font-size: 1.4rem; margin: 0 0 12px; }
+  .player-box {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #000;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+  }
+  #player { width: 100%; height: 100%; }
+
+  .progress-track {
+    margin-top: 10px;
+    height: 8px;
+    background: #e5e7eb;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    background: var(--primary);
+    transition: width 0.25s linear;
+  }
+  .marker {
+    margin-top: 8px;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+
+  /* Overlay */
+  .overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    z-index: 100;
+  }
+  .overlay.show { display: flex; }
+  .q-card {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 24px;
+    max-width: 640px;
+    width: 100%;
+    max-height: 88vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    text-align: center;
+  }
+  .q-icon { font-size: 2.4rem; margin-bottom: 8px; }
+  .q-title { font-size: 1.15rem; font-weight: 700; margin: 0 0 8px; }
+  .q-desc { font-size: 0.95rem; color: var(--muted); margin: 0 0 20px; line-height: 1.5; }
+
+  .quiz-frame-box {
+    display: none;
+    margin-top: 10px;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    overflow: hidden;
+    height: 70vh;
+  }
+  .quiz-frame-box.show { display: block; }
+  .quiz-frame-box iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+
+  .btn {
+    display: inline-block;
+    width: 100%;
+    padding: 14px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    min-height: 48px;
+    margin-top: 10px;
+  }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:active { background: var(--primary-dark); }
+  .btn-secondary { background: #e5e7eb; color: var(--text); }
+
+  .hint { margin-top: 10px; font-size: 0.85rem; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1 id="lessonTitle">Bài học: (Đặt tên bài học ở đây)</h1>
+
+  <div class="player-box">
+    <div id="player"></div>
+  </div>
+
+  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+  <div class="marker" id="markerText"></div>
+  <p class="hint">Video sẽ tự dừng tại mốc thời gian quy định để làm bài trắc nghiệm.</p>
+</div>
+
+<!-- Overlay -->
+<div class="overlay" id="overlay">
+  <div class="q-card">
+    <div id="promptView">
+      <div class="q-icon">📝</div>
+      <p class="q-title">Đến giờ làm bài trắc nghiệm!</p>
+      <p class="q-desc">Hãy hoàn thành 5 câu hỏi bên dưới, sau đó bấm "Tiếp tục xem video".</p>
+      <button class="btn btn-primary" id="openQuizBtn">Mở bài trắc nghiệm</button>
+    </div>
+
+    <div class="quiz-frame-box" id="quizFrameBox">
+      <iframe id="quizIframe" title="Bài trắc nghiệm"></iframe>
+    </div>    
+  </div>
+</div>
+
+<!-- footer -->
+ <hr>
+<footer>
+  <p>&copy; GV. Vũ Nguyễn Hoàng Anh</p>
+</footer>
+
+<script>
+/* ======================================================
+   CONFIG — CHỈNH SỬA Ở ĐÂY
+   ====================================================== */
+const CONFIG = {
+  videoId: "dQw4w9WgXcQ",       // <-- Thay bằng ID video YouTube thật (sau v= trong URL)
+  lessonTitle: "Bài học: Hệ điều hành là gì?",
+
+  pauseTime: 60,                 // <-- Giây trong video sẽ tự dừng lại (VD: 60 = phút 1:00)
+
+  quizFile: "trac-nghiem.html"   // <-- Đường dẫn tương đối tới file trắc nghiệm 5 câu đã gộp
+};
+/* ====================================================== */
+
+document.getElementById("lessonTitle").textContent = CONFIG.lessonTitle;
+
+const pm = Math.floor(CONFIG.pauseTime / 60), ps = CONFIG.pauseTime % 60;
+document.getElementById("markerText").textContent =
+  "Mốc dừng làm bài: " + pm + ":" + String(ps).padStart(2, "0");
+
+let player;
+let checkInterval = null;
+let hasPaused = false; // đảm bảo chỉ dừng 1 lần tại mốc
+
+const tag = document.createElement("script");
+tag.src = "https://www.youtube.com/iframe_api";
+document.head.appendChild(tag);
+
+function onYouTubeIframeAPIReady() {
+  player = new YT.Player("player", {
+    videoId: CONFIG.videoId,
+    host: "https://www.youtube-nocookie.com",
+    playerVars: {
+      rel: 0,
+      modestbranding: 1,
+      playsinline: 1,
+      origin: window.location.origin
+    },
+    events: {
+      onReady: onPlayerReady,
+      onError: onPlayerError
+    }
+  });
+}
+
+function onPlayerError(e) {
+  const codes = {
+    2: "ID video không hợp lệ.",
+    5: "Lỗi trình phát HTML5.",
+    100: "Video không tồn tại hoặc đã bị xóa/ẩn.",
+    101: "Chủ video không cho phép nhúng (embed).",
+    150: "Chủ video không cho phép nhúng (embed).",
+    153: "Lỗi cấu hình phát video. Nguyên nhân thường gặp: trang đang mở không có origin hợp lệ (do mở file trực tiếp bằng file://). Hãy mở file này qua một web server (http/https) thay vì double-click mở trực tiếp."
+  };
+  alert("Lỗi phát video (mã " + e.data + "): " + (codes[e.data] || "Không xác định."));
+}
+
+function onPlayerReady() {
+  checkInterval = setInterval(checkTime, 300);
+}
+
+function checkTime() {
+  if (!player || typeof player.getCurrentTime !== "function") return;
+  const t = player.getCurrentTime();
+  const dur = player.getDuration() || 1;
+  document.getElementById("progressFill").style.width = ((t / dur) * 100) + "%";
+
+  if (!hasPaused && t >= CONFIG.pauseTime) {
+    hasPaused = true;
+    pauseForQuiz();
+  }
+}
+
+function pauseForQuiz() {
+  player.pauseVideo();
+  document.getElementById("overlay").classList.add("show");
+}
+
+document.getElementById("openQuizBtn").addEventListener("click", () => {
+  document.getElementById("quizIframe").src = CONFIG.quizFile;
+  document.getElementById("promptView").style.display = "none";
+  document.getElementById("quizFrameBox").classList.add("show");
+  document.getElementById("continueBtn").style.display = "block";
+});
+
+document.getElementById("continueBtn").addEventListener("click", () => {
+  document.getElementById("overlay").classList.remove("show");
+  player.playVideo();
+});
+</script>
+</body>
+</html>

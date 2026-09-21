@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Trắc nghiệm Tin học 9: Bài 1. Thế giới kĩ thuật số</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #EEF4FF;
+    --surface: #FFFFFF;
+    --ink: #14213D;
+    --muted: #4E5C78;
+    --line: #C6D3EE;
+    --accent: #2F5BFF;
+    --accent-ink: #FFFFFF;
+    --head-bg: #2F5BFF;
+    --head-ink: #FFFFFF;
+    --sun: #FFC93C;
+    --sun-ink: #14213D;
+    --ok: #12703A;
+    --ok-bg: #DFF6E8;
+    --ok-solid: #1FB26A;
+    --bad: #B42328;
+    --bad-bg: #FDE6E6;
+    --bad-solid: #EF4B52;
+    --font: "Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0F1729;
+      --surface: #18223A;
+      --ink: #EAF0FF;
+      --muted: #A3B0D0;
+      --line: #2E3B5C;
+      --accent: #7C97FF;
+      --accent-ink: #0F1729;
+      --head-bg: #1E2E66;
+      --head-ink: #EAF0FF;
+      --ok: #5BE08D;
+      --ok-bg: #12331F;
+      --ok-solid: #34D07C;
+      --bad: #FF8A8F;
+      --bad-bg: #3B1B1F;
+      --bad-solid: #FF6B72;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0F1729;
+    --surface: #18223A;
+    --ink: #EAF0FF;
+    --muted: #A3B0D0;
+    --line: #2E3B5C;
+    --accent: #7C97FF;
+    --accent-ink: #0F1729;
+    --head-bg: #1E2E66;
+    --head-ink: #EAF0FF;
+    --ok: #5BE08D;
+    --ok-bg: #12331F;
+    --ok-solid: #34D07C;
+    --bad: #FF8A8F;
+    --bad-bg: #3B1B1F;
+    --bad-solid: #FF6B72;
+  }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  *, *::before, *::after { box-sizing: inherit; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font);
+    font-size: 17px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, p { margin: 0; }
+  :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; border-radius: 8px; }
+  [tabindex="-1"]:focus { outline: none; }
+
+  /* Tiêu đề bài luôn ở trên cùng */
+  .site { background: var(--head-bg); color: var(--head-ink); }
+  .site-in {
+    max-width: 640px; margin: 0 auto;
+    padding: 16px 20px;
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  }
+  .chip {
+    background: var(--sun); color: var(--sun-ink);
+    font-weight: 800; font-size: 13px; letter-spacing: .04em; text-transform: uppercase;
+    padding: 4px 10px; border-radius: 999px;
+  }
+  .lesson { font-weight: 800; font-size: clamp(18px, 4.6vw, 22px); line-height: 1.25; }
+
+  .wrap { max-width: 640px; margin: 0 auto; padding: 24px 20px 48px; }
+
+  /* Ô bit 1/0 (màn hình mở đầu và tổng kết) */
+  .bits { display: flex; gap: 10px; }
+  .bit {
+    width: 44px; height: 44px; border-radius: 8px;
+    border: 2px solid var(--line); background: var(--surface);
+    display: grid; place-items: center;
+    font-weight: 800; font-size: 20px; color: var(--muted);
+  }
+  .bit.one { background: var(--ok-bg); border-color: var(--ok); color: var(--ok); }
+  .bit.zero { background: var(--bad-bg); border-color: var(--bad); color: var(--bad); }
+  .bits.big .bit { width: 52px; height: 52px; font-size: 24px; }
+
+  /* Thanh tiến độ */
+  .topbar { display: flex; align-items: center; gap: 14px; margin-bottom: 26px; }
+  .progress { flex: 1; display: flex; gap: 6px; }
+  .seg { flex: 1; height: 12px; border-radius: 6px; background: var(--line); transition: background-color .25s; }
+  .seg.current { background: var(--surface); box-shadow: inset 0 0 0 3px var(--accent); }
+  .seg.ok { background: var(--ok-solid); }
+  .seg.bad { background: var(--bad-solid); }
+  .counter { flex: none; font-weight: 800; font-size: 15px; color: var(--ink); }
+
+  /* Mở đầu */
+  .intro h1 { font-size: clamp(32px, 8vw, 46px); line-height: 1.1; font-weight: 800; letter-spacing: -0.02em; margin: 22px 0 12px; }
+  .intro .lead { color: var(--muted); margin-bottom: 18px; }
+  .rules { list-style: none; padding: 0; margin: 0 0 30px; display: grid; gap: 10px; }
+  .rules li {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 16px; display: flex; gap: 12px; align-items: flex-start;
+  }
+  .rules .dot { flex: none; width: 10px; height: 10px; border-radius: 3px; background: var(--sun); margin-top: 9px; }
+
+  /* Câu hỏi */
+  .question { font-size: clamp(21px, 5vw, 26px); line-height: 1.35; font-weight: 600; margin-bottom: 22px; }
+  .options { display: grid; gap: 12px; padding: 0; margin: 0; list-style: none; }
+  .option {
+    width: 100%; display: flex; align-items: flex-start; gap: 14px;
+    text-align: left; font: inherit; color: inherit;
+    background: var(--surface); border: 2px solid var(--line); border-radius: 12px;
+    padding: 14px 16px; cursor: pointer;
+    transition: border-color .15s, background-color .15s;
+  }
+  .option:hover:not(:disabled) { border-color: var(--accent); }
+  .option:disabled { cursor: default; }
+  .letter {
+    flex: none; width: 30px; height: 30px; border-radius: 6px;
+    display: grid; place-items: center; font-weight: 800; font-size: 15px;
+    background: var(--bg); color: var(--muted); border: 1px solid var(--line);
+  }
+  .option .text { padding-top: 2px; }
+  .option.correct { border-color: var(--ok); background: var(--ok-bg); }
+  .option.correct .letter { background: var(--ok); color: var(--surface); border-color: var(--ok); }
+  .option.wrong { border-color: var(--bad); background: var(--bad-bg); }
+  .option.wrong .letter { background: var(--bad); color: var(--surface); border-color: var(--bad); }
+  .option.dim { opacity: .6; }
+  .tag { margin-left: auto; flex: none; font-size: 14px; font-weight: 600; padding-top: 3px; padding-left: 8px; }
+  .option.correct .tag { color: var(--ok); }
+  .option.wrong .tag { color: var(--bad); }
+
+  .feedback { margin-top: 22px; border-radius: 12px; padding: 16px 18px; border-left: 6px solid var(--line); background: var(--surface); }
+  .feedback.ok { border-left-color: var(--ok); background: var(--ok-bg); }
+  .feedback.bad { border-left-color: var(--bad); background: var(--bad-bg); }
+  .feedback h3 { font-size: 17px; font-weight: 800; margin-bottom: 4px; }
+  .feedback.ok h3 { color: var(--ok); }
+  .feedback.bad h3 { color: var(--bad); }
+
+  .btn {
+    font: inherit; font-weight: 600;
+    background: var(--accent); color: var(--accent-ink);
+    border: 0; border-radius: 12px; padding: 14px 26px; min-height: 48px;
+    cursor: pointer; transition: transform .1s, filter .15s;
+  }
+  .btn:hover { filter: brightness(1.08); }
+  .btn:active { transform: translateY(1px); }
+  .actions { margin-top: 24px; display: flex; gap: 12px; flex-wrap: wrap; }
+
+  /* Tổng kết */
+  .result .kicker { color: var(--muted); font-weight: 500; }
+  .result h1 { font-size: clamp(56px, 16vw, 96px); line-height: 1; font-weight: 800; letter-spacing: -0.03em; margin: 6px 0 6px; }
+  .result h1 small { font-size: .4em; color: var(--muted); font-weight: 600; letter-spacing: 0; }
+  .result .percent { color: var(--muted); font-weight: 500; margin-bottom: 20px; }
+  .result .msg { font-size: 20px; font-weight: 600; margin: 22px 0 6px; }
+  .result .sub { color: var(--muted); }
+  .section-title { margin-top: 36px; font-size: 18px; font-weight: 800; }
+  .review { list-style: none; padding: 0; margin: 14px 0 0; display: grid; gap: 12px; }
+  .review li {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 16px; display: flex; gap: 14px; align-items: flex-start;
+  }
+  .review .bit { width: 34px; height: 34px; font-size: 16px; flex: none; border-radius: 6px; }
+  .review .qtext { font-weight: 600; }
+  .review .verdict { font-weight: 800; font-size: 14px; margin-bottom: 2px; }
+  .review .verdict.ok { color: var(--ok); }
+  .review .verdict.bad { color: var(--bad); }
+  .review .ans { color: var(--muted); font-size: 15px; margin-top: 4px; }
+  .review .ans b { color: var(--ink); font-weight: 600; }
+
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+  @media (max-width: 420px) {
+    .bits { gap: 8px; }
+    .bit { width: 40px; height: 40px; }
+  }
+</style>
+</head>
+<body>
+<header class="site">
+  <div class="site-in">
+    <span class="chip">Tin học 9</span>
+    <span class="lesson">Bài 1. Thế giới kĩ thuật số</span>
+  </div>
+</header>
+<main class="wrap" id="app"></main>
+
+<script>
+  // Ngân hàng câu hỏi gốc. Thứ tự câu và thứ tự đáp án sẽ được xáo trộn mỗi lượt làm bài.
+  var BANK = [
+    {
+      q: "Dữ liệu số là gì?",
+      opts: [
+        "Chỉ là các con số dùng để tính toán trong môn Toán.",
+        "Dữ liệu được biểu diễn bằng dãy bit (0 và 1) để máy tính lưu trữ và xử lí.",
+        "Dữ liệu được viết tay trên giấy rồi cất vào tủ hồ sơ.",
+        "Chỉ gồm các bức ảnh chụp bằng điện thoại."
+      ],
+      a: 1,
+      exp: "Trong máy tính, mọi dữ liệu (văn bản, hình ảnh, âm thanh, video…) đều được mã hoá thành dãy bit 0 và 1. Đó là dữ liệu số, nên máy tính có thể lưu trữ, xử lí và truyền đi rất nhanh."
+    },
+    {
+      q: "Thiết bị nào sau đây KHÔNG phải là thiết bị số?",
+      opts: [
+        "Điện thoại thông minh",
+        "Máy tính bảng",
+        "Đồng hồ thông minh",
+        "Sách Tin học giấy"
+      ],
+      a: 3,
+      exp: "Thiết bị số có khả năng thu nhận, lưu trữ và xử lí dữ liệu số. Điện thoại thông minh, máy tính bảng và đồng hồ thông minh đều làm được việc này, còn sách Tin học giấy thì không."
+    },
+    {
+      q: "Đặc điểm nổi bật của thế giới kĩ thuật số là gì?",
+      opts: [
+        "Thiết bị và con người được kết nối với nhau, dữ liệu được chia sẻ và xử lí nhanh chóng.",
+        "Mỗi thiết bị hoạt động riêng lẻ và không cần kết nối với thiết bị khác.",
+        "Mọi công việc đều phải làm thủ công từng bước.",
+        "Dữ liệu chỉ được lưu giữ trên giấy."
+      ],
+      a: 0,
+      exp: "Nhờ Internet, các thiết bị số và con người kết nối với nhau. Dữ liệu được chia sẻ tức thì và nhiều công việc được tự động hoá, đó là điểm khác biệt lớn của thế giới kĩ thuật số."
+    },
+    {
+      q: "Việc nào sau đây là ví dụ về ứng dụng công nghệ số trong đời sống?",
+      opts: [
+        "Ghi chép lịch học vào sổ tay bằng bút mực.",
+        "Gửi thư tay qua bưu điện bằng tem.",
+        "Thanh toán bằng mã QR qua ứng dụng ngân hàng trên điện thoại.",
+        "Đạp xe đến trường mỗi buổi sáng."
+      ],
+      a: 2,
+      exp: "Thanh toán bằng mã QR dùng điện thoại, ứng dụng và kết nối mạng để xử lí giao dịch ngay lập tức. Ba việc còn lại không dùng công nghệ số."
+    },
+    {
+      q: "Em nhận được tin nhắn từ người lạ: “Bấm vào liên kết và nhập mật khẩu tài khoản để nhận quà.” Em nên làm gì?",
+      opts: [
+        "Nhập mật khẩu để nhận quà, sau đó đổi mật khẩu sau.",
+        "Không bấm vào liên kết, không cung cấp mật khẩu và báo cho thầy cô hoặc người lớn.",
+        "Chuyển tiếp tin nhắn cho bạn bè để cùng nhận quà.",
+        "Trả lời lại để hỏi xem quà là gì."
+      ],
+      a: 1,
+      exp: "Đây là dấu hiệu của lừa đảo trực tuyến. Mật khẩu là thông tin riêng tư, tuyệt đối không cung cấp cho người khác. Em nên bỏ qua tin nhắn, không chia sẻ tiếp và báo cho người lớn."
+    }
+  ];
+
+  var LETTERS = ["A", "B", "C", "D"];
+  var QUIZ_SIZE = 2; // mỗi lượt chỉ lấy ngẫu nhiên 2 câu trong ngân hàng 5 câu
+  var app = document.getElementById("app");
+  var state = { screen: "intro", index: 0, answers: [], session: [] };
+
+  // Fisher-Yates
+  function shuffle(arr) {
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+
+  // Tạo một bản đề mới: trộn thứ tự câu và thứ tự đáp án
+  function buildSession() {
+    var qs = shuffle(BANK).slice(0, QUIZ_SIZE);
+    return qs.map(function (item) {
+      var opts = shuffle(item.opts.map(function (t, i) { return { t: t, ok: i === item.a }; }));
+      var a = 0;
+      for (var i = 0; i < opts.length; i++) if (opts[i].ok) a = i;
+      return { q: item.q, opts: opts.map(function (o) { return o.t; }), a: a, exp: item.exp };
+    });
+  }
+
+  function esc(s) {
+    return String(s).replace(/[&<>"]/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+    });
+  }
+
+  function answeredCount() {
+    var n = 0;
+    for (var i = 0; i < state.session.length; i++) if (state.answers[i] !== undefined) n++;
+    return n;
+  }
+
+  function progressHtml() {
+    var n = state.session.length;
+    var html = '<div class="progress" role="progressbar" aria-label="Tiến độ làm bài" aria-valuemin="0" aria-valuemax="' + n + '" aria-valuenow="' + answeredCount() + '">';
+    for (var i = 0; i < n; i++) {
+      var cls = "seg";
+      if (state.answers[i] !== undefined) cls += state.answers[i] === state.session[i].a ? " ok" : " bad";
+      else if (i === state.index) cls += " current";
+      html += '<div class="' + cls + '"></div>';
+    }
+    return html + "</div>";
+  }
+
+  function topbarHtml() {
+    return progressHtml() + '<span class="counter">Câu ' + (state.index + 1) + "/" + state.session.length + "</span>";
+  }
+
+  function bitsHtml(big, mode) {
+    var html = '<div class="bits' + (big ? " big" : "") + '" aria-hidden="true">';
+    for (var i = 0; i < state.session.length; i++) {
+      var cls = "bit", txt = "?";
+      if (mode === "result") {
+        var ok = state.answers[i] === state.session[i].a;
+        cls += ok ? " one" : " zero"; txt = ok ? "1" : "0";
+      }
+      html += '<div class="' + cls + '">' + txt + "</div>";
+    }
+    return html + "</div>";
+  }
+
+  function score() {
+    var s = 0;
+    for (var i = 0; i < state.session.length; i++) if (state.answers[i] === state.session[i].a) s++;
+    return s;
+  }
+
+  function startNew() {
+    state.session = buildSession();
+    state.answers = [];
+    state.index = 0;
+    state.screen = "quiz";
+    renderQuestion();
+  }
+
+  function renderIntro() {
+    state.screen = "intro";
+    state.session = buildSession();
+    app.innerHTML =
+      '<section class="intro">' +
+        bitsHtml(true, "intro") +
+        '<h1 id="heading" tabindex="-1">Sẵn sàng chưa?</h1>' +
+        '<p class="lead">Trả lời ' + QUIZ_SIZE + ' câu hỏi trắc nghiệm về thế giới kĩ thuật số.</p>' +
+        '<ul class="rules">' +
+          '<li><span class="dot"></span><span>Chọn một đáp án, đúng hay sai sẽ hiện ngay kèm lời giải thích.</span></li>' +
+          '<li><span class="dot"></span><span>Đã chọn là khóa lại, không đổi được đáp án.</span></li>' +
+          '<li><span class="dot"></span><span>Bài có 5 câu, mỗi lần chỉ hiện ngẫu nhiên 2 câu. Thứ tự đáp án cũng được xáo trộn nên mỗi bạn một đề khác nhau.</span></li>' +
+        "</ul>" +
+        '<button class="btn" id="start">Bắt đầu làm bài</button>' +
+      "</section>";
+    document.getElementById("start").addEventListener("click", startNew);
+  }
+
+  function renderQuestion() {
+    var i = state.index, item = state.session[i];
+    var html =
+      '<section class="quiz">' +
+        '<div class="topbar" id="topbar">' + topbarHtml() + "</div>" +
+        '<h2 class="question" id="heading" tabindex="-1">' + esc(item.q) + "</h2>" +
+        '<ul class="options">';
+    for (var k = 0; k < item.opts.length; k++) {
+      html += '<li><button class="option" data-i="' + k + '">' +
+        '<span class="letter">' + LETTERS[k] + "</span>" +
+        '<span class="text">' + esc(item.opts[k]) + "</span>" +
+        '<span class="tag"></span></button></li>';
+    }
+    html += '</ul><div id="feedback" aria-live="polite"></div><div id="actions"></div></section>';
+    app.innerHTML = html;
+    var btns = app.querySelectorAll(".option");
+    for (var b = 0; b < btns.length; b++) btns[b].addEventListener("click", onChoose);
+    document.getElementById("heading").focus({ preventScroll: true });
+    window.scrollTo(0, 0);
+  }
+
+  function onChoose(e) {
+    var i = state.index, item = state.session[i];
+    if (state.answers[i] !== undefined) return; // đã khóa
+    var chosen = parseInt(e.currentTarget.getAttribute("data-i"), 10);
+    state.answers[i] = chosen;
+    var ok = chosen === item.a;
+
+    var btns = app.querySelectorAll(".option");
+    for (var k = 0; k < btns.length; k++) {
+      var btn = btns[k], tag = btn.querySelector(".tag");
+      btn.disabled = true;
+      if (k === item.a) { btn.classList.add("correct"); tag.textContent = "Đáp án đúng"; }
+      else if (k === chosen) { btn.classList.add("wrong"); tag.textContent = "Em đã chọn"; }
+      else { btn.classList.add("dim"); }
+    }
+
+    document.getElementById("topbar").innerHTML = topbarHtml();
+
+    document.getElementById("feedback").innerHTML =
+      '<div class="feedback ' + (ok ? "ok" : "bad") + '">' +
+        "<h3>" + (ok ? "Chính xác!" : "Chưa đúng") + "</h3>" +
+        "<p>" + esc(item.exp) + "</p></div>";
+
+    var last = i === state.session.length - 1;
+    document.getElementById("actions").innerHTML =
+      '<div class="actions"><button class="btn" id="next">' +
+      (last ? "Xem kết quả" : "Câu tiếp theo") + "</button></div>";
+    var next = document.getElementById("next");
+    next.addEventListener("click", function () {
+      if (last) renderResult();
+      else { state.index++; renderQuestion(); }
+    });
+    next.focus({ preventScroll: true });
+    next.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }
+
+  function renderResult() {
+    state.screen = "result";
+    var n = state.session.length, s = score(), pct = Math.round(s / n * 100);
+    var msg, sub;
+    if (s === n) { msg = "Xuất sắc!"; sub = "Em đã nắm vững kiến thức của Bài 1."; }
+    else if (s === n - 1) { msg = "Rất tốt!"; sub = "Chỉ còn một câu cần xem lại."; }
+    else if (s >= 3) { msg = "Khá ổn!"; sub = "Xem lại các câu sai bên dưới để nhớ chắc hơn."; }
+    else { msg = "Cố gắng thêm nhé!"; sub = "Đọc lại Bài 1, xem các lời giải thích bên dưới rồi làm lại."; }
+
+    var html =
+      '<section class="result">' +
+        '<p class="kicker">Kết quả của em</p>' +
+        '<h1 id="heading" tabindex="-1">' + s + "<small>/" + n + "</small></h1>" +
+        '<p class="percent">' + s + " câu đúng, " + pct + "%</p>" +
+        bitsHtml(true, "result") +
+        '<p class="msg">' + msg + '</p><p class="sub">' + sub + "</p>" +
+        '<div class="actions"><button class="btn" id="again">Làm lại</button></div>' +
+        '<h2 class="section-title">Xem lại từng câu</h2><ul class="review">';
+    for (var i = 0; i < n; i++) {
+      var it = state.session[i], ok = state.answers[i] === it.a;
+      html += '<li><div class="bit ' + (ok ? "one" : "zero") + '" aria-hidden="true">' + (ok ? "1" : "0") + "</div><div>" +
+        '<div class="verdict ' + (ok ? "ok" : "bad") + '">' + (ok ? "Đúng" : "Sai") + "</div>" +
+        '<div class="qtext">' + esc(it.q) + "</div>" +
+        '<div class="ans">Em chọn: <b>' + esc(it.opts[state.answers[i]]) + "</b></div>" +
+        (ok ? "" : '<div class="ans">Đáp án đúng: <b>' + esc(it.opts[it.a]) + "</b></div>") +
+        "</div></li>";
+    }
+    html += "</ul></section>";
+    app.innerHTML = html;
+    document.getElementById("again").addEventListener("click", startNew);
+    document.getElementById("heading").focus({ preventScroll: true });
+    window.scrollTo(0, 0);
+  }
+
+  // Phím tắt A-D hoặc 1-4 để chọn đáp án
+  document.addEventListener("keydown", function (e) {
+    if (state.screen !== "quiz" || e.ctrlKey || e.metaKey || e.altKey) return;
+    var key = e.key.toLowerCase(), idx = -1;
+    if (key >= "a" && key <= "d") idx = key.charCodeAt(0) - 97;
+    else if (key >= "1" && key <= "4") idx = parseInt(key, 10) - 1;
+    if (idx < 0 || state.answers[state.index] !== undefined) return;
+    var btn = app.querySelectorAll(".option")[idx];
+    if (btn) btn.click();
+  });
+
+  renderIntro();
+</script>
+</body>
+</html>
