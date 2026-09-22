@@ -199,28 +199,7 @@
   @keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
   /* Result */
-  .score { display: flex; align-items: baseline; gap: 12px; margin: 4px 0 8px; flex-wrap: wrap; }
-  .score .n {
-    font-size: clamp(4rem, 20vw, 6.5rem);
-    font-weight: 800; line-height: 1;
-    background: var(--sun); color: var(--on-sun);
-    border-radius: 20px;
-    padding: 6px 26px 10px;
-  }
-  .score .d { font-size: 1.4rem; font-weight: 700; color: var(--muted); }
-  .rsub { margin: 0 0 6px; font-weight: 700; font-size: 1.1rem; }
-  .rmsg { margin: 0 0 26px; color: var(--muted); }
-  h3 { margin: 0 0 12px; font-size: 1.1rem; }
-  .review { list-style: none; margin: 0 0 28px; padding: 0; display: grid; gap: 12px; }
-  .rv { border: 2px solid var(--line); border-left-width: 6px; border-radius: 14px; padding: 12px 14px; }
-  .rv.ok { border-left-color: var(--ok); }
-  .rv.bad { border-left-color: var(--bad); }
-  .rv-s { font-weight: 700; font-size: .9rem; }
-  .rv.ok .rv-s { color: var(--ok); }
-  .rv.bad .rv-s { color: var(--bad); }
-  .rv p { margin: 4px 0 0; }
-  .rv .rv-q { font-weight: 500; }
-  .rv .rv-a { color: var(--muted); font-size: .95rem; }
+  .rmsg { margin: 8px 0 26px; color: var(--muted); }
 
   @media (prefers-reduced-motion: reduce) {
     .fb { animation: none; }
@@ -239,7 +218,7 @@
     <!-- Màn hình bắt đầu -->
     <section id="start">
       <ul class="facts">
-        <li>Gồm 5 câu, mỗi câu chọn 1 đáp án.</li>
+        <li>Mỗi lượt làm bài gồm 2 câu hỏi, được chọn ngẫu nhiên trong ngân hàng câu hỏi của bài.</li>
         <li>Chọn xong là em xem được đáp án đúng và lời giải thích ngay.</li>
         <li>Câu hỏi và các đáp án được xáo trộn ngẫu nhiên cho mỗi lần làm bài.</li>
       </ul>
@@ -260,13 +239,9 @@
 
     <!-- Màn hình tổng kết -->
     <section id="result" hidden>
-      <h2 id="rtitle" tabindex="-1">Kết quả của em</h2>
-      <div class="score"><span class="n" id="rscore"></span><span class="d">/ 10 điểm</span></div>
-      <p class="rsub" id="rsub"></p>
-      <p class="rmsg" id="rmsg"></p>
-      <h3>Xem lại từng câu</h3>
-      <ol id="review" class="review"></ol>
-      <button id="btnRetry" class="btn" type="button">Làm lại với đề mới xáo trộn</button>
+      <h2 id="rtitle" tabindex="-1">Em đã hoàn thành bài trắc nghiệm!</h2>
+      <p class="rmsg">Hãy nhấn nút bên dưới để làm lại với bộ câu hỏi mới được xáo trộn ngẫu nhiên.</p>
+      <button id="btnRetry" class="btn" type="button">Làm lại</button>
     </section>
 
   </div>
@@ -369,8 +344,10 @@
     window.scrollTo(0, 0);
   }
 
+  var QUESTIONS_PER_ROUND = 2;
+
   function startQuiz() {
-    quiz = shuffle(BANK).map(function (q) {
+    quiz = shuffle(BANK).slice(0, QUESTIONS_PER_ROUND).map(function (q) {
       return { q: q.q, why: q.why, options: shuffle(q.options) };
     });
     idx = 0;
@@ -456,35 +433,6 @@
   }
 
   function showResult() {
-    var correct = results.filter(function (r) { return r.ok; }).length;
-    var total = quiz.length;
-    var score = correct * (10 / total);
-
-    $("rscore").textContent = String(Number.isInteger(score) ? score : score.toFixed(1));
-    $("rsub").textContent = "Em trả lời đúng " + correct + " trên " + total + " câu.";
-
-    var msg;
-    if (correct === total) msg = "Xuất sắc! Em nắm rất vững kiến thức của bài này.";
-    else if (correct === total - 1) msg = "Rất tốt! Em chỉ cần xem lại câu chưa đúng là hoàn hảo.";
-    else if (correct >= 3) msg = "Khá ổn. Hãy đọc lại phần giải thích ở các câu sai để nhớ chắc hơn.";
-    else msg = "Em cần ôn lại bài. Hãy đọc lại Bài 2 trong sách giáo khoa rồi làm lại nhé.";
-    $("rmsg").textContent = msg;
-
-    var list = $("review");
-    list.replaceChildren();
-    quiz.forEach(function (q, i) {
-      var r = results[i];
-      var li = el("li", "rv " + (r.ok ? "ok" : "bad"));
-      li.appendChild(el("span", "rv-s", "Câu " + (i + 1) + ": " + (r.ok ? "Đúng" : "Sai")));
-      li.appendChild(el("p", "rv-q", q.q));
-      li.appendChild(el("p", "rv-a", "Em chọn: " + LETTERS[r.chosen] + ". " + q.options[r.chosen].t));
-      if (!r.ok) {
-        var c = q.options.findIndex(function (o) { return o.ok; });
-        li.appendChild(el("p", "rv-a", "Đáp án đúng: " + LETTERS[c] + ". " + q.options[c].t));
-      }
-      list.appendChild(li);
-    });
-
     show(sResult);
     $("rtitle").focus({ preventScroll: true });
   }

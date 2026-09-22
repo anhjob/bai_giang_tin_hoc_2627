@@ -52,24 +52,29 @@
     overflow: hidden;
   }
   .titlebar {
-    display: flex; align-items: center; gap: 14px;
-    padding: 10px 16px;
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 18px;
     background: var(--blue);
     border-bottom: 2px solid var(--ink);
     color: #fff;
-    font-size: 14px; font-weight: 700;
   }
-  .dots { display: flex; gap: 7px; }
-  .dots i { width: 13px; height: 13px; border-radius: 50%; display: block; border: 1.5px solid var(--ink); }
-  .dots i:nth-child(1) { background: #ff6b6b; }
-  .dots i:nth-child(2) { background: var(--sun); }
-  .dots i:nth-child(3) { background: #4ade80; }
+  .titlebar .badge {
+    flex: none;
+    width: 34px; height: 34px;
+    display: grid; place-items: center;
+    background: var(--sun); color: var(--ink);
+    border: 2px solid var(--ink); border-radius: 9px;
+    font-weight: 800; font-size: 15px;
+  }
+  .titlebar .names { display: flex; flex-direction: column; line-height: 1.25; }
+  .titlebar .subject { font-size: 12.5px; font-weight: 700; opacity: .9; letter-spacing: .02em; text-transform: uppercase; }
+  .titlebar .lesson { font-size: 16px; font-weight: 800; }
 
   .screen { display: none; padding: 28px 28px 30px; }
   .screen.active { display: block; }
 
   h1, h2, h3, p { margin: 0; }
-  h1 { font-size: clamp(26px, 5.5vw, 36px); line-height: 1.2; font-weight: 800; letter-spacing: -0.01em; }
+  h1 { font-size: clamp(24px, 5.2vw, 32px); line-height: 1.2; font-weight: 800; letter-spacing: -0.01em; }
   h2 { font-size: clamp(20px, 4.2vw, 25px); line-height: 1.35; font-weight: 700; }
 
   /* ---- Nút ---- */
@@ -100,7 +105,6 @@
   .facts li:nth-child(1) { background: #d7e5ff; }
   .facts li:nth-child(2) { background: #ffe3ef; }
   .facts li:nth-child(3) { background: #fff0bd; }
-  .facts li:nth-child(4) { background: #c9f3ef; }
 
   /* ---- Màn hình câu hỏi ---- */
   .progress-row { display: flex; align-items: center; gap: 14px; margin-bottom: 22px; }
@@ -110,7 +114,6 @@
     border: 2px solid var(--ink); border-radius: 999px; overflow: hidden;
   }
   .progress-fill { height: 100%; width: 0; background: var(--teal); transition: width .35s ease; }
-  .live-score { font-size: 15px; font-weight: 700; white-space: nowrap; color: var(--ink-soft); }
 
   .options { display: grid; gap: 12px; margin-top: 22px; }
   .option {
@@ -160,26 +163,19 @@
   .actions .btn.show { display: inline-block; }
 
   /* ---- Màn hình tổng kết ---- */
-  .result-top { display: flex; align-items: center; gap: 26px; flex-wrap: wrap; }
-  .ring { position: relative; width: 160px; height: 160px; flex: none; }
-  .ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
-  .ring .bg { fill: none; stroke: var(--blue-tint); stroke-width: 15; }
-  .ring .fg {
-    fill: none; stroke: var(--blue); stroke-width: 15; stroke-linecap: round;
-    stroke-dasharray: 402.12; stroke-dashoffset: 402.12;
-    transition: stroke-dashoffset 1s cubic-bezier(.2,.8,.2,1);
+  .result-top { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; }
+  .result-icon {
+    flex: none; width: 84px; height: 84px;
+    display: grid; place-items: center;
+    border: 2px solid var(--ink); border-radius: 50%;
+    font-size: 42px;
   }
-  .ring .num {
-    position: absolute; inset: 0; display: grid; place-content: center; text-align: center;
-    font-weight: 800; font-size: 44px; line-height: 1;
-  }
-  .ring .num small { display: block; margin-top: 4px; font-size: 14px; font-weight: 700; color: var(--ink-soft); }
   .result-msg h2 { margin-bottom: 6px; }
-  .result-msg p { color: var(--ink-soft); max-width: 34ch; }
+  .result-msg p { color: var(--ink-soft); max-width: 36ch; }
   .correct-count {
     display: inline-block; margin-top: 12px;
-    background: #fff0bd; border: 2px solid var(--ink); border-radius: 999px;
-    padding: 3px 14px; font-weight: 800; font-size: 15px;
+    border: 2px solid var(--ink); border-radius: 999px;
+    padding: 4px 16px; font-weight: 800; font-size: 15.5px;
   }
 
   .review-heading { margin-top: 26px; font-size: 18px; font-weight: 800; }
@@ -204,10 +200,10 @@
     .screen { padding: 22px 16px 24px; }
     .window { box-shadow: 5px 5px 0 var(--ink); }
     .option { font-size: 16px; padding: 11px 12px; }
-    .live-score { display: none; }
     .btn { width: 100%; }
     .actions { justify-content: stretch; }
     .actions .btn.show { width: 100%; }
+    .titlebar .lesson { font-size: 15px; }
   }
   @media (prefers-reduced-motion: reduce) {
     * { animation: none !important; transition: none !important; }
@@ -217,9 +213,12 @@
 <body>
 
 <main class="window" aria-label="Bài trắc nghiệm">
-  <div class="titlebar" aria-hidden="true">
-    <div class="dots"><i></i><i></i><i></i></div>
-    <span>Tin học 7 – Bài 2. Phần mềm máy tính</span>
+  <div class="titlebar">
+    <span class="badge" aria-hidden="true">Tin</span>
+    <span class="names">
+      <span class="subject">Tin học 7</span>
+      <span class="lesson">Bài 2. Phần mềm máy tính</span>
+    </span>
   </div>
 
   <!-- Màn hình bắt đầu -->
@@ -227,8 +226,7 @@
     <h1>Trắc nghiệm: Phần mềm máy tính</h1>
     <p class="intro-lead">Kiểm tra xem em đã hiểu phần mềm là gì, có những loại nào và hệ điều hành làm nhiệm vụ gì. Chọn một đáp án, em sẽ biết ngay đúng hay sai và vì sao.</p>
     <ul class="facts">
-      <li>5 câu hỏi</li>
-      <li>Thang điểm 10</li>
+      <li>2 câu hỏi mỗi lượt</li>
       <li>Có giải thích sau mỗi câu</li>
       <li>Mỗi bạn một đề riêng</li>
     </ul>
@@ -242,7 +240,6 @@
       <div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="5" aria-valuenow="0" id="progress-bar">
         <div class="progress-fill" id="progress-fill"></div>
       </div>
-      <span class="live-score" id="live-score">Đúng: 0</span>
     </div>
 
     <h2 id="question-text"></h2>
@@ -258,13 +255,7 @@
   <!-- Màn hình tổng kết -->
   <section class="screen" id="screen-result">
     <div class="result-top">
-      <div class="ring" aria-hidden="true">
-        <svg viewBox="0 0 150 150">
-          <circle class="bg" cx="75" cy="75" r="64"></circle>
-          <circle class="fg" id="ring-fg" cx="75" cy="75" r="64"></circle>
-        </svg>
-        <div class="num"><span id="result-score">0</span><small>trên 10 điểm</small></div>
-      </div>
+      <div class="result-icon" id="result-icon" aria-hidden="true">🎉</div>
       <div class="result-msg">
         <h2 id="result-title"></h2>
         <p id="result-desc"></p>
@@ -339,8 +330,8 @@
   ];
 
   var LETTERS = ["A", "B", "C", "D"];
-  var total = BANK.length;
-  var POINTS_PER_Q = 10 / total;
+  var QUESTIONS_PER_ROUND = 2;   // mỗi lượt chỉ lấy ngẫu nhiên 2 trong số 5 câu của ngân hàng
+  var total = QUESTIONS_PER_ROUND;
 
   var quiz = [];      // bộ đề đã xáo trộn cho lần làm bài hiện tại
   var current = 0;
@@ -361,7 +352,8 @@
   }
 
   function buildQuiz() {
-    return shuffle(BANK).map(function (item) {
+    // Xáo trộn cả ngân hàng câu hỏi, rồi chỉ lấy ra QUESTIONS_PER_ROUND câu đầu tiên
+    return shuffle(BANK).slice(0, QUESTIONS_PER_ROUND).map(function (item) {
       var opts = shuffle(item.options);
       var answerIdx = 0;
       opts.forEach(function (o, i) { if (o.ok) answerIdx = i; });
@@ -391,7 +383,6 @@
     $("progress-text").textContent = "Câu " + (current + 1) + "/" + total;
     $("progress-fill").style.width = (current / total * 100) + "%";
     $("progress-bar").setAttribute("aria-valuenow", String(current));
-    $("live-score").textContent = "Đúng: " + correctCount;
     $("question-text").textContent = item.q;
 
     var box = $("options");
@@ -456,7 +447,6 @@
     ex.textContent = item.explain;
     fb.appendChild(ex);
 
-    $("live-score").textContent = "Đúng: " + correctCount;
     $("progress-fill").style.width = ((current + 1) / total * 100) + "%";
     $("btn-next").classList.add("show");
     $("btn-next").focus({ preventScroll: true });
@@ -474,47 +464,31 @@
     }
   }
 
-  function formatScore(n) {
-    return (Math.round(n * 10) / 10).toString().replace(".", ",");
-  }
-
   function showResult() {
     show("result");
-    var score10 = correctCount * POINTS_PER_Q;
 
-    $("result-score").textContent = formatScore(score10);
-    $("result-count").textContent = "Đúng " + correctCount + "/" + total + " câu";
-
-    var title, desc, color;
+    var title, desc, icon;
     if (correctCount === total) {
-      title = "Xuất sắc! Điểm tuyệt đối 🎉";
+      title = "Xuất sắc! Em làm đúng hết";
       desc = "Em nắm rất chắc kiến thức về phần mềm máy tính. Hãy thử giải thích cho bạn cùng lớp nhé.";
-      color = "#12805a";
-    } else if (correctCount === 4) {
-      title = "Rất tốt! 👏";
+      icon = "🎉";
+    } else if (correctCount === total - 1) {
+      title = "Rất tốt!";
       desc = "Em chỉ còn sai một câu. Xem lại phần giải thích bên dưới là em sẽ nắm vững hơn.";
-      color = "#12805a";
-    } else if (correctCount === 3) {
-      title = "Khá tốt, cố gắng thêm nhé 💪";
+      icon = "👏";
+    } else if (correctCount >= Math.ceil(total / 2)) {
+      title = "Khá tốt, cố gắng thêm nhé";
       desc = "Em đã hiểu phần lớn bài. Đọc lại các câu sai bên dưới rồi làm lại để đạt điểm cao hơn.";
-      color = "#2f6bff";
+      icon = "💪";
     } else {
-      title = "Em cần ôn lại bài một chút 📘";
+      title = "Em cần ôn lại bài một chút";
       desc = "Đừng lo, hãy đọc lại Bài 2 trong sách giáo khoa và xem lại các câu bên dưới rồi thử lần nữa nhé.";
-      color = "#c73838";
+      icon = "📘";
     }
     $("result-title").textContent = title;
     $("result-desc").textContent = desc;
-
-    var ring = $("ring-fg");
-    var circumference = 402.12;
-    ring.style.strokeDashoffset = String(circumference);
-    ring.style.stroke = color;
-    requestAnimationFrame(function () {
-      requestAnimationFrame(function () {
-        ring.style.strokeDashoffset = String(circumference * (1 - correctCount / total));
-      });
-    });
+    $("result-icon").textContent = icon;
+    $("result-count").textContent = "Đúng " + correctCount + "/" + total + " câu";
 
     var list = $("review");
     list.innerHTML = "";
