@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>K7_2_B04_Cauhoi</title>
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#fff6e0; --card:#ffffff; --ink:#1f2a44; --muted:#5b6784;
+  --brand:#2f6fed; --brand-d:#1f55c4; --line:#d9deec;
+  --ok:#16a34a; --ok-bg:#dcfce7; --bad:#dc2626; --bad-bg:#fee2e2;
+  --track:#ffe3a3; --sun:#ffb703;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#141a2e; --card:#1d2540; --ink:#f1f4ff; --muted:#a9b4d6;
+    --brand:#6ea0ff; --brand-d:#8db4ff; --line:#33406b;
+    --ok:#4ade80; --ok-bg:#12351f; --bad:#f87171; --bad-bg:#40191c; --track:#33406b;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#141a2e; --card:#1d2540; --ink:#f1f4ff; --muted:#a9b4d6;
+  --brand:#6ea0ff; --brand-d:#8db4ff; --line:#33406b;
+  --ok:#4ade80; --ok-bg:#12351f; --bad:#f87171; --bad-bg:#40191c; --track:#33406b;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Nunito","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  font-size:18px;line-height:1.5;min-height:100vh}
+.wrap{max-width:720px;margin:0 auto;padding:16px}
+header{background:var(--brand);color:#fff;border-radius:20px;padding:18px 20px;margin-bottom:16px}
+header small{display:block;font-size:15px;opacity:.9}
+header h1{margin:2px 0 0;font-size:22px;line-height:1.3}
+.progress{margin:0 0 16px}
+.progress .lbl{display:flex;justify-content:space-between;font-weight:700;font-size:16px;margin-bottom:6px}
+.track{height:14px;background:var(--track);border-radius:99px;overflow:hidden}
+.bar{height:100%;width:0;background:var(--sun);border-radius:99px;transition:width .4s}
+.card{background:var(--card);border:2px solid var(--line);border-radius:20px;padding:20px}
+.q{font-size:21px;font-weight:800;margin:0 0 16px;line-height:1.4}
+.opts{display:grid;gap:12px}
+.opt{display:flex;gap:12px;align-items:center;text-align:left;width:100%;
+  font:inherit;font-weight:600;color:#000;background:var(--card);
+  border:2px solid var(--line);border-radius:14px;padding:14px;min-height:56px;cursor:pointer}
+.opt:hover:not(:disabled){border-color:var(--brand)}
+.opt:focus-visible,.btn:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+.opt .k{flex:none;width:36px;height:36px;border-radius:50%;background:var(--track);
+  display:grid;place-items:center;font-weight:800;color:#1f2a44}
+.opt:disabled{cursor:default}
+.opt.correct{background:var(--ok-bg);border-color:var(--ok)}
+.opt.correct .k{background:var(--ok);color:#fff}
+.opt.wrong{background:var(--bad-bg);border-color:var(--bad)}
+.opt.wrong .k{background:var(--bad);color:#fff}
+:root[data-theme="dark"] .opt{color:var(--ink)}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .opt{color:var(--ink)} }
+.fb{margin-top:16px;padding:14px;border-radius:14px;font-size:17px}
+.fb.ok{background:var(--ok-bg);border-left:6px solid var(--ok)}
+.fb.no{background:var(--bad-bg);border-left:6px solid var(--bad)}
+.fb b{display:block;margin-bottom:2px}
+.btn{font:inherit;font-weight:800;color:#fff;background:var(--brand);border:0;border-radius:14px;
+  padding:14px 24px;min-height:52px;cursor:pointer;margin-top:16px}
+.btn:hover{background:var(--brand-d)}
+.hidden{display:none}
+.result{text-align:center}
+.result .big{font-size:26px;font-weight:800;margin:4px 0}
+.result .cmt{color:var(--muted);margin:0 0 16px}
+.emoji{font-size:56px;line-height:1}
+.review{list-style:none;padding:0;margin:16px 0 0;text-align:left;display:grid;gap:10px}
+.review li{border:2px solid var(--line);border-radius:14px;padding:12px}
+.review li.ok{border-color:var(--ok);background:var(--ok-bg)}
+.review li.no{border-color:var(--bad);background:var(--bad-bg)}
+.review .st{font-weight:800}
+.review .ans{font-size:16px;color:var(--muted)}
+@media (max-width:480px){body{font-size:17px}.q{font-size:19px}header h1{font-size:19px}}
+@media (prefers-reduced-motion:reduce){.bar{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <small>Tin học 7 · Kết nối tri thức với cuộc sống</small>
+    <h1>Bài 4. Mạng xã hội và một số kênh trao đổi thông tin trên Internet</h1>
+  </header>
+
+  <div id="quiz">
+    <div class="progress">
+      <div class="lbl"><span id="plabel">Câu 1/2</span><span id="pcount">0 câu đã làm</span></div>
+      <div class="track"><div class="bar" id="bar"></div></div>
+    </div>
+    <div class="card">
+      <p class="q" id="qtext"></p>
+      <div class="opts" id="opts"></div>
+      <div class="fb hidden" id="fb" role="status" aria-live="polite"></div>
+      <button class="btn hidden" id="next"></button>
+    </div>
+  </div>
+
+  <div id="end" class="card result hidden">
+    <div class="emoji" id="eemoji"></div>
+    <div class="big" id="ecount"></div>
+    <p class="cmt" id="ecmt"></p>
+    <ul class="review" id="review"></ul>
+    <button class="btn" id="again">Làm lại</button>
+  </div>
+</div>
+
+<script>
+var BANK = [
+  {q:"Mạng xã hội có chức năng cơ bản nào sau đây?",
+   a:["Kết nối, giao lưu và chia sẻ thông tin giữa các thành viên",
+      "Chỉ dùng để lưu trữ tệp tin cá nhân, không chia sẻ được",
+      "Chỉ dùng để cài đặt phần mềm cho máy tính",
+      "Chỉ dùng để soạn thảo văn bản trực tuyến"],
+   e:"Mạng xã hội là nơi mọi người kết nối, giao lưu, chia sẻ thông tin, hình ảnh, video với bạn bè và cộng đồng."},
+  {q:"Trong các website sau, website nào là một mạng xã hội?",
+   a:["Facebook",
+      "Một trang báo điện tử chỉ đăng tin tức, không cho bình luận, kết bạn",
+      "Một trang web tra cứu từ điển trực tuyến",
+      "Một trang web bán vé máy bay"],
+   e:"Facebook là mạng xã hội phổ biến, cho phép người dùng tạo hồ sơ cá nhân, kết bạn, chia sẻ và tương tác với nhau."},
+  {q:"Em có thể sử dụng chức năng nào của mạng xã hội để chia sẻ một bức ảnh với bạn bè?",
+   a:["Đăng bài viết kèm ảnh lên trang cá nhân",
+      "Gỡ cài đặt ứng dụng mạng xã hội",
+      "Xoá tài khoản mạng xã hội của mình",
+      "Tắt kết nối Internet của máy tính"],
+   e:"Đăng bài viết kèm hình ảnh lên trang cá nhân là cách phổ biến để chia sẻ ảnh với bạn bè trên mạng xã hội."},
+  {q:"Đâu là một kênh trao đổi thông tin thông dụng trên Internet (ngoài mạng xã hội)?",
+   a:["Thư điện tử (Email)",
+      "Bàn phím máy tính",
+      "Ổ đĩa cứng",
+      "Máy in"],
+   e:"Thư điện tử (Email) là một kênh trao đổi thông tin thông dụng trên Internet, dùng để gửi và nhận thư, tệp đính kèm."},
+  {q:"Việc sử dụng thông tin cá nhân của người khác trên mạng xã hội vào mục đích sai trái có thể gây ra hậu quả gì?",
+   a:["Ảnh hưởng xấu đến danh dự, tâm lí của người bị lộ thông tin",
+      "Giúp người đó nổi tiếng hơn và không ảnh hưởng gì",
+      "Làm máy tính chạy nhanh hơn",
+      "Tăng dung lượng lưu trữ trên điện thoại"],
+   e:"Sử dụng sai mục đích thông tin cá nhân của người khác có thể gây ảnh hưởng xấu đến danh dự, tâm lí, thậm chí là an toàn của người đó."}
+];
+var N = 2, LET = ["A","B","C","D"];
+var items, idx, answered, right;
+
+function shuffle(arr){
+  var a = arr.slice();
+  for (var i = a.length - 1; i > 0; i--){
+    var j = Math.floor(Math.random() * (i + 1));
+    var t = a[i]; a[i] = a[j]; a[j] = t;
+  }
+  return a;
+}
+function $(id){ return document.getElementById(id); }
+
+function start(){
+  items = shuffle(BANK).slice(0, N).map(function(b){
+    var opts = shuffle(b.a.map(function(t, i){ return {t:t, ok:i === 0}; }));
+    return {q:b.q, e:b.e, opts:opts, picked:-1};
+  });
+  idx = 0; right = 0; answered = false;
+  $("end").classList.add("hidden");
+  $("quiz").classList.remove("hidden");
+  show();
+}
+
+function show(){
+  var it = items[idx];
+  answered = false;
+  $("plabel").textContent = "Câu " + (idx + 1) + "/" + N;
+  $("pcount").textContent = idx + " câu đã làm";
+  $("bar").style.width = (idx / N * 100) + "%";
+  $("qtext").textContent = it.q;
+  $("fb").className = "fb hidden";
+  $("next").className = "btn hidden";
+  var box = $("opts");
+  box.innerHTML = "";
+  it.opts.forEach(function(o, i){
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "opt";
+    b.innerHTML = '<span class="k">' + LET[i] + '</span><span></span>';
+    b.lastChild.textContent = o.t;
+    b.addEventListener("click", function(){ pick(i); });
+    box.appendChild(b);
+  });
+}
+
+function pick(i){
+  if (answered) return;
+  answered = true;
+  var it = items[idx];
+  it.picked = i;
+  var good = it.opts[i].ok;
+  if (good) right++;
+  var btns = $("opts").children;
+  for (var k = 0; k < btns.length; k++){
+    btns[k].disabled = true;
+    if (it.opts[k].ok) btns[k].classList.add("correct");
+    else if (k === i) btns[k].classList.add("wrong");
+  }
+  var fb = $("fb");
+  fb.className = "fb " + (good ? "ok" : "no");
+  fb.innerHTML = "<b>" + (good ? "Chính xác!" : "Chưa đúng rồi.") + "</b>";
+  var s = document.createElement("span");
+  s.textContent = it.e;
+  fb.appendChild(s);
+  $("pcount").textContent = (idx + 1) + " câu đã làm";
+  $("bar").style.width = ((idx + 1) / N * 100) + "%";
+  var nx = $("next");
+  nx.textContent = idx < N - 1 ? "Câu tiếp theo" : "Xem kết quả";
+  nx.className = "btn";
+  nx.focus();
+}
+
+function finish(){
+  $("quiz").classList.add("hidden");
+  $("end").classList.remove("hidden");
+  var pct = (right / N) * 100;
+  var emo, cmt;
+  if (pct === 100){ emo = "🏆"; cmt = "Xuất sắc! Em đã nắm rất tốt nội dung bài học."; }
+  else if (pct >= 75){ emo = "🌟"; cmt = "Rất tốt! Em đã hiểu phần lớn nội dung bài học."; }
+  else if (pct >= 50){ emo = "👍"; cmt = "Khá tốt! Em nên ôn lại một số nội dung còn chưa chắc."; }
+  else { emo = "📘"; cmt = "Em nên xem lại bài học và luyện tập thêm nhé."; }
+  $("eemoji").textContent = emo;
+  $("ecount").textContent = "Em trả lời đúng " + right + "/" + N + " câu";
+  $("ecmt").textContent = cmt;
+  var ul = $("review");
+  ul.innerHTML = "";
+  items.forEach(function(it, n){
+    var good = it.opts[it.picked].ok;
+    var right_t = it.opts.filter(function(o){ return o.ok; })[0].t;
+    var li = document.createElement("li");
+    li.className = good ? "ok" : "no";
+    var st = document.createElement("div");
+    st.className = "st";
+    st.textContent = (good ? "✔ Đúng" : "✘ Sai") + " · Câu " + (n + 1);
+    var q = document.createElement("div");
+    q.textContent = it.q;
+    var a = document.createElement("div");
+    a.className = "ans";
+    a.textContent = good ? "Đáp án: " + right_t : "Em chọn: " + it.opts[it.picked].t + " · Đáp án đúng: " + right_t;
+    li.appendChild(st); li.appendChild(q); li.appendChild(a);
+    ul.appendChild(li);
+  });
+  window.scrollTo(0, 0);
+}
+
+$("next").addEventListener("click", function(){
+  if (idx < N - 1){ idx++; show(); } else { finish(); }
+});
+$("again").addEventListener("click", start);
+start();
+</script>
+</body>
+</html>

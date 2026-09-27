@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tin học 9 – Bài 3. Thực hành: Đánh giá chất lượng thông tin</title>
+<style>
+:root{
+  --bg1:#fff3c4; --bg2:#c9f0ff;
+  --ink:#1d2b4f; --muted:#5a6785;
+  --card:#ffffff; --brand:#2f6df6; --brand-d:#1f52c4;
+  --line:#d9e2f5; --track:#e4ebfb;
+  --ok:#16a34a; --ok-bg:#dcfce7;
+  --bad:#dc2626; --bad-bg:#fee2e2;
+  --accent:#ff8a3d;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  font-family:"Nunito","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  color:var(--ink);
+  background:linear-gradient(160deg,var(--bg1),var(--bg2));
+  min-height:100vh;
+  padding:16px;
+  font-size:18px; line-height:1.5;
+}
+.wrap{max-width:720px;margin:0 auto}
+header{
+  background:var(--brand); color:#fff;
+  border-radius:20px 20px 0 0;
+  padding:18px 20px 16px;
+}
+header .sub{font-size:14px;opacity:.9;font-weight:600}
+header h1{font-size:22px;line-height:1.3;margin:4px 0 0;font-weight:800}
+.progress-wrap{background:#fff;padding:14px 20px 0}
+.progress-info{display:flex;justify-content:space-between;font-size:15px;font-weight:700;color:var(--muted);margin-bottom:6px}
+.track{height:12px;background:var(--track);border-radius:99px;overflow:hidden}
+.bar{height:100%;width:0;background:linear-gradient(90deg,#34d399,#2f6df6);border-radius:99px;transition:width .4s ease}
+main{background:#fff;border-radius:0 0 20px 20px;padding:20px;box-shadow:0 10px 30px rgba(31,82,196,.15)}
+.level{display:inline-block;background:#fff1e6;color:#b45309;font-weight:800;font-size:14px;padding:4px 12px;border-radius:99px}
+.question{font-size:21px;font-weight:800;margin:12px 0 16px;line-height:1.4}
+.options{display:grid;gap:12px}
+.opt{
+  display:flex;gap:12px;align-items:flex-start;text-align:left;width:100%;
+  font:inherit;color:var(--ink);
+  background:#f6f9ff;border:2.5px solid var(--line);border-radius:14px;
+  padding:14px;cursor:pointer;min-height:56px;
+  transition:transform .1s,border-color .15s,background .15s;
+}
+.opt:hover:not(:disabled){border-color:var(--brand);background:#eef4ff}
+.opt:active:not(:disabled){transform:scale(.99)}
+.opt:focus-visible,.btn:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.opt:disabled{cursor:default}
+.letter{
+  flex:0 0 34px;height:34px;border-radius:50%;
+  background:var(--brand);color:#fff;font-weight:800;
+  display:flex;align-items:center;justify-content:center;
+}
+.opt .txt{padding-top:3px}
+.opt.correct{background:var(--ok-bg);border-color:var(--ok)}
+.opt.correct .letter{background:var(--ok)}
+.opt.wrong{background:var(--bad-bg);border-color:var(--bad)}
+.opt.wrong .letter{background:var(--bad)}
+.opt.dim{opacity:.6}
+.feedback{
+  margin-top:16px;padding:14px 16px;border-radius:14px;
+  border-left:6px solid;font-size:17px;
+}
+.feedback.ok{background:var(--ok-bg);border-color:var(--ok)}
+.feedback.no{background:var(--bad-bg);border-color:var(--bad)}
+.feedback strong{display:block;margin-bottom:2px}
+.hidden{display:none}
+.btn{
+  font:inherit;font-weight:800;color:#fff;background:var(--brand);
+  border:0;border-radius:14px;padding:14px 26px;cursor:pointer;
+  min-height:52px;margin-top:18px;
+  box-shadow:0 4px 0 var(--brand-d);
+}
+.btn:hover{background:#3d79ff}
+.btn:active{transform:translateY(2px);box-shadow:0 2px 0 var(--brand-d)}
+.btn.block{width:100%}
+/* Tổng kết */
+.result{text-align:center}
+.emoji{font-size:64px;line-height:1}
+.result h2{font-size:26px;margin:8px 0 4px}
+.count{
+  display:inline-block;margin:8px 0;padding:8px 24px;border-radius:99px;
+  background:#eef4ff;color:var(--brand-d);font-weight:800;font-size:22px;
+}
+.comment{color:var(--muted);margin:8px auto 4px;max-width:520px}
+.review{text-align:left;margin-top:20px}
+.review h3{font-size:18px;margin:0 0 10px}
+.ritem{border:2px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:10px}
+.ritem.ok{border-color:#86efac;background:#f4fdf7}
+.ritem.no{border-color:#fca5a5;background:#fff7f7}
+.rhead{display:flex;gap:8px;align-items:flex-start;font-weight:800}
+.badge{flex:0 0 auto;font-size:13px;padding:2px 10px;border-radius:99px;color:#fff;margin-top:3px}
+.ok .badge{background:var(--ok)}
+.no .badge{background:var(--bad)}
+.rline{font-size:16px;margin-top:6px}
+.rline b{color:var(--ink)}
+@media (max-width:480px){
+  body{padding:10px;font-size:17px}
+  header h1{font-size:19px}
+  .question{font-size:19px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="sub">Tin học 9 · Kết nối tri thức với cuộc sống</div>
+    <h1>Bài 3. Thực hành: Đánh giá chất lượng thông tin</h1>
+  </header>
+  <div class="progress-wrap" id="progressWrap">
+    <div class="progress-info"><span id="stepText">Câu 1/2</span><span id="doneText">Đã làm 0/2</span></div>
+    <div class="track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="track"><div class="bar" id="bar"></div></div>
+  </div>
+  <main id="app" aria-live="polite"></main>
+</div>
+
+<script>
+/* ===== Ngân hàng 5 câu hỏi (đáp án đúng luôn ở vị trí đầu, sẽ được xáo trộn khi làm bài) ===== */
+const BANK = [
+  {
+    level: "Nhận biết",
+    q: "Tiêu chí nào dưới đây KHÔNG dùng để đánh giá chất lượng của một thông tin?",
+    opts: [
+      "Số lượt thích và lượt chia sẻ của bài đăng",
+      "Tính chính xác của thông tin",
+      "Độ tin cậy của nguồn thông tin",
+      "Tính cập nhật (mới) của thông tin"
+    ],
+    why: "Số lượt thích, chia sẻ chỉ cho biết bài đăng được nhiều người chú ý, không chứng minh thông tin đúng. Chất lượng thông tin được đánh giá qua tính chính xác, độ tin cậy của nguồn, tính cập nhật, tính đầy đủ…"
+  },
+  {
+    level: "Nhận biết",
+    q: "Để tìm thông tin về tình hình dịch bệnh, nguồn nào dưới đây đáng tin cậy nhất?",
+    opts: [
+      "Trang thông tin chính thức của cơ quan y tế",
+      "Tin nhắn chuyển tiếp từ người quen không rõ nguồn",
+      "Bài đăng ẩn danh trên mạng xã hội",
+      "Video có tiêu đề giật gân nhưng không ghi tác giả"
+    ],
+    why: "Trang thông tin chính thức của cơ quan chuyên môn có người chịu trách nhiệm, được kiểm duyệt và cập nhật thường xuyên nên đáng tin cậy hơn các nguồn ẩn danh hoặc không rõ xuất xứ."
+  },
+  {
+    level: "Thông hiểu",
+    q: "Vì sao em cần kiểm tra thông tin trước khi chia sẻ cho người khác?",
+    opts: [
+      "Để tránh lan truyền thông tin sai lệch, gây hậu quả cho mình và cho người khác",
+      "Vì chia sẻ càng nhanh thì càng được nhiều người biết đến em",
+      "Vì thông tin trên mạng luôn đúng nên chỉ cần chia sẻ lại",
+      "Vì kiểm tra thông tin là việc của giáo viên, không phải của học sinh"
+    ],
+    why: "Thông tin sai khi được chia sẻ rộng có thể gây hoang mang, thiệt hại và ảnh hưởng đến uy tín của chính em. Mỗi người dùng mạng đều có trách nhiệm kiểm tra trước khi chia sẻ."
+  },
+  {
+    level: "Thông hiểu",
+    q: "Em đọc được một tin nghe rất bất ngờ trên mạng. Cách nào giúp kiểm chứng tin đó hiệu quả nhất?",
+    opts: [
+      "Đối chiếu với nhiều nguồn tin cậy khác, xem tác giả và ngày đăng",
+      "Chỉ cần đọc kỹ lại chính bài viết đó nhiều lần",
+      "Hỏi bạn bè xem có ai đã chia sẻ chưa",
+      "Tin ngay nếu bài viết có nhiều hình ảnh minh họa"
+    ],
+    why: "Muốn kiểm chứng, cần so sánh với các nguồn đáng tin cậy độc lập và xem xét tác giả, thời gian đăng. Đọc lại một bài nhiều lần, hình ảnh đẹp hay việc nhiều người chia sẻ đều không chứng minh tin là đúng."
+  },
+  {
+    level: "Thông hiểu",
+    q: "Một bài viết đăng từ nhiều năm trước nói về giá xăng \"hiện nay\". Bài viết này có thể có hạn chế gì về chất lượng thông tin?",
+    opts: [
+      "Thông tin có thể đã lỗi thời, không còn cập nhật",
+      "Thông tin chắc chắn đúng vì có nói đến con số cụ thể",
+      "Thông tin luôn đầy đủ vì bài viết đã được đăng lâu",
+      "Không có hạn chế nào vì nội dung vẫn còn trên mạng"
+    ],
+    why: "Giá cả thay đổi theo thời gian, nên bài viết cũ có thể không còn đúng ở hiện tại. Đây là vấn đề về tính cập nhật – một tiêu chí quan trọng khi đánh giá chất lượng thông tin."
+  }
+];
+const PER_ROUND = 2;
+const LABELS = ["A","B","C","D"];
+
+/* ===== Tiện ích ===== */
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+
+/* ===== Trạng thái ===== */
+let quiz = [];      // các câu đã chọn và xáo trộn
+let idx = 0;
+let answers = [];   // {picked, correct}
+
+const app = document.getElementById("app");
+const bar = document.getElementById("bar");
+const track = document.getElementById("track");
+const stepText = document.getElementById("stepText");
+const doneText = document.getElementById("doneText");
+
+function start(){
+  // Chọn ngẫu nhiên 2 câu trong 5 câu, xáo thứ tự câu và thứ tự đáp án
+  quiz = shuffle(BANK).slice(0,PER_ROUND).map(item=>{
+    const opts = shuffle(item.opts.map((t,i)=>({text:t,isCorrect:i===0})));
+    return {level:item.level,q:item.q,why:item.why,opts};
+  });
+  idx = 0; answers = [];
+  document.getElementById("progressWrap").classList.remove("hidden");
+  render();
+}
+
+function setProgress(done){
+  const pct = Math.round(done/PER_ROUND*100);
+  bar.style.width = pct+"%";
+  track.setAttribute("aria-valuenow",pct);
+  doneText.textContent = "Đã làm "+done+"/"+PER_ROUND;
+}
+
+function render(){
+  const item = quiz[idx];
+  stepText.textContent = "Câu "+(idx+1)+"/"+PER_ROUND;
+  setProgress(idx);
+  app.innerHTML =
+    '<span class="level">'+esc(item.level)+'</span>'+
+    '<div class="question">'+esc(item.q)+'</div>'+
+    '<div class="options">'+
+    item.opts.map((o,i)=>
+      '<button class="opt" data-i="'+i+'"><span class="letter">'+LABELS[i]+'</span><span class="txt">'+esc(o.text)+'</span></button>'
+    ).join("")+
+    '</div>'+
+    '<div id="fb" class="feedback hidden"></div>'+
+    '<button id="next" class="btn block hidden"></button>';
+  app.querySelectorAll(".opt").forEach(b=>b.addEventListener("click",()=>choose(+b.dataset.i)));
+}
+
+function choose(i){
+  const item = quiz[idx];
+  if(answers[idx]) return; // đã chọn thì khóa
+  const ok = item.opts[i].isCorrect;
+  answers[idx] = {picked:i,correct:ok};
+  const btns = app.querySelectorAll(".opt");
+  btns.forEach((b,k)=>{
+    b.disabled = true;
+    if(item.opts[k].isCorrect) b.classList.add("correct");
+    else if(k===i) b.classList.add("wrong");
+    else b.classList.add("dim");
+  });
+  const correctIdx = item.opts.findIndex(o=>o.isCorrect);
+  const fb = document.getElementById("fb");
+  fb.className = "feedback "+(ok?"ok":"no");
+  fb.innerHTML = '<strong>'+(ok?"Chính xác!":"Chưa đúng. Đáp án đúng là "+LABELS[correctIdx]+".")+'</strong>'+esc(item.why);
+  setProgress(idx+1);
+  const next = document.getElementById("next");
+  next.textContent = idx+1<PER_ROUND ? "Câu tiếp theo" : "Xem kết quả";
+  next.classList.remove("hidden");
+  next.addEventListener("click",()=>{
+    if(idx+1<PER_ROUND){idx++;render();window.scrollTo({top:0,behavior:"smooth"});}
+    else showResult();
+  });
+  next.focus({preventScroll:true});
+  fb.scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+
+function showResult(){
+  document.getElementById("progressWrap").classList.add("hidden");
+  const right = answers.filter(a=>a.correct).length;
+  let emoji,title,comment;
+  if(right===PER_ROUND){
+    emoji="🏆";title="Xuất sắc!";
+    comment="Em nắm rất chắc cách đánh giá chất lượng thông tin. Hãy luôn kiểm tra trước khi chia sẻ nhé!";
+  }else if(right>0){
+    emoji="👍";title="Khá tốt!";
+    comment="Em đã hiểu một phần bài học. Xem lại câu chưa đúng bên dưới rồi bấm \"Làm lại\" để luyện thêm nhé.";
+  }else{
+    emoji="💪";title="Cố gắng lên!";
+    comment="Đừng lo, em hãy đọc lại các tiêu chí đánh giá chất lượng thông tin trong bài rồi thử làm lại nhé.";
+  }
+  const review = quiz.map((item,n)=>{
+    const a = answers[n];
+    const ci = item.opts.findIndex(o=>o.isCorrect);
+    const yours = item.opts[a.picked].text;
+    return '<div class="ritem '+(a.correct?"ok":"no")+'">'+
+      '<div class="rhead"><span class="badge">'+(a.correct?"Đúng":"Sai")+'</span><span>Câu '+(n+1)+': '+esc(item.q)+'</span></div>'+
+      (a.correct
+        ? '<div class="rline"><b>Em chọn:</b> '+esc(yours)+'</div>'
+        : '<div class="rline"><b>Em chọn:</b> '+esc(yours)+'</div><div class="rline"><b>Đáp án đúng:</b> '+esc(item.opts[ci].text)+'</div>')+
+      '<div class="rline">'+esc(item.why)+'</div>'+
+    '</div>';
+  }).join("");
+  app.innerHTML =
+    '<div class="result">'+
+      '<div class="emoji">'+emoji+'</div>'+
+      '<h2>'+title+'</h2>'+
+      '<div class="count">Đúng '+right+'/'+PER_ROUND+' câu</div>'+
+      '<p class="comment">'+comment+'</p>'+
+    '</div>'+
+    '<div class="review"><h3>Xem lại từng câu</h3>'+review+'</div>'+
+    '<button id="again" class="btn block">Làm lại</button>';
+  document.getElementById("again").addEventListener("click",()=>{start();window.scrollTo({top:0,behavior:"smooth"});});
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+start();
+</script>
+</body>
+</html>

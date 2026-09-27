@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tin học 9 – Bài 4. Một số vấn đề pháp lí về sử dụng dịch vụ Internet</title>
+<style>
+:root{
+  --bg1:#fff3c4; --bg2:#c9f0ff;
+  --ink:#1d2b4f; --muted:#5a6785;
+  --card:#ffffff; --brand:#2f6df6; --brand-d:#1f52c4;
+  --line:#d9e2f5; --track:#e4ebfb;
+  --ok:#16a34a; --ok-bg:#dcfce7;
+  --bad:#dc2626; --bad-bg:#fee2e2;
+  --accent:#ff8a3d;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  font-family:"Nunito","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  color:var(--ink);
+  background:linear-gradient(160deg,var(--bg1),var(--bg2));
+  min-height:100vh;
+  padding:16px;
+  font-size:18px; line-height:1.5;
+}
+.wrap{max-width:720px;margin:0 auto}
+header{
+  background:var(--brand); color:#fff;
+  border-radius:20px 20px 0 0;
+  padding:18px 20px 16px;
+}
+header .sub{font-size:14px;opacity:.9;font-weight:600}
+header h1{font-size:22px;line-height:1.3;margin:4px 0 0;font-weight:800}
+.progress-wrap{background:#fff;padding:14px 20px 0}
+.progress-info{display:flex;justify-content:space-between;font-size:15px;font-weight:700;color:var(--muted);margin-bottom:6px}
+.track{height:12px;background:var(--track);border-radius:99px;overflow:hidden}
+.bar{height:100%;width:0;background:linear-gradient(90deg,#34d399,#2f6df6);border-radius:99px;transition:width .4s ease}
+main{background:#fff;border-radius:0 0 20px 20px;padding:20px;box-shadow:0 10px 30px rgba(31,82,196,.15)}
+.level{display:inline-block;background:#fff1e6;color:#b45309;font-weight:800;font-size:14px;padding:4px 12px;border-radius:99px}
+.question{font-size:21px;font-weight:800;margin:12px 0 16px;line-height:1.4}
+.options{display:grid;gap:12px}
+.opt{
+  display:flex;gap:12px;align-items:flex-start;text-align:left;width:100%;
+  font:inherit;color:var(--ink);
+  background:#f6f9ff;border:2.5px solid var(--line);border-radius:14px;
+  padding:14px;cursor:pointer;min-height:56px;
+  transition:transform .1s,border-color .15s,background .15s;
+}
+.opt:hover:not(:disabled){border-color:var(--brand);background:#eef4ff}
+.opt:active:not(:disabled){transform:scale(.99)}
+.opt:focus-visible,.btn:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.opt:disabled{cursor:default}
+.letter{
+  flex:0 0 34px;height:34px;border-radius:50%;
+  background:var(--brand);color:#fff;font-weight:800;
+  display:flex;align-items:center;justify-content:center;
+}
+.opt .txt{padding-top:3px}
+.opt.correct{background:var(--ok-bg);border-color:var(--ok)}
+.opt.correct .letter{background:var(--ok)}
+.opt.wrong{background:var(--bad-bg);border-color:var(--bad)}
+.opt.wrong .letter{background:var(--bad)}
+.opt.dim{opacity:.6}
+.feedback{
+  margin-top:16px;padding:14px 16px;border-radius:14px;
+  border-left:6px solid;font-size:17px;
+}
+.feedback.ok{background:var(--ok-bg);border-color:var(--ok)}
+.feedback.no{background:var(--bad-bg);border-color:var(--bad)}
+.feedback strong{display:block;margin-bottom:2px}
+.hidden{display:none}
+.btn{
+  font:inherit;font-weight:800;color:#fff;background:var(--brand);
+  border:0;border-radius:14px;padding:14px 26px;cursor:pointer;
+  min-height:52px;margin-top:18px;
+  box-shadow:0 4px 0 var(--brand-d);
+}
+.btn:hover{background:#3d79ff}
+.btn:active{transform:translateY(2px);box-shadow:0 2px 0 var(--brand-d)}
+.btn.block{width:100%}
+/* Tổng kết */
+.result{text-align:center}
+.emoji{font-size:64px;line-height:1}
+.result h2{font-size:26px;margin:8px 0 4px}
+.count{
+  display:inline-block;margin:8px 0;padding:8px 24px;border-radius:99px;
+  background:#eef4ff;color:var(--brand-d);font-weight:800;font-size:22px;
+}
+.comment{color:var(--muted);margin:8px auto 4px;max-width:520px}
+.review{text-align:left;margin-top:20px}
+.review h3{font-size:18px;margin:0 0 10px}
+.ritem{border:2px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:10px}
+.ritem.ok{border-color:#86efac;background:#f4fdf7}
+.ritem.no{border-color:#fca5a5;background:#fff7f7}
+.rhead{display:flex;gap:8px;align-items:flex-start;font-weight:800}
+.badge{flex:0 0 auto;font-size:13px;padding:2px 10px;border-radius:99px;color:#fff;margin-top:3px}
+.ok .badge{background:var(--ok)}
+.no .badge{background:var(--bad)}
+.rline{font-size:16px;margin-top:6px}
+.rline b{color:var(--ink)}
+@media (max-width:480px){
+  body{padding:10px;font-size:17px}
+  header h1{font-size:19px}
+  .question{font-size:19px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="sub">Tin học 9 · Kết nối tri thức với cuộc sống</div>
+    <h1>Bài 4. Một số vấn đề pháp lí về sử dụng dịch vụ Internet</h1>
+  </header>
+  <div class="progress-wrap" id="progressWrap">
+    <div class="progress-info"><span id="stepText">Câu 1/2</span><span id="doneText">Đã làm 0/2</span></div>
+    <div class="track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="track"><div class="bar" id="bar"></div></div>
+  </div>
+  <main id="app" aria-live="polite"></main>
+</div>
+
+<script>
+/* ===== Ngân hàng 5 câu hỏi (đáp án đúng luôn ở vị trí đầu, sẽ được xáo trộn khi làm bài) ===== */
+const BANK = [
+  {
+    level: "Nhận biết",
+    q: "Đâu là một tác động tiêu cực của công nghệ kĩ thuật số đến đời sống con người?",
+    opts: [
+      "Có thể gây nghiện Internet, mạng xã hội, ảnh hưởng sức khoẻ và học tập",
+      "Giúp học tập trực tuyến thuận tiện hơn",
+      "Giúp kết nối bạn bè ở xa nhanh chóng",
+      "Tăng khả năng tiếp cận tri thức"
+    ],
+    why: "Bên cạnh lợi ích, công nghệ số cũng có thể gây nghiện, ảnh hưởng tiêu cực đến sức khoẻ thể chất, tinh thần và kết quả học tập nếu sử dụng không hợp lí."
+  },
+  {
+    level: "Nhận biết",
+    q: "Hành vi nào sau đây là vi phạm pháp luật khi sử dụng dịch vụ Internet?",
+    opts: [
+      "Sao chép, phát tán phần mềm, video có bản quyền khi chưa được phép",
+      "Chia sẻ bài viết do chính mình sáng tác",
+      "Gửi email hỏi bài thầy cô",
+      "Đăng ảnh cá nhân do mình tự chụp lên mạng xã hội"
+    ],
+    why: "Sao chép, phát tán sản phẩm có bản quyền (phần mềm, video, nhạc...) mà không được phép của chủ sở hữu là hành vi vi phạm pháp luật về sở hữu trí tuệ."
+  },
+  {
+    level: "Thông hiểu",
+    q: "Khi sử dụng thông tin, hình ảnh của người khác trên mạng, em cần chú ý điều gì để tránh vi phạm pháp luật?",
+    opts: [
+      "Xin phép hoặc trích dẫn nguồn, tôn trọng quyền sở hữu và quyền riêng tư",
+      "Sử dụng thoải mái vì thông tin trên mạng là miễn phí",
+      "Chỉ cần đổi tên tệp là được phép sử dụng",
+      "Không cần quan tâm vì không ai kiểm tra"
+    ],
+    why: "Việc sử dụng thông tin, hình ảnh của người khác cần tôn trọng quyền sở hữu trí tuệ và quyền riêng tư; nên xin phép hoặc trích dẫn nguồn rõ ràng."
+  },
+  {
+    level: "Thông hiểu",
+    q: "Hành vi nào dưới đây được coi là thiếu văn hoá khi tham gia môi trường số?",
+    opts: [
+      "Đăng tin giả, xúc phạm, bôi nhọ danh dự người khác trên mạng xã hội",
+      "Bình luận lịch sự, góp ý mang tính xây dựng",
+      "Báo cáo (report) nội dung xấu, độc hại",
+      "Tôn trọng quan điểm khác biệt của người khác"
+    ],
+    why: "Đăng tin giả, xúc phạm hay bôi nhọ danh dự, nhân phẩm người khác trên mạng là hành vi thiếu văn hoá và có thể vi phạm pháp luật."
+  },
+  {
+    level: "Thông hiểu",
+    q: "Pháp luật Việt Nam quy định về việc sử dụng dịch vụ Internet nhằm mục đích gì?",
+    opts: [
+      "Bảo vệ quyền lợi hợp pháp của người dùng, đảm bảo môi trường mạng an toàn, lành mạnh",
+      "Ngăn cấm hoàn toàn việc sử dụng Internet",
+      "Chỉ áp dụng cho các cơ quan nhà nước",
+      "Không có quy định pháp luật nào liên quan đến Internet"
+    ],
+    why: "Nhà nước ban hành luật và các nghị định liên quan (Luật Công nghệ thông tin, Luật An ninh mạng...) nhằm bảo vệ quyền lợi hợp pháp của người dùng và xây dựng môi trường mạng an toàn, lành mạnh."
+  }
+];
+const PER_ROUND = 2;
+const LABELS = ["A","B","C","D"];
+
+/* ===== Tiện ích ===== */
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+
+/* ===== Trạng thái ===== */
+let quiz = [];      // các câu đã chọn và xáo trộn
+let idx = 0;
+let answers = [];   // {picked, correct}
+
+const app = document.getElementById("app");
+const bar = document.getElementById("bar");
+const track = document.getElementById("track");
+const stepText = document.getElementById("stepText");
+const doneText = document.getElementById("doneText");
+
+function start(){
+  // Chọn ngẫu nhiên 2 câu trong 5 câu, xáo thứ tự câu và thứ tự đáp án
+  quiz = shuffle(BANK).slice(0,PER_ROUND).map(item=>{
+    const opts = shuffle(item.opts.map((t,i)=>({text:t,isCorrect:i===0})));
+    return {level:item.level,q:item.q,why:item.why,opts};
+  });
+  idx = 0; answers = [];
+  document.getElementById("progressWrap").classList.remove("hidden");
+  render();
+}
+
+function setProgress(done){
+  const pct = Math.round(done/PER_ROUND*100);
+  bar.style.width = pct+"%";
+  track.setAttribute("aria-valuenow",pct);
+  doneText.textContent = "Đã làm "+done+"/"+PER_ROUND;
+}
+
+function render(){
+  const item = quiz[idx];
+  stepText.textContent = "Câu "+(idx+1)+"/"+PER_ROUND;
+  setProgress(idx);
+  app.innerHTML =
+    '<span class="level">'+esc(item.level)+'</span>'+
+    '<div class="question">'+esc(item.q)+'</div>'+
+    '<div class="options">'+
+    item.opts.map((o,i)=>
+      '<button class="opt" data-i="'+i+'"><span class="letter">'+LABELS[i]+'</span><span class="txt">'+esc(o.text)+'</span></button>'
+    ).join("")+
+    '</div>'+
+    '<div id="fb" class="feedback hidden"></div>'+
+    '<button id="next" class="btn block hidden"></button>';
+  app.querySelectorAll(".opt").forEach(b=>b.addEventListener("click",()=>choose(+b.dataset.i)));
+}
+
+function choose(i){
+  const item = quiz[idx];
+  if(answers[idx]) return; // đã chọn thì khóa
+  const ok = item.opts[i].isCorrect;
+  answers[idx] = {picked:i,correct:ok};
+  const btns = app.querySelectorAll(".opt");
+  btns.forEach((b,k)=>{
+    b.disabled = true;
+    if(item.opts[k].isCorrect) b.classList.add("correct");
+    else if(k===i) b.classList.add("wrong");
+    else b.classList.add("dim");
+  });
+  const correctIdx = item.opts.findIndex(o=>o.isCorrect);
+  const fb = document.getElementById("fb");
+  fb.className = "feedback "+(ok?"ok":"no");
+  fb.innerHTML = '<strong>'+(ok?"Chính xác!":"Chưa đúng. Đáp án đúng là "+LABELS[correctIdx]+".")+'</strong>'+esc(item.why);
+  setProgress(idx+1);
+  const next = document.getElementById("next");
+  next.textContent = idx+1<PER_ROUND ? "Câu tiếp theo" : "Xem kết quả";
+  next.classList.remove("hidden");
+  next.addEventListener("click",()=>{
+    if(idx+1<PER_ROUND){idx++;render();window.scrollTo({top:0,behavior:"smooth"});}
+    else showResult();
+  });
+  next.focus({preventScroll:true});
+  fb.scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+
+function showResult(){
+  document.getElementById("progressWrap").classList.add("hidden");
+  const right = answers.filter(a=>a.correct).length;
+  let emoji,title,comment;
+  if(right===PER_ROUND){
+    emoji="🏆";title="Xuất sắc!";
+    comment="Em đã nắm rất tốt các vấn đề pháp lí khi sử dụng Internet. Hãy luôn hành xử văn minh, đúng luật trên mạng nhé!";
+  }else if(right>0){
+    emoji="👍";title="Khá tốt!";
+    comment="Em đã hiểu một phần bài học. Xem lại câu chưa đúng bên dưới rồi bấm \"Làm lại\" để luyện thêm nhé.";
+  }else{
+    emoji="💪";title="Cố gắng lên!";
+    comment="Đừng lo, em hãy đọc lại bài học về các vấn đề pháp lí khi sử dụng Internet rồi thử làm lại nhé.";
+  }
+  const review = quiz.map((item,n)=>{
+    const a = answers[n];
+    const ci = item.opts.findIndex(o=>o.isCorrect);
+    const yours = item.opts[a.picked].text;
+    return '<div class="ritem '+(a.correct?"ok":"no")+'">'+
+      '<div class="rhead"><span class="badge">'+(a.correct?"Đúng":"Sai")+'</span><span>Câu '+(n+1)+': '+esc(item.q)+'</span></div>'+
+      (a.correct
+        ? '<div class="rline"><b>Em chọn:</b> '+esc(yours)+'</div>'
+        : '<div class="rline"><b>Em chọn:</b> '+esc(yours)+'</div><div class="rline"><b>Đáp án đúng:</b> '+esc(item.opts[ci].text)+'</div>')+
+      '<div class="rline">'+esc(item.why)+'</div>'+
+    '</div>';
+  }).join("");
+  app.innerHTML =
+    '<div class="result">'+
+      '<div class="emoji">'+emoji+'</div>'+
+      '<h2>'+title+'</h2>'+
+      '<div class="count">Đúng '+right+'/'+PER_ROUND+' câu</div>'+
+      '<p class="comment">'+comment+'</p>'+
+    '</div>'+
+    '<div class="review"><h3>Xem lại từng câu</h3>'+review+'</div>'+
+    '<button id="again" class="btn block">Làm lại</button>';
+  document.getElementById("again").addEventListener("click",()=>{start();window.scrollTo({top:0,behavior:"smooth"});});
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+start();
+</script>
+</body>
+</html>
