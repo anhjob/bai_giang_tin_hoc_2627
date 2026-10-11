@@ -91,6 +91,8 @@
   }
   .btn:hover { background: var(--sun-deep); }
   .btn:active { transform: translate(3px, 3px); box-shadow: 0 0 0 var(--ink); }
+  .btn.btn-ghost { background: #fff; }
+  .btn.btn-ghost:hover { background: var(--blue-tint); }
   :focus-visible { outline: 3px solid var(--pink); outline-offset: 3px; }
 
   /* ---- Màn hình bắt đầu ---- */
@@ -194,6 +196,9 @@
   .review .mark.no { background: var(--bad); }
   .review .answer { display: block; margin-top: 3px; color: var(--ink-soft); font-size: 14.5px; }
 
+  /* ---- Nhóm nút ở màn hình kết quả ---- */
+  .result-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+
   @keyframes pop { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
   @media (max-width: 520px) {
     body { font-size: 16px; padding: 16px 10px 30px; }
@@ -266,7 +271,10 @@
     <h3 class="review-heading">Xem lại từng câu</h3>
     <ul class="review" id="review"></ul>
 
-    <button class="btn" id="btn-retry" type="button">Làm lại</button>
+    <div class="result-actions">
+      <button class="btn btn-ghost" id="btn-retry" type="button">Làm lại</button>
+      <button class="btn" id="btn-continue" type="button" style="display:none;">Tiếp tục bài giảng</button>
+    </div>
   </section>
 </main>
 
@@ -518,11 +526,25 @@
       li.appendChild(body);
       list.appendChild(li);
     });
+
+    // Báo cho trang cha biết học sinh đã hoàn thành bài (giữ lại, vô hại)
+    try {
+      parent.postMessage("quiz-completed", "*");
+    } catch (e) {}
   }
 
   $("btn-start").addEventListener("click", startQuiz);
   $("btn-next").addEventListener("click", next);
   $("btn-retry").addEventListener("click", startQuiz);   // xáo trộn lại đề mới
+
+  // Nút "Tiếp tục bài giảng": chỉ hiện khi bài được nhúng trong trang video
+  var btnContinue = $("btn-continue");
+  if (window.parent !== window) {
+    btnContinue.style.display = "inline-block";
+  }
+  btnContinue.addEventListener("click", function () {
+    parent.postMessage("quiz-continue", "*");
+  });
 
   // Phím tắt: A–D (hoặc 1–4) để chọn đáp án
   document.addEventListener("keydown", function (e) {

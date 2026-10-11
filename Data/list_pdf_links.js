@@ -6,7 +6,7 @@ window.DB = {
         { ten_bai: "K7_B03. Quản lý dữ liệu trong máy tính", ngay_tao: "2026-09-24", link: "./K7/K7_1_B03.pdf" ,youtube: "", cauhoi: "./K7/K7_1_B03_Cauhoi.html" },
 
         { ten_bai: "👉K7. Chủ đề 2. Tổ chức lưu trữ, tìm kiếm và trao đổi thông tin", ngay_tao: "--", link: "" ,youtube: "" },
-        { ten_bai: "K7_B04. Mạng xã hội và một số kênh trao đổi thông tin trên Internet", ngay_tao: "2025-11-10", link: "./K7/K7_2_B04. Mạng xã hội và một số kênh trao đổi thông tin trên Internet.pdf" ,youtube: "https://youtu.be/xEFfvfczBz4", youtube2: "https://youtu.be/xEFfvfczBz4" }                
+        { ten_bai: "K7_B04. Mạng xã hội và một số kênh trao đổi thông tin trên Internet", ngay_tao: "2025-11-10", link: "./K7/K7_2_B04. Mạng xã hội và một số kênh trao đổi thông tin trên Internet.pdf" ,youtube: "https://youtu.be/pbJXgs04Gbk", youtube2: "" }                
     ],
 
     K9: [
