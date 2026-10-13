@@ -6,7 +6,7 @@ window.DB = {
         { ten_bai: "K7_B03. Quản lý dữ liệu trong máy tính", ngay_tao: "2026-09-24", link: "./K7/K7_1_B03.pdf" ,youtube: "", cauhoi: "./K7/K7_1_B03_Cauhoi.html" },
 
         { ten_bai: "👉K7. Chủ đề 2. Tổ chức lưu trữ, tìm kiếm và trao đổi thông tin", ngay_tao: "--", link: "" ,youtube: "" },
-        { ten_bai: "K7_B04. Mạng xã hội và một số kênh trao đổi thông tin trên Internet", ngay_tao: "2025-11-10", link: "./K7/K7_2_B04. Mạng xã hội và một số kênh trao đổi thông tin trên Internet.pdf" ,youtube: "https://youtu.be/pbJXgs04Gbk", youtube2: "" }                
+        { ten_bai: "K7_B04. Mạng xã hội và một số kênh trao đổi thông tin trên Internet", ngay_tao: "2026-10-10", link: "./K7/K7_2_B04. Mạng xã hội và một số kênh trao đổi thông tin trên Internet.pdf" ,youtube: "./K7/K7_1_B04_Video.html", youtube2: "", cauhoi: "./K7/K7_1_B04_Cauhoi.html" }                
     ],
 
     K9: [
@@ -15,7 +15,11 @@ window.DB = {
 
         { ten_bai: "👉K9. Chủ đề 2. Tổ chức lưu trữ, tìm kiếm và trao đổi thông tin", ngay_tao: "--", link: "" ,youtube: "" },
         { ten_bai: "K9_B02. Thông tin trong giải quyết vấn đề", ngay_tao: "2026-09-20", link: "./K9/K9_2_B02.pdf" ,youtube: "", cauhoi: "./K9/K9_2_B02_Cauhoi.html" },
-        { ten_bai: "K9_B03. Thực hành: Đánh giá chất lượng thông tin", ngay_tao: "2026-09-24", link: "./K9/K9_2_B03.pdf" ,youtube: "", cauhoi: "./K9/K9_2_B03_Cauhoi.html" }
+        { ten_bai: "K9_B03. Thực hành: Đánh giá chất lượng thông tin", ngay_tao: "2026-09-24", link: "./K9/K9_2_B03.pdf" ,youtube: "", cauhoi: "./K9/K9_2_B03_Cauhoi.html" },
+
+        { ten_bai: "👉K9. Chủ đề 3. Đạo đức, pháp luật và văn hóa trong môi trường số", ngay_tao: "--", link: "" ,youtube: "" },
+        { ten_bai: "K9_B04. Bảo vệ thông tin cá nhân", ngay_tao: "2026-10-10", link: "./K9/K9_3_B04.pdf" ,youtube: "./K9/K9_3_B04_Video.html", cauhoi: "./K9/K9_3_B04_Cauhoi.html" },
+
     ],
 
     K6: [],
