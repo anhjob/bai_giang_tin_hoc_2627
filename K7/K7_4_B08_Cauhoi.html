@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>K7_4_B08_Cauhoi</title>
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#fff6e0; --card:#ffffff; --ink:#1f2a44; --muted:#5b6784;
+  --brand:#2f6fed; --brand-d:#1f55c4; --line:#d9deec;
+  --ok:#16a34a; --ok-bg:#dcfce7; --bad:#dc2626; --bad-bg:#fee2e2;
+  --track:#ffe3a3; --sun:#ffb703;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#141a2e; --card:#1d2540; --ink:#f1f4ff; --muted:#a9b4d6;
+    --brand:#6ea0ff; --brand-d:#8db4ff; --line:#33406b;
+    --ok:#4ade80; --ok-bg:#12351f; --bad:#f87171; --bad-bg:#40191c; --track:#33406b;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#141a2e; --card:#1d2540; --ink:#f1f4ff; --muted:#a9b4d6;
+  --brand:#6ea0ff; --brand-d:#8db4ff; --line:#33406b;
+  --ok:#4ade80; --ok-bg:#12351f; --bad:#f87171; --bad-bg:#40191c; --track:#33406b;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Nunito","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  font-size:18px;line-height:1.5;min-height:100vh}
+.wrap{max-width:720px;margin:0 auto;padding:16px}
+header{background:var(--brand);color:#fff;border-radius:20px;padding:18px 20px;margin-bottom:16px}
+header small{display:block;font-size:15px;opacity:.9}
+header h1{margin:2px 0 0;font-size:22px;line-height:1.3}
+.progress{margin:0 0 16px}
+.progress .lbl{display:flex;justify-content:space-between;font-weight:700;font-size:16px;margin-bottom:6px}
+.track{height:14px;background:var(--track);border-radius:99px;overflow:hidden}
+.bar{height:100%;width:0;background:var(--sun);border-radius:99px;transition:width .4s}
+.card{background:var(--card);border:2px solid var(--line);border-radius:20px;padding:20px}
+.q{font-size:21px;font-weight:800;margin:0 0 16px;line-height:1.4}
+.opts{display:grid;gap:12px}
+.opt{display:flex;gap:12px;align-items:center;text-align:left;width:100%;
+  font:inherit;font-weight:600;color:#000;background:var(--card);
+  border:2px solid var(--line);border-radius:14px;padding:14px;min-height:56px;cursor:pointer}
+.opt:hover:not(:disabled){border-color:var(--brand)}
+.opt:focus-visible,.btn:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+.opt .k{flex:none;width:36px;height:36px;border-radius:50%;background:var(--track);
+  display:grid;place-items:center;font-weight:800;color:#1f2a44}
+.opt:disabled{cursor:default}
+.opt.correct{background:var(--ok-bg);border-color:var(--ok)}
+.opt.correct .k{background:var(--ok);color:#fff}
+.opt.wrong{background:var(--bad-bg);border-color:var(--bad)}
+.opt.wrong .k{background:var(--bad);color:#fff}
+:root[data-theme="dark"] .opt{color:var(--ink)}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .opt{color:var(--ink)} }
+.fb{margin-top:16px;padding:14px;border-radius:14px;font-size:17px}
+.fb.ok{background:var(--ok-bg);border-left:6px solid var(--ok)}
+.fb.no{background:var(--bad-bg);border-left:6px solid var(--bad)}
+.fb b{display:block;margin-bottom:2px}
+.btn{font:inherit;font-weight:800;color:#fff;background:var(--brand);border:0;border-radius:14px;
+  padding:14px 24px;min-height:52px;cursor:pointer;margin-top:16px}
+.btn:hover{background:var(--brand-d)}
+.hidden{display:none}
+.btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.btn.alt{background:var(--sun);color:#1f2a44}
+.btn.alt:hover{background:#ffc833}
+.result{text-align:center}
+.result .big{font-size:26px;font-weight:800;margin:4px 0}
+.result .cmt{color:var(--muted);margin:0 0 16px}
+.emoji{font-size:56px;line-height:1}
+.review{list-style:none;padding:0;margin:16px 0 0;text-align:left;display:grid;gap:10px}
+.review li{border:2px solid var(--line);border-radius:14px;padding:12px}
+.review li.ok{border-color:var(--ok);background:var(--ok-bg)}
+.review li.no{border-color:var(--bad);background:var(--bad-bg)}
+.review .st{font-weight:800}
+.review .ans{font-size:16px;color:var(--muted)}
+@media (max-width:480px){body{font-size:17px}.q{font-size:19px}header h1{font-size:19px}}
+@media (prefers-reduced-motion:reduce){.bar{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <!-- SỬA: dòng nhỏ = Lớp · Bộ sách -->
+    <small>Tin học 7 · Kết nối tri thức với cuộc sống</small>
+    <!-- SỬA: tên bài học đầy đủ -->
+    <h1>Bài 8. Công cụ hỗ trợ tính toán</h1>
+  </header>
+
+  <div id="quiz">
+    <div class="progress">
+      <div class="lbl"><span id="plabel">Câu 1/2</span><span id="pcount">0 câu đã làm</span></div>
+      <div class="track"><div class="bar" id="bar"></div></div>
+    </div>
+    <div class="card">
+      <p class="q" id="qtext"></p>
+      <div class="opts" id="opts"></div>
+      <div class="fb hidden" id="fb" role="status" aria-live="polite"></div>
+      <button class="btn hidden" id="next"></button>
+    </div>
+  </div>
+
+  <div id="end" class="card result hidden">
+    <div class="emoji" id="eemoji"></div>
+    <div class="big" id="ecount"></div>
+    <p class="cmt" id="ecmt"></p>
+    <ul class="review" id="review"></ul>
+    <div class="btns">
+      <button class="btn" id="again">Làm lại</button>
+      <button class="btn alt hidden" id="cont">Tiếp tục bài giảng</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// NGÂN HÀNG CÂU HỎI — SỬA Ở ĐÂY
+// Mỗi câu: q = nội dung câu hỏi
+//          a = mảng 4 phương án, PHẦN TỬ ĐẦU TIÊN (index 0) LUÔN LÀ ĐÁP ÁN ĐÚNG
+//              (code sẽ tự xáo trộn thứ tự hiển thị, không cố định A/B/C/D)
+//          e = giải thích ngắn gọn hiển thị sau khi học sinh trả lời
+// Tạo ĐẦY ĐỦ ngân hàng câu hỏi theo yêu cầu của giáo viên (ví dụ 5, 8, 10 câu...),
+// KHÔNG chỉ tạo đúng số câu học sinh sẽ làm.
+// ============================================================
+var BANK = [
+  {q:"Trong bảng tính, hàm nào dùng để tính tổng các giá trị số trong một vùng ô?",
+   a:["SUM","AVERAGE","MAX","COUNT"],
+   e:"Hàm SUM dùng để tính tổng. Ví dụ =SUM(B2:B10) cộng tất cả các số trong vùng B2:B10."},
+  {q:"Để đếm xem trong vùng D1:D10 có bao nhiêu ô chứa dữ liệu số, em dùng hàm nào?",
+   a:["COUNT","SUM","MIN","AVERAGE"],
+   e:"Hàm COUNT đếm số ô chứa dữ liệu số trong vùng được chọn. Ví dụ =COUNT(D1:D10)."},
+  {q:"Cột C2:C31 là điểm kiểm tra của cả lớp. Muốn biết điểm cao nhất, em nhập công thức nào?",
+   a:["=MAX(C2:C31)","=MIN(C2:C31)","=SUM(C2:C31)","=COUNT(C2:C31)"],
+   e:"Hàm MAX trả về giá trị lớn nhất trong vùng ô, nên =MAX(C2:C31) cho điểm cao nhất."},
+  {q:"Ô B2, B3, B4, B5 lần lượt chứa các số 6, 8, 10, 8. Công thức =AVERAGE(B2:B5) cho kết quả bao nhiêu?",
+   a:["8","32","10","6"],
+   e:"AVERAGE tính trung bình cộng: (6 + 8 + 10 + 8) : 4 = 32 : 4 = 8."},
+  {q:"Các ô B2, B3, B4, B5, B6 lần lượt chứa các số 7, 3, 9, 5, 8. Công thức =MIN(B2:B6) cho kết quả bao nhiêu?",
+   a:["3","9","8","32"],
+   e:"Hàm MIN trả về giá trị nhỏ nhất trong vùng ô. Trong các số 7, 3, 9, 5, 8 thì số nhỏ nhất là 3."}
+];
+
+// SỬA: N = số câu học sinh thực sự làm trong mỗi lượt (được chọn ngẫu nhiên từ BANK)
+var N = 2, LET = ["A","B","C","D"];
+var items, idx, answered, right;
+
+function shuffle(arr){
+  var a = arr.slice();
+  for (var i = a.length - 1; i > 0; i--){
+    var j = Math.floor(Math.random() * (i + 1));
+    var t = a[i]; a[i] = a[j]; a[j] = t;
+  }
+  return a;
+}
+function $(id){ return document.getElementById(id); }
+
+function start(){
+  items = shuffle(BANK).slice(0, N).map(function(b){
+    var opts = shuffle(b.a.map(function(t, i){ return {t:t, ok:i === 0}; }));
+    return {q:b.q, e:b.e, opts:opts, picked:-1};
+  });
+  idx = 0; right = 0; answered = false;
+  $("end").classList.add("hidden");
+  $("quiz").classList.remove("hidden");
+  show();
+}
+
+function show(){
+  var it = items[idx];
+  answered = false;
+  $("plabel").textContent = "Câu " + (idx + 1) + "/" + N;
+  $("pcount").textContent = idx + " câu đã làm";
+  $("bar").style.width = (idx / N * 100) + "%";
+  $("qtext").textContent = it.q;
+  $("fb").className = "fb hidden";
+  $("next").className = "btn hidden";
+  var box = $("opts");
+  box.innerHTML = "";
+  it.opts.forEach(function(o, i){
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "opt";
+    b.innerHTML = '<span class="k">' + LET[i] + '</span><span></span>';
+    b.lastChild.textContent = o.t;
+    b.addEventListener("click", function(){ pick(i); });
+    box.appendChild(b);
+  });
+}
+
+function pick(i){
+  if (answered) return;
+  answered = true;
+  var it = items[idx];
+  it.picked = i;
+  var good = it.opts[i].ok;
+  if (good) right++;
+  var btns = $("opts").children;
+  for (var k = 0; k < btns.length; k++){
+    btns[k].disabled = true;
+    if (it.opts[k].ok) btns[k].classList.add("correct");
+    else if (k === i) btns[k].classList.add("wrong");
+  }
+  var fb = $("fb");
+  fb.className = "fb " + (good ? "ok" : "no");
+  fb.innerHTML = "<b>" + (good ? "Chính xác!" : "Chưa đúng rồi.") + "</b>";
+  var s = document.createElement("span");
+  s.textContent = it.e;
+  fb.appendChild(s);
+  $("pcount").textContent = (idx + 1) + " câu đã làm";
+  $("bar").style.width = ((idx + 1) / N * 100) + "%";
+  var nx = $("next");
+  nx.textContent = idx < N - 1 ? "Câu tiếp theo" : "Xem kết quả";
+  nx.className = "btn";
+  nx.focus();
+}
+
+function finish(){
+  $("quiz").classList.add("hidden");
+  $("end").classList.remove("hidden");
+  var pct = (right / N) * 100;
+  var emo, cmt;
+  if (pct === 100){ emo = "🏆"; cmt = "Xuất sắc! Em đã nắm rất tốt nội dung bài học."; }
+  else if (pct >= 75){ emo = "🌟"; cmt = "Rất tốt! Em đã hiểu phần lớn nội dung bài học."; }
+  else if (pct >= 50){ emo = "👍"; cmt = "Khá tốt! Em nên ôn lại một số nội dung còn chưa chắc."; }
+  else { emo = "📘"; cmt = "Em nên xem lại bài học và luyện tập thêm nhé."; }
+  $("eemoji").textContent = emo;
+  $("ecount").textContent = "Em trả lời đúng " + right + "/" + N + " câu";
+  $("ecmt").textContent = cmt;
+  var ul = $("review");
+  ul.innerHTML = "";
+  items.forEach(function(it, n){
+    var good = it.opts[it.picked].ok;
+    var right_t = it.opts.filter(function(o){ return o.ok; })[0].t;
+    var li = document.createElement("li");
+    li.className = good ? "ok" : "no";
+    var st = document.createElement("div");
+    st.className = "st";
+    st.textContent = (good ? "✔ Đúng" : "✘ Sai") + " · Câu " + (n + 1);
+    var q = document.createElement("div");
+    q.textContent = it.q;
+    var a = document.createElement("div");
+    a.className = "ans";
+    a.textContent = good ? "Đáp án: " + right_t : "Em chọn: " + it.opts[it.picked].t + " · Đáp án đúng: " + right_t;
+    li.appendChild(st); li.appendChild(q); li.appendChild(a);
+    ul.appendChild(li);
+  });
+  window.scrollTo(0, 0);
+}
+
+$("next").addEventListener("click", function(){
+  if (idx < N - 1){ idx++; show(); } else { finish(); }
+});
+$("again").addEventListener("click", start);
+// Chỉ hiện nút "Tiếp tục bài giảng" khi bài được mở trong iframe của trang video
+try{
+  if (window.parent && window.parent !== window){
+    $("cont").classList.remove("hidden");
+    $("cont").addEventListener("click", function(){ window.parent.postMessage("quiz-continue", "*"); });
+  }
+}catch(err){}
+start();
+</script>
+</body>
+</html>

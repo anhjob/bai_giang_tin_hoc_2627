@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trắc nghiệm Tin học 9 – Bài 6. Thực hành. Khai thác phần mềm mô phỏng</title>
+<style>
+:root{--ink:#14213d;--soft:#465272;--sky:#cfe8ff;--line:#cbd8ee;--blue:#2f6bff;--tint:#eaf1ff;--sun:#ffc933;--sun2:#ffb800;--pink:#e8478b;--teal:#0fa3a3;--amber:#f5a300;--ok:#12805a;--oktint:#e1f7ec;--bad:#c73838;--badtint:#fdeaea;--font:"Be Vietnam Pro","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%}
+body{font-family:var(--font);color:var(--ink);background:var(--sky);display:flex;justify-content:center;align-items:flex-start;padding:28px 16px 40px;line-height:1.55;font-size:17px}
+.window{width:100%;max-width:720px;background:#fff;border:2px solid var(--ink);border-radius:16px;box-shadow:8px 8px 0 var(--ink);overflow:hidden}
+.titlebar{display:flex;align-items:center;gap:12px;padding:14px 18px;background:var(--blue);border-bottom:2px solid var(--ink);color:#fff}
+.badge{flex:none;width:34px;height:34px;display:grid;place-items:center;background:var(--sun);color:var(--ink);border:2px solid var(--ink);border-radius:9px;font-weight:800;font-size:15px}
+.names{display:flex;flex-direction:column;line-height:1.25}
+.subject{font-size:12.5px;font-weight:700;opacity:.9;text-transform:uppercase;letter-spacing:.02em}
+.lesson{font-size:16px;font-weight:800}
+.screen{display:none;padding:28px 28px 30px}.screen.active{display:block}
+h1,h2,h3,p{margin:0}
+h1{font-size:clamp(24px,5.2vw,32px);line-height:1.2;font-weight:800}
+h2{font-size:clamp(20px,4.2vw,25px);line-height:1.35;font-weight:700}
+.btn{font-family:inherit;font-size:17px;font-weight:800;color:var(--ink);background:var(--sun);border:2px solid var(--ink);border-radius:12px;padding:12px 26px;cursor:pointer;box-shadow:3px 3px 0 var(--ink);transition:transform .08s,box-shadow .08s,background .15s}
+.btn:hover{background:var(--sun2)}.btn:active{transform:translate(3px,3px);box-shadow:none}
+.btn-ghost{background:#fff}.btn-ghost:hover{background:var(--tint)}
+:focus-visible{outline:3px solid var(--pink);outline-offset:3px}
+.lead{margin-top:14px;color:var(--soft);max-width:48ch}
+.facts{display:flex;flex-wrap:wrap;gap:10px;margin:22px 0 28px;padding:0;list-style:none}
+.facts li{border:2px solid var(--ink);border-radius:999px;padding:5px 16px;font-size:15px;font-weight:700}
+.facts li:nth-child(1){background:#d7e5ff}.facts li:nth-child(2){background:#ffe3ef}.facts li:nth-child(3){background:#fff0bd}
+.prow{display:flex;align-items:center;gap:14px;margin-bottom:22px}
+.ptext{font-weight:800;font-size:15px;white-space:nowrap}
+.ptrack{flex:1;height:14px;background:var(--tint);border:2px solid var(--ink);border-radius:999px;overflow:hidden}
+.pfill{height:100%;width:0;background:var(--teal);transition:width .35s}
+.options{display:grid;gap:12px;margin-top:22px}
+.option{display:flex;align-items:flex-start;gap:14px;width:100%;text-align:left;font-family:inherit;font-size:17px;color:var(--ink);background:#fff;border:2px solid var(--line);border-radius:12px;padding:12px 16px;cursor:pointer;transition:border-color .15s,background .15s}
+.option:hover:not(:disabled){border-color:var(--ink);background:#f6f9ff}.option:disabled{cursor:default}
+.letter{flex:none;width:34px;height:34px;display:grid;place-items:center;border-radius:9px;border:2px solid var(--ink);font-weight:800;font-size:15px;color:#fff}
+.l0{background:var(--blue)}.l1{background:var(--pink)}.l2{background:var(--amber);color:var(--ink)}.l3{background:var(--teal)}
+.text{padding-top:4px}
+.option.correct{border-color:var(--ok);background:var(--oktint)}.option.correct .letter{background:var(--ok);color:#fff}
+.option.wrong{border-color:var(--bad);background:var(--badtint)}.option.wrong .letter{background:var(--bad);color:#fff}
+.option.dim{opacity:.55}
+.feedback{display:none;margin-top:20px;border-radius:12px;padding:16px 18px;border:2px solid var(--ink)}
+.feedback.show{display:block;animation:pop .25s ease}
+.feedback.ok{background:var(--oktint);border-color:var(--ok)}.feedback.no{background:var(--badtint);border-color:var(--bad)}
+.verdict{font-weight:800;font-size:18px;margin-bottom:6px}
+.ok .verdict{color:var(--ok)}.no .verdict{color:var(--bad)}
+.feedback p+p{margin-top:8px}.explain{font-size:16px}
+.actions{display:flex;justify-content:flex-end;margin-top:22px;min-height:54px}
+.actions .btn{display:none}.actions .btn.show{display:inline-block}
+.rtop{display:flex;align-items:center;gap:22px;flex-wrap:wrap}
+.ricon{flex:none;width:84px;height:84px;display:grid;place-items:center;border:2px solid var(--ink);border-radius:50%;font-size:42px}
+.rmsg h2{margin-bottom:6px}.rmsg p{color:var(--soft);max-width:38ch}
+.count{display:inline-block;margin-top:12px;border:2px solid var(--ink);border-radius:999px;padding:4px 16px;font-weight:800;font-size:15.5px}
+.rh{margin-top:26px;font-size:18px;font-weight:800}
+.review{list-style:none;margin:12px 0 26px;padding:0;display:grid;gap:10px}
+.review li{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border:2px solid var(--line);border-radius:12px;font-size:15.5px}
+.review li.ok{border-color:#9fdcc0;background:#f4fcf8}.review li.no{border-color:#f0b3b3;background:#fff7f7}
+.mark{flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:800;font-size:14px}
+.mark.ok{background:var(--ok)}.mark.no{background:var(--bad)}
+.rans,.rex{display:block;margin-top:3px;color:var(--soft);font-size:14.5px}
+.ractions{display:flex;flex-wrap:wrap;gap:12px}
+@keyframes pop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media(max-width:520px){body{font-size:16px;padding:16px 10px 30px}.screen{padding:22px 16px 24px}.window{box-shadow:5px 5px 0 var(--ink)}.option{font-size:16px;padding:11px 12px}.btn{width:100%}.actions .btn.show{width:100%}.lesson{font-size:15px}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main class="window" aria-label="Bài trắc nghiệm">
+  <div class="titlebar">
+    <span class="badge" aria-hidden="true">Tin</span>
+    <span class="names"><span class="subject">Tin học 9</span><span class="lesson">Bài 6. Thực hành. Khai thác phần mềm mô phỏng</span></span>
+  </div>
+
+  <section class="screen active" id="s-start">
+    <h1>Trắc nghiệm: Khai thác phần mềm mô phỏng</h1>
+    <p class="lead">Kiểm tra xem em đã hiểu phần mềm mô phỏng giúp ích gì, cách khai thác phần mềm và những kiến thức có thể thu nhận được từ mô phỏng thế giới thực.</p>
+    <ul class="facts"><li>2 câu hỏi mỗi lượt</li><li>Có giải thích sau mỗi câu</li><li>Mỗi lượt một đề khác</li></ul>
+    <button class="btn" id="b-start" type="button">Bắt đầu làm bài</button>
+  </section>
+
+  <section class="screen" id="s-quiz" aria-live="polite">
+    <div class="prow">
+      <span class="ptext" id="ptext">Câu 1/2</span>
+      <div class="ptrack" role="progressbar" aria-valuemin="0" aria-valuemax="2" aria-valuenow="0" id="pbar"><div class="pfill" id="pfill"></div></div>
+    </div>
+    <h2 id="qtext"></h2>
+    <div class="options" id="options" role="group" aria-labelledby="qtext"></div>
+    <div class="feedback" id="fb" role="status"></div>
+    <div class="actions"><button class="btn" id="b-next" type="button">Câu tiếp theo</button></div>
+  </section>
+
+  <section class="screen" id="s-result">
+    <div class="rtop">
+      <div class="ricon" id="ricon" aria-hidden="true">🎉</div>
+      <div class="rmsg"><h2 id="rtitle"></h2><p id="rdesc"></p><span class="count" id="rcount"></span></div>
+    </div>
+    <h3 class="rh">Xem lại từng câu</h3>
+    <ul class="review" id="review"></ul>
+    <div class="ractions"><button class="btn btn-ghost" id="b-retry" type="button">Làm lại</button></div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  // Ngân hàng 5 câu; mỗi lượt chỉ lấy ngẫu nhiên QUESTIONS_PER_ROUND câu.
+  var BANK = [
+    {
+      q: "Phần mềm mô phỏng giúp ích gì cho người học?",
+      options: [
+        { t: "Quan sát, thử nghiệm các hiện tượng khó hoặc không thể thực hiện trực tiếp ngoài đời thật", ok: true },
+        { t: "Thay thế hoàn toàn việc học trên lớp và đọc sách", note: "Phần mềm mô phỏng chỉ hỗ trợ việc học, không thay thế hoàn toàn các hoạt động khác." },
+        { t: "Giúp máy tính chạy nhanh hơn", note: "Tốc độ máy tính không phải là mục đích của phần mềm mô phỏng." },
+        { t: "Chỉ dùng để giải trí, không có tác dụng học tập", note: "Phần mềm mô phỏng có nhiều ứng dụng trong học tập và nghiên cứu, không chỉ để giải trí." }
+      ],
+      explain: "Phần mềm mô phỏng tái hiện hiện tượng thật trên máy tính, giúp em quan sát và thử nghiệm những điều quá nhỏ, quá lớn, quá nhanh, quá chậm, nguy hiểm hoặc tốn kém."
+    },
+    {
+      q: "Khi khai thác phần mềm mô phỏng để tìm hiểu một hiện tượng, cách làm nào sau đây là phù hợp?",
+      options: [
+        { t: "Thay đổi các thông số rồi quan sát kết quả thay đổi như thế nào", ok: true },
+        { t: "Chỉ nhìn màn hình mà không thay đổi thông số nào", note: "Không thay đổi thông số thì em khó phát hiện được mối quan hệ giữa các yếu tố." },
+        { t: "Đóng phần mềm ngay sau khi mở", note: "Đóng phần mềm ngay thì em chưa khai thác được gì." },
+        { t: "Nhập thông số bất kì rồi không cần ghi nhận kết quả", note: "Không ghi nhận kết quả thì em không rút ra được kiến thức từ lần thử nghiệm." }
+      ],
+      explain: "Thay đổi thông số rồi quan sát kết quả là cách để em khám phá quy luật của hiện tượng đang được mô phỏng."
+    },
+    {
+      q: "Mô phỏng thế giới thực bằng phần mềm giúp con người điều gì?",
+      options: [
+        { t: "Khám phá tri thức và giải quyết vấn đề", ok: true },
+        { t: "Thay đổi các quy luật của tự nhiên", note: "Mô phỏng chỉ tái hiện thế giới thực, không thay đổi được quy luật tự nhiên." },
+        { t: "Không cần làm thí nghiệm hay quan sát thực tế trong bất kì trường hợp nào", note: "Mô phỏng hỗ trợ, nhưng không phải lúc nào cũng thay thế được quan sát thực tế." },
+        { t: "Chỉ để tạo ra hình ảnh đẹp mắt", note: "Hình ảnh chỉ là cách thể hiện, mục đích chính là giúp tìm hiểu và giải quyết vấn đề." }
+      ],
+      explain: "Nhờ mô phỏng, con người có thể thử nghiệm, rút ra kiến thức mới và tìm giải pháp cho các vấn đề trong khoa học, kĩ thuật và đời sống."
+    },
+    {
+      q: "Tình huống nào sau đây phù hợp nhất để sử dụng phần mềm mô phỏng?",
+      options: [
+        { t: "Quan sát chuyển động của các hành tinh trong Hệ Mặt Trời ngay trong lớp học", ok: true },
+        { t: "Soạn một lá thư mời họp lớp", note: "Soạn thư mời dùng phần mềm soạn thảo văn bản, không cần mô phỏng." },
+        { t: "Sao chép tệp từ USB vào máy tính", note: "Sao chép tệp là thao tác quản lí tệp, không liên quan đến mô phỏng." },
+        { t: "Gửi tin nhắn cho bạn bè", note: "Gửi tin nhắn dùng ứng dụng trao đổi thông tin, không phải phần mềm mô phỏng." }
+      ],
+      explain: "Chuyển động của các hành tinh rất lớn và chậm nên khó quan sát trực tiếp, phần mềm mô phỏng giúp em quan sát dễ dàng ngay trong lớp học."
+    },
+    {
+      q: "Sau khi khai thác xong phần mềm mô phỏng, em nên làm gì để nêu được kiến thức đã thu nhận?",
+      options: [
+        { t: "Ghi lại những điều quan sát được và rút ra nhận xét từ kết quả mô phỏng", ok: true },
+        { t: "Quên hết kết quả để bắt đầu lại từ đầu", note: "Quên kết quả thì em không nêu được kiến thức đã thu nhận." },
+        { t: "Chỉ nhớ tên phần mềm đã sử dụng", note: "Tên phần mềm không phải là kiến thức thu nhận được từ việc khai thác mô phỏng." },
+        { t: "Xóa phần mềm khỏi máy tính", note: "Xóa phần mềm không giúp em tổng hợp kiến thức." }
+      ],
+      explain: "Ghi lại quan sát và rút ra nhận xét giúp em nêu được kiến thức thu nhận, đồng thời rèn tính trung thực, chăm chỉ khi thực hành."
+    },
+    {
+      q: "Vì sao có thể dùng phần mềm mô phỏng để thử nghiệm những tình huống nguy hiểm hoặc tốn kém?",
+      options: [
+        { t: "Vì mọi thao tác chỉ diễn ra trên máy tính nên an toàn và tiết kiệm chi phí", ok: true },
+        { t: "Vì kết quả trong phần mềm luôn giống hệt thực tế trong mọi trường hợp", note: "Mô phỏng chỉ gần đúng với thực tế, không phải lúc nào cũng giống hệt." },
+        { t: "Vì phần mềm mô phỏng không cần dùng máy tính", note: "Phần mềm mô phỏng vẫn phải chạy trên máy tính hoặc thiết bị số." },
+        { t: "Vì phần mềm mô phỏng không cho phép thay đổi thông số", note: "Phần mềm mô phỏng thường cho phép thay đổi thông số để quan sát kết quả." }
+      ],
+      explain: "Thử nghiệm trong phần mềm mô phỏng không gây nguy hiểm và không tốn vật liệu, nên em có thể thử nhiều lần để khám phá và rút ra kiến thức."
+    }
+  ];
+
+  var LETTERS = ["A", "B", "C", "D"];
+  var PER_ROUND = 2;
+  var total = Math.min(PER_ROUND, BANK.length);
+  var quiz = [], cur = 0, right = 0, answered = false;
+  var $ = function (id) { return document.getElementById(id); };
+  var screens = { start: $("s-start"), quiz: $("s-quiz"), result: $("s-result") };
+
+  function shuffle(a) {
+    a = a.slice();
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1)), t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+  function build() {
+    return shuffle(BANK).slice(0, total).map(function (it) {
+      var opts = shuffle(it.options), ans = 0;
+      opts.forEach(function (o, i) { if (o.ok) ans = i; });
+      return { q: it.q, options: opts, answer: ans, explain: it.explain, pick: null };
+    });
+  }
+  function show(n) {
+    Object.keys(screens).forEach(function (k) { screens[k].classList.toggle("active", k === n); });
+    window.scrollTo(0, 0);
+  }
+  function start() { quiz = build(); cur = 0; right = 0; show("quiz"); render(); }
+
+  function render() {
+    var it = quiz[cur]; answered = false;
+    $("ptext").textContent = "Câu " + (cur + 1) + "/" + total;
+    $("pfill").style.width = (cur / total * 100) + "%";
+    $("pbar").setAttribute("aria-valuemax", String(total));
+    $("pbar").setAttribute("aria-valuenow", String(cur));
+    $("qtext").textContent = it.q;
+    var box = $("options"); box.innerHTML = "";
+    it.options.forEach(function (o, i) {
+      var b = document.createElement("button");
+      b.type = "button"; b.className = "option";
+      b.innerHTML = '<span class="letter l' + i + '"></span><span class="text"></span>';
+      b.querySelector(".letter").textContent = LETTERS[i];
+      b.querySelector(".text").textContent = o.t;
+      b.addEventListener("click", function () { choose(i); });
+      box.appendChild(b);
+    });
+    $("fb").className = "feedback"; $("fb").innerHTML = "";
+    var n = $("b-next"); n.classList.remove("show");
+    n.textContent = cur === total - 1 ? "Xem kết quả" : "Câu tiếp theo";
+  }
+  function lower(s) { return s.charAt(0).toLowerCase() + s.slice(1); }
+
+  function choose(i) {
+    if (answered) return;
+    answered = true;
+    var it = quiz[cur], ok = i === it.answer;
+    it.pick = i; if (ok) right++;
+    $("options").querySelectorAll(".option").forEach(function (b, k) {
+      b.disabled = true;
+      b.classList.add(k === it.answer ? "correct" : k === i ? "wrong" : "dim");
+    });
+    var fb = $("fb"); fb.className = "feedback show " + (ok ? "ok" : "no"); fb.innerHTML = "";
+    var v = document.createElement("div"); v.className = "verdict";
+    v.textContent = ok ? "Chính xác! Em làm đúng câu này." : "Chưa đúng rồi. Đáp án đúng là " + LETTERS[it.answer] + ".";
+    fb.appendChild(v);
+    if (!ok && it.options[i].note) {
+      var w = document.createElement("p");
+      w.textContent = "Đáp án " + LETTERS[i] + " chưa đúng vì: " + lower(it.options[i].note);
+      fb.appendChild(w);
+    }
+    var e = document.createElement("p"); e.className = "explain"; e.textContent = it.explain; fb.appendChild(e);
+    $("pfill").style.width = ((cur + 1) / total * 100) + "%";
+    $("b-next").classList.add("show");
+    $("b-next").focus({ preventScroll: true });
+    fb.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+  function next() {
+    if (!answered) return;
+    if (cur < total - 1) { cur++; render(); window.scrollTo(0, 0); } else { result(); }
+  }
+  function result() {
+    show("result");
+    var pct = right / total * 100, t, d, ic;
+    if (pct === 100) { t = "Xuất sắc!"; d = "Em đã nắm rất tốt nội dung bài học."; ic = "🌟"; }
+    else if (pct >= 75) { t = "Rất tốt!"; d = "Em đã hiểu phần lớn nội dung bài học."; ic = "👏"; }
+    else if (pct >= 50) { t = "Khá tốt!"; d = "Em nên ôn lại một số nội dung còn chưa chắc, xem phần giải thích bên dưới nhé."; ic = "💪"; }
+    else { t = "Cố gắng thêm nhé!"; d = "Em nên xem lại bài học và luyện tập thêm. Đọc phần giải thích bên dưới rồi thử làm lại nhé."; ic = "📘"; }
+    $("rtitle").textContent = t; $("rdesc").textContent = d; $("ricon").textContent = ic;
+    $("rcount").textContent = "Bạn trả lời đúng " + right + "/" + total + " câu";
+    var list = $("review"); list.innerHTML = "";
+    quiz.forEach(function (it, idx) {
+      var ok = it.pick === it.answer, li = document.createElement("li");
+      li.className = ok ? "ok" : "no";
+      var m = document.createElement("span"); m.className = "mark " + (ok ? "ok" : "no");
+      m.textContent = ok ? "✓" : "✗"; m.setAttribute("aria-label", ok ? "Đúng" : "Sai");
+      var body = document.createElement("div");
+      var q = document.createElement("span"); q.textContent = "Câu " + (idx + 1) + ". " + it.q;
+      var a = document.createElement("span"); a.className = "rans";
+      var r = it.options[it.answer].t;
+      a.textContent = ok ? "Em chọn đúng: " + r : "Em chọn: " + it.options[it.pick].t + " — Đáp án đúng: " + r;
+      var x = document.createElement("span"); x.className = "rex"; x.textContent = "Giải thích: " + it.explain;
+      body.appendChild(q); body.appendChild(a); body.appendChild(x);
+      li.appendChild(m); li.appendChild(body); list.appendChild(li);
+    });
+  }
+  $("b-start").addEventListener("click", start);
+  $("b-next").addEventListener("click", next);
+  $("b-retry").addEventListener("click", start);
+  document.addEventListener("keydown", function (e) {
+    if (!screens.quiz.classList.contains("active") || e.ctrlKey || e.metaKey || e.altKey) return;
+    var map = { a: 0, b: 1, c: 2, d: 3, "1": 0, "2": 1, "3": 2, "4": 3 }, k = e.key.toLowerCase();
+    if (!answered && Object.prototype.hasOwnProperty.call(map, k)) choose(map[k]);
+  });
+})();
+</script>
+</body>
+</html>

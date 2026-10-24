@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Trắc nghiệm Tin học 9 – Bài 5. Tìm hiểu phần mềm mô phỏng</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#14213d;--ink-soft:#465272;--sky:#cfe8ff;--panel:#fff;--line:#cbd8ee;--blue:#2f6bff;--blue-tint:#eaf1ff;--sun:#ffc933;--sun-deep:#ffb800;--pink:#e8478b;--teal:#0fa3a3;--amber:#f5a300;--ok:#12805a;--ok-text:#12805a;--ok-tint:#e1f7ec;--bad:#c73838;--bad-text:#c73838;--bad-tint:#fdeaea;--hover:#f6f9ff;--font:"Be Vietnam Pro","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ink:#e8eefc;--ink-soft:#b4bfd9;--sky:#0f1830;--panel:#18233f;--line:#33426b;--blue-tint:#22315a;--ok-text:#5fdcae;--bad-text:#ff9a9a;--ok-tint:#123a2c;--bad-tint:#3d1c1f;--hover:#1f2d52}}
+:root[data-theme="dark"]{--ink:#e8eefc;--ink-soft:#b4bfd9;--sky:#0f1830;--panel:#18233f;--line:#33426b;--blue-tint:#22315a;--ok-text:#5fdcae;--bad-text:#ff9a9a;--ok-tint:#123a2c;--bad-tint:#3d1c1f;--hover:#1f2d52}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+html,body{margin:0;min-height:100%}
+body{font-family:var(--font);color:var(--ink);background:var(--sky);display:flex;justify-content:center;align-items:flex-start;padding:28px 16px 40px;line-height:1.55;font-size:17px}
+.window{width:100%;max-width:720px;background:var(--panel);border:2px solid var(--ink);border-radius:16px;box-shadow:8px 8px 0 var(--ink);overflow:hidden}
+.titlebar{display:flex;align-items:center;gap:12px;padding:14px 18px;background:var(--blue);border-bottom:2px solid var(--ink);color:#fff}
+.badge{flex:none;width:34px;height:34px;display:grid;place-items:center;background:var(--sun);color:#14213d;border:2px solid var(--ink);border-radius:9px;font-weight:800;font-size:15px}
+.names{display:flex;flex-direction:column;line-height:1.25}
+.subject{font-size:12.5px;font-weight:700;opacity:.9;letter-spacing:.02em;text-transform:uppercase}
+.lesson{font-size:16px;font-weight:800}
+.screen{display:none;padding:28px 28px 30px}
+.screen.active{display:block}
+h1,h2,h3,p{margin:0}
+h1{font-size:clamp(24px,5.2vw,32px);line-height:1.2;font-weight:800}
+h2{font-size:clamp(20px,4.2vw,25px);line-height:1.35;font-weight:700}
+.btn{font-family:inherit;font-size:17px;font-weight:800;color:#14213d;background:var(--sun);border:2px solid var(--ink);border-radius:12px;padding:12px 26px;cursor:pointer;box-shadow:3px 3px 0 var(--ink);transition:transform .08s,box-shadow .08s,background .15s}
+.btn:hover{background:var(--sun-deep)}
+.btn:active{transform:translate(3px,3px);box-shadow:0 0 0 var(--ink)}
+.btn-ghost{background:#fff}
+.btn-ghost:hover{background:var(--blue-tint)}
+:focus-visible{outline:3px solid var(--pink);outline-offset:3px}
+.intro-lead{margin-top:14px;color:var(--ink-soft);max-width:46ch}
+.facts{display:flex;flex-wrap:wrap;gap:10px;margin:22px 0 28px;padding:0;list-style:none}
+.facts li{border:2px solid var(--ink);border-radius:999px;padding:5px 16px;font-size:15px;font-weight:700;color:#14213d}
+.facts li:nth-child(1){background:#d7e5ff}.facts li:nth-child(2){background:#ffe3ef}.facts li:nth-child(3){background:#fff0bd}
+.progress-row{display:flex;align-items:center;gap:14px;margin-bottom:22px}
+.progress-text{font-weight:800;font-size:15px;white-space:nowrap}
+.progress-track{flex:1;height:14px;background:var(--blue-tint);border:2px solid var(--ink);border-radius:999px;overflow:hidden}
+.progress-fill{height:100%;width:0;background:var(--teal);transition:width .35s ease}
+.options{display:grid;gap:12px;margin-top:22px}
+.option{display:flex;align-items:flex-start;gap:14px;width:100%;text-align:left;font-family:inherit;font-size:17px;color:var(--ink);background:var(--panel);border:2px solid var(--line);border-radius:12px;padding:12px 16px;cursor:pointer;transition:border-color .15s,background .15s}
+.option:hover:not(:disabled){border-color:var(--ink);background:var(--hover)}
+.option:disabled{cursor:default}
+.letter{flex:none;width:34px;height:34px;display:grid;place-items:center;border-radius:9px;border:2px solid var(--ink);font-weight:800;font-size:15px;color:#fff}
+.l0{background:var(--blue)}.l1{background:var(--pink)}.l2{background:var(--amber);color:#14213d}.l3{background:var(--teal)}
+.text{padding-top:4px}
+.option.correct{border-color:var(--ok);background:var(--ok-tint)}
+.option.correct .letter{background:var(--ok);color:#fff}
+.option.wrong{border-color:var(--bad);background:var(--bad-tint)}
+.option.wrong .letter{background:var(--bad);color:#fff}
+.option.dim{opacity:.6}
+.feedback{display:none;margin-top:20px;border-radius:12px;padding:16px 18px;border:2px solid var(--ink)}
+.feedback.show{display:block;animation:pop .25s ease}
+.feedback.ok{background:var(--ok-tint);border-color:var(--ok)}
+.feedback.no{background:var(--bad-tint);border-color:var(--bad)}
+.verdict{font-weight:800;font-size:18px;margin-bottom:6px}
+.ok .verdict{color:var(--ok-text)}.no .verdict{color:var(--bad-text)}
+.feedback p+p{margin-top:8px}
+.explain{font-size:16px}
+.actions{display:flex;justify-content:flex-end;margin-top:22px;min-height:54px}
+.actions .btn{display:none}
+.actions .btn.show{display:inline-block}
+.result-top{display:flex;align-items:center;gap:22px;flex-wrap:wrap}
+.result-icon{flex:none;width:84px;height:84px;display:grid;place-items:center;border:2px solid var(--ink);border-radius:50%;font-size:42px}
+.result-msg h2{margin-bottom:6px}
+.result-msg p{color:var(--ink-soft);max-width:36ch}
+.correct-count{display:inline-block;margin-top:12px;border:2px solid var(--ink);border-radius:999px;padding:4px 16px;font-weight:800;font-size:15.5px}
+.review-heading{margin-top:26px;font-size:18px;font-weight:800}
+.review{list-style:none;margin:12px 0 26px;padding:0;display:grid;gap:10px}
+.review li{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border:2px solid var(--line);border-radius:12px;font-size:15.5px}
+.review li.ok{border-color:var(--ok);background:var(--ok-tint)}
+.review li.no{border-color:var(--bad);background:var(--bad-tint)}
+.mark{flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:800;font-size:14px}
+.mark.ok{background:var(--ok)}.mark.no{background:var(--bad)}
+.answer{display:block;margin-top:3px;color:var(--ink-soft);font-size:14.5px}
+.why{display:block;margin-top:3px;font-size:14.5px}
+.result-actions{display:flex;flex-wrap:wrap;gap:12px}
+@keyframes pop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media (max-width:520px){body{font-size:16px;padding:16px 10px 30px}.screen{padding:22px 16px 24px}.window{box-shadow:5px 5px 0 var(--ink)}.option{font-size:16px;padding:11px 12px}.btn{width:100%}.actions{justify-content:stretch}.actions .btn.show{width:100%}.lesson{font-size:15px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main class="window" aria-label="Bài trắc nghiệm">
+  <div class="titlebar">
+    <span class="badge" aria-hidden="true">Tin</span>
+    <span class="names"><span class="subject">Tin học 9</span><span class="lesson">Bài 5. Tìm hiểu phần mềm mô phỏng</span></span>
+  </div>
+
+  <section class="screen active" id="screen-start">
+    <h1>Trắc nghiệm: Tìm hiểu phần mềm mô phỏng</h1>
+    <p class="intro-lead">Kiểm tra xem em đã nêu được ví dụ về phần mềm mô phỏng và nhận ra ích lợi của loại phần mềm này hay chưa.</p>
+    <ul class="facts"><li>2 câu hỏi mỗi lượt</li><li>Có giải thích sau mỗi câu</li><li>Mỗi lượt một đề riêng</li></ul>
+    <button class="btn" id="btn-start" type="button">Bắt đầu làm bài</button>
+  </section>
+
+  <section class="screen" id="screen-quiz" aria-live="polite">
+    <div class="progress-row">
+      <span class="progress-text" id="progress-text">Câu 1/2</span>
+      <div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="2" aria-valuenow="0" id="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+    </div>
+    <h2 id="question-text"></h2>
+    <div class="options" id="options" role="group" aria-labelledby="question-text"></div>
+    <div class="feedback" id="feedback" role="status"></div>
+    <div class="actions"><button class="btn" id="btn-next" type="button">Câu tiếp theo</button></div>
+  </section>
+
+  <section class="screen" id="screen-result">
+    <div class="result-top">
+      <div class="result-icon" id="result-icon" aria-hidden="true">🎉</div>
+      <div class="result-msg"><h2 id="result-title"></h2><p id="result-desc"></p><span class="correct-count" id="result-count"></span></div>
+    </div>
+    <h3 class="review-heading">Xem lại từng câu</h3>
+    <ul class="review" id="review"></ul>
+    <div class="result-actions">
+      <button class="btn btn-ghost" id="btn-retry" type="button">Làm lại</button>
+      <button class="btn" id="btn-continue" type="button" style="display:none">Tiếp tục bài giảng</button>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  var BANK = [
+    {
+      level: "Nhận biết",
+      q: "Phần mềm mô phỏng là phần mềm có đặc điểm nào sau đây?",
+      options: [
+        { t: "Tái hiện trên máy tính hoạt động của một đối tượng, hiện tượng trong thế giới thực", ok: true },
+        { t: "Dùng để soạn thảo và định dạng các văn bản, báo cáo", note: "Soạn thảo và định dạng văn bản là chức năng của phần mềm soạn thảo văn bản." },
+        { t: "Dùng để tính toán và lập bảng số liệu trên các trang tính", note: "Tính toán, lập bảng số liệu là chức năng của phần mềm bảng tính." },
+        { t: "Dùng để duyệt và tìm kiếm thông tin trên Internet", note: "Duyệt và tìm kiếm thông tin trên Internet là chức năng của trình duyệt web." }
+      ],
+      explain: "Phần mềm mô phỏng tạo ra mô hình trên máy tính để tái hiện hoạt động của một đối tượng, hiện tượng hay quá trình trong thế giới thực."
+    },
+    {
+      level: "Nhận biết",
+      q: "Phần mềm nào sau đây là phần mềm mô phỏng?",
+      options: [
+        { t: "Phần mềm mô phỏng thí nghiệm hoá học hoặc vật lí", ok: true },
+        { t: "Phần mềm soạn thảo văn bản", note: "Phần mềm soạn thảo văn bản dùng để tạo văn bản, không tái hiện hiện tượng thực tế." },
+        { t: "Phần mềm duyệt web", note: "Trình duyệt web dùng để truy cập các trang web, không phải phần mềm mô phỏng." },
+        { t: "Phần mềm nén và giải nén tệp", note: "Phần mềm nén tệp dùng để giảm dung lượng tệp, không tái hiện hiện tượng thực tế." }
+      ],
+      explain: "Phần mềm mô phỏng thí nghiệm hoá học, vật lí cho phép quan sát các hiện tượng ngay trên máy tính. Các phần mềm còn lại có chức năng khác."
+    },
+    {
+      level: "Nhận biết",
+      q: "Ích lợi nào sau đây là của phần mềm mô phỏng?",
+      options: [
+        { t: "Cho phép quan sát các hiện tượng nguy hiểm hoặc khó thực hiện một cách an toàn", ok: true },
+        { t: "Thay thế hoàn toàn mọi thí nghiệm thực tế", note: "Mô phỏng chỉ là mô hình gần đúng nên không thể thay thế hoàn toàn thực nghiệm." },
+        { t: "Luôn cho kết quả giống hệt thế giới thực trong mọi trường hợp", note: "Mô phỏng chỉ gần đúng với thực tế, kết quả không phải lúc nào cũng giống hệt." },
+        { t: "Giúp máy tính chạy nhanh hơn khi sử dụng", note: "Phần mềm mô phỏng không có tác dụng làm tăng tốc độ của máy tính." }
+      ],
+      explain: "Nhờ phần mềm mô phỏng, em có thể quan sát an toàn những hiện tượng nguy hiểm hoặc khó làm thật, nhưng cần nhớ đây chỉ là mô hình gần đúng của thực tế."
+    },
+    {
+      level: "Thông hiểu",
+      q: "Vì sao nên dùng phần mềm mô phỏng để tìm hiểu quá trình núi lửa phun trào?",
+      options: [
+        { t: "Vì không thể và không an toàn để tạo ra hiện tượng này ngoài đời thật để quan sát", ok: true },
+        { t: "Vì núi lửa trong phần mềm luôn phun mạnh hơn núi lửa thật", note: "Phần mềm mô phỏng cố gắng tái hiện đúng hiện tượng thật, không phải để làm cho mạnh hơn." },
+        { t: "Vì phần mềm mô phỏng không cần dùng máy tính", note: "Phần mềm mô phỏng vẫn chạy trên máy tính." },
+        { t: "Vì mô phỏng chỉ dành cho các hiện tượng rất nhỏ", note: "Mô phỏng dùng được cho cả hiện tượng rất nhỏ lẫn rất lớn." }
+      ],
+      explain: "Những hiện tượng quá nguy hiểm hoặc quá lớn như núi lửa phun trào không thể tự tạo ra để quan sát, nên mô phỏng giúp em quan sát an toàn trên máy tính."
+    },
+    {
+      level: "Thông hiểu",
+      q: "Một bạn thay đổi các số liệu ban đầu trong phần mềm mô phỏng rồi xem kết quả xuất hiện thế nào. Việc làm này giúp bạn điều gì?",
+      options: [
+        { t: "Khám phá tri thức và dự đoán kết quả khi điều kiện thay đổi", ok: true },
+        { t: "Làm hỏng thiết bị thật trong phòng thí nghiệm", note: "Thay đổi thông số trong phần mềm không ảnh hưởng đến thiết bị thật." },
+        { t: "Chắc chắn thu được kết quả đúng tuyệt đối ngoài đời thật", note: "Mô phỏng là mô hình gần đúng nên kết quả cần đối chiếu với thực tế." },
+        { t: "Không thu được thêm hiểu biết nào mới", note: "Thử nhiều thông số khác nhau chính là cách để hiểu rõ hơn về đối tượng được mô phỏng." }
+      ],
+      explain: "Thay đổi thông số rồi quan sát kết quả giúp em khám phá tri thức, hiểu rõ hiện tượng và dự đoán điều sẽ xảy ra, mà không tốn vật liệu hay gặp nguy hiểm."
+    }
+  ];
+
+  var LETTERS = ["A", "B", "C", "D"];
+  var QUESTIONS_PER_ROUND = Math.min(2, BANK.length);
+  var total = QUESTIONS_PER_ROUND;
+  var quiz = [], current = 0, correctCount = 0, answered = false;
+
+  var $ = function (id) { return document.getElementById(id); };
+  var screens = { start: $("screen-start"), quiz: $("screen-quiz"), result: $("screen-result") };
+
+  function shuffle(arr) {
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+
+  function buildQuiz() {
+    return shuffle(BANK).slice(0, QUESTIONS_PER_ROUND).map(function (item) {
+      var opts = shuffle(item.options);
+      var answerIdx = 0;
+      opts.forEach(function (o, i) { if (o.ok) answerIdx = i; });
+      return { q: item.q, options: opts, answer: answerIdx, explain: item.explain, pick: null };
+    });
+  }
+
+  function show(name) {
+    Object.keys(screens).forEach(function (k) { screens[k].classList.toggle("active", k === name); });
+    window.scrollTo(0, 0);
+  }
+
+  function startQuiz() {
+    quiz = buildQuiz(); current = 0; correctCount = 0;
+    show("quiz"); renderQuestion();
+  }
+
+  function renderQuestion() {
+    var item = quiz[current];
+    answered = false;
+    $("progress-text").textContent = "Câu " + (current + 1) + "/" + total;
+    $("progress-fill").style.width = (current / total * 100) + "%";
+    $("progress-bar").setAttribute("aria-valuemax", String(total));
+    $("progress-bar").setAttribute("aria-valuenow", String(current));
+    $("question-text").textContent = item.q;
+    var box = $("options");
+    box.innerHTML = "";
+    item.options.forEach(function (opt, i) {
+      var b = document.createElement("button");
+      b.type = "button"; b.className = "option";
+      b.innerHTML = '<span class="letter l' + i + '"></span><span class="text"></span>';
+      b.querySelector(".letter").textContent = LETTERS[i];
+      b.querySelector(".text").textContent = opt.t;
+      b.addEventListener("click", function () { choose(i); });
+      box.appendChild(b);
+    });
+    var fb = $("feedback"); fb.className = "feedback"; fb.innerHTML = "";
+    var next = $("btn-next");
+    next.classList.remove("show");
+    next.textContent = current === total - 1 ? "Xem kết quả" : "Câu tiếp theo";
+  }
+
+  function lowerFirst(s) { return s.charAt(0).toLowerCase() + s.slice(1); }
+
+  function choose(i) {
+    if (answered) return;
+    answered = true;
+    var item = quiz[current];
+    var isRight = i === item.answer;
+    item.pick = i;
+    if (isRight) correctCount++;
+    $("options").querySelectorAll(".option").forEach(function (b, idx) {
+      b.disabled = true;
+      if (idx === item.answer) b.classList.add("correct");
+      else if (idx === i) b.classList.add("wrong");
+      else b.classList.add("dim");
+    });
+    var fb = $("feedback");
+    fb.className = "feedback show " + (isRight ? "ok" : "no");
+    fb.innerHTML = "";
+    var v = document.createElement("div");
+    v.className = "verdict";
+    v.textContent = isRight ? "Chính xác! Em làm đúng câu này." : "Chưa đúng rồi. Đáp án đúng là " + LETTERS[item.answer] + ".";
+    fb.appendChild(v);
+    if (!isRight && item.options[i].note) {
+      var why = document.createElement("p");
+      why.textContent = "Đáp án " + LETTERS[i] + " chưa đúng vì: " + lowerFirst(item.options[i].note);
+      fb.appendChild(why);
+    }
+    var ex = document.createElement("p");
+    ex.className = "explain"; ex.textContent = item.explain;
+    fb.appendChild(ex);
+    $("progress-fill").style.width = ((current + 1) / total * 100) + "%";
+    $("btn-next").classList.add("show");
+    $("btn-next").focus({ preventScroll: true });
+    fb.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+
+  function next() {
+    if (!answered) return;
+    if (current < total - 1) { current++; renderQuestion(); window.scrollTo(0, 0); }
+    else showResult();
+  }
+
+  function showResult() {
+    show("result");
+    var ratio = correctCount / total, title, desc, icon;
+    if (ratio === 1) { title = "Xuất sắc! Em làm đúng hết"; desc = "Em đã nắm rất tốt nội dung bài học về phần mềm mô phỏng."; icon = "🎉"; }
+    else if (ratio >= 0.75) { title = "Rất tốt!"; desc = "Em đã hiểu phần lớn nội dung bài học. Xem lại phần giải thích bên dưới để chắc hơn nhé."; icon = "👏"; }
+    else if (ratio >= 0.5) { title = "Khá tốt!"; desc = "Em nên ôn lại một số nội dung còn chưa chắc, rồi làm lại để thử sức nhé."; icon = "💪"; }
+    else { title = "Cùng ôn lại nhé"; desc = "Em hãy xem lại bài học và đọc phần giải thích bên dưới, sau đó luyện tập thêm."; icon = "📘"; }
+    $("result-title").textContent = title;
+    $("result-desc").textContent = desc;
+    $("result-icon").textContent = icon;
+    $("result-count").textContent = "Em trả lời đúng " + correctCount + "/" + total + " câu";
+
+    var list = $("review");
+    list.innerHTML = "";
+    quiz.forEach(function (item, idx) {
+      var ok = item.pick === item.answer;
+      var li = document.createElement("li");
+      li.className = ok ? "ok" : "no";
+      var mark = document.createElement("span");
+      mark.className = "mark " + (ok ? "ok" : "no");
+      mark.textContent = ok ? "✓" : "✗";
+      mark.setAttribute("aria-label", ok ? "Đúng" : "Sai");
+      var body = document.createElement("div");
+      var q = document.createElement("span");
+      q.textContent = "Câu " + (idx + 1) + ". " + item.q;
+      var a = document.createElement("span");
+      a.className = "answer";
+      var right = item.options[item.answer].t;
+      a.textContent = ok ? "Em chọn đúng: " + right : "Em chọn: " + item.options[item.pick].t + " — Đáp án đúng: " + right;
+      var e = document.createElement("span");
+      e.className = "why"; e.textContent = "Giải thích: " + item.explain;
+      body.appendChild(q); body.appendChild(a); body.appendChild(e);
+      li.appendChild(mark); li.appendChild(body);
+      list.appendChild(li);
+    });
+    try { parent.postMessage("quiz-completed", "*"); } catch (err) {}
+  }
+
+  $("btn-start").addEventListener("click", startQuiz);
+  $("btn-next").addEventListener("click", next);
+  $("btn-retry").addEventListener("click", startQuiz);
+
+  var btnContinue = $("btn-continue");
+  if (window.parent !== window) btnContinue.style.display = "inline-block";
+  btnContinue.addEventListener("click", function () { try { parent.postMessage("quiz-continue", "*"); } catch (err) {} });
+
+  document.addEventListener("keydown", function (e) {
+    if (!screens.quiz.classList.contains("active")) return;
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    var map = { a: 0, b: 1, c: 2, d: 3, "1": 0, "2": 1, "3": 2, "4": 3 };
+    var k = e.key.toLowerCase();
+    if (!answered && Object.prototype.hasOwnProperty.call(map, k)) choose(map[k]);
+  });
+})();
+</script>
+</body>
+</html>

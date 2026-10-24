@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Trắc nghiệm Tin học 7 – Bài 09. Trình bày bảng tính</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#14213d;--ink-soft:#465272;--sky:#cfe8ff;--line:#cbd8ee;--blue:#2f6bff;--tint:#eaf1ff;--sun:#ffc933;--sun2:#ffb800;--pink:#e8478b;--teal:#0fa3a3;--amber:#f5a300;--ok:#12805a;--oktint:#e1f7ec;--bad:#c73838;--badtint:#fdeaea;--font:"Be Vietnam Pro","Segoe UI",Roboto,Arial,sans-serif;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+html,body{margin:0;min-height:100%}
+body{font-family:var(--font);color:var(--ink);background:var(--sky);display:flex;justify-content:center;align-items:flex-start;padding:28px 16px 40px;line-height:1.55;font-size:17px}
+.window{width:100%;max-width:720px;background:#fff;border:2px solid var(--ink);border-radius:16px;box-shadow:8px 8px 0 var(--ink);overflow:hidden}
+.titlebar{display:flex;align-items:center;gap:12px;padding:14px 18px;background:var(--blue);border-bottom:2px solid var(--ink);color:#fff}
+.badge{flex:none;width:34px;height:34px;display:grid;place-items:center;background:var(--sun);color:var(--ink);border:2px solid var(--ink);border-radius:9px;font-weight:800;font-size:15px}
+.names{display:flex;flex-direction:column;line-height:1.25}
+.subject{font-size:12.5px;font-weight:700;opacity:.9;text-transform:uppercase;letter-spacing:.02em}
+.lesson{font-size:16px;font-weight:800}
+.screen{display:none;padding:28px 28px 30px}
+.screen.active{display:block}
+h1,h2,h3,p{margin:0}
+h1{font-size:clamp(24px,5.2vw,32px);line-height:1.2;font-weight:800}
+h2{font-size:clamp(20px,4.2vw,25px);line-height:1.35;font-weight:700}
+.btn{font-family:inherit;font-size:17px;font-weight:800;color:var(--ink);background:var(--sun);border:2px solid var(--ink);border-radius:12px;padding:12px 26px;cursor:pointer;box-shadow:3px 3px 0 var(--ink);transition:transform .08s,box-shadow .08s,background .15s}
+.btn:hover{background:var(--sun2)}
+.btn:active{transform:translate(3px,3px);box-shadow:none}
+.btn-ghost{background:#fff}.btn-ghost:hover{background:var(--tint)}
+:focus-visible{outline:3px solid var(--pink);outline-offset:3px}
+.lead{margin-top:14px;color:var(--ink-soft);max-width:46ch}
+.facts{display:flex;flex-wrap:wrap;gap:10px;margin:22px 0 28px;padding:0;list-style:none}
+.facts li{border:2px solid var(--ink);border-radius:999px;padding:5px 16px;font-size:15px;font-weight:700}
+.facts li:nth-child(1){background:#d7e5ff}.facts li:nth-child(2){background:#ffe3ef}.facts li:nth-child(3){background:#fff0bd}
+.prow{display:flex;align-items:center;gap:14px;margin-bottom:22px}
+.ptext{font-weight:800;font-size:15px;white-space:nowrap}
+.ptrack{flex:1;height:14px;background:var(--tint);border:2px solid var(--ink);border-radius:999px;overflow:hidden}
+.pfill{height:100%;width:0;background:var(--teal);transition:width .35s}
+.options{display:grid;gap:12px;margin-top:22px}
+.option{display:flex;align-items:flex-start;gap:14px;width:100%;text-align:left;font-family:inherit;font-size:17px;color:var(--ink);background:#fff;border:2px solid var(--line);border-radius:12px;padding:12px 16px;cursor:pointer;transition:border-color .15s,background .15s}
+.option:hover:not(:disabled){border-color:var(--ink);background:#f6f9ff}
+.option:disabled{cursor:default}
+.letter{flex:none;width:34px;height:34px;display:grid;place-items:center;border-radius:9px;border:2px solid var(--ink);font-weight:800;font-size:15px;color:#fff}
+.l0{background:var(--blue)}.l1{background:var(--pink)}.l2{background:var(--amber);color:var(--ink)}.l3{background:var(--teal)}
+.option .text{padding-top:4px}
+.option.correct{border-color:var(--ok);background:var(--oktint)}.option.correct .letter{background:var(--ok);color:#fff}
+.option.wrong{border-color:var(--bad);background:var(--badtint)}.option.wrong .letter{background:var(--bad);color:#fff}
+.option.dim{opacity:.55}
+.feedback{display:none;margin-top:20px;border-radius:12px;padding:16px 18px;border:2px solid var(--ink)}
+.feedback.show{display:block;animation:pop .25s}
+.feedback.ok{background:var(--oktint);border-color:var(--ok)}.feedback.no{background:var(--badtint);border-color:var(--bad)}
+.verdict{font-weight:800;font-size:18px;margin-bottom:6px}
+.ok .verdict{color:var(--ok)}.no .verdict{color:var(--bad)}
+.feedback p+p{margin-top:8px}.explain{font-size:16px}
+.actions{display:flex;justify-content:flex-end;margin-top:22px;min-height:54px}
+.actions .btn{display:none}.actions .btn.show{display:inline-block}
+.rtop{display:flex;align-items:center;gap:22px;flex-wrap:wrap}
+.ricon{flex:none;width:84px;height:84px;display:grid;place-items:center;border:2px solid var(--ink);border-radius:50%;font-size:42px}
+.rmsg h2{margin-bottom:6px}.rmsg p{color:var(--ink-soft);max-width:36ch}
+.count{display:inline-block;margin-top:12px;border:2px solid var(--ink);border-radius:999px;padding:4px 16px;font-weight:800;font-size:15.5px}
+.rh{margin-top:26px;font-size:18px;font-weight:800}
+.review{list-style:none;margin:12px 0 26px;padding:0;display:grid;gap:10px}
+.review li{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border:2px solid var(--line);border-radius:12px;font-size:15.5px}
+.review li.ok{border-color:#9fdcc0;background:#f4fcf8}.review li.no{border-color:#f0b3b3;background:#fff7f7}
+.mark{flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:800;font-size:14px}
+.mark.ok{background:var(--ok)}.mark.no{background:var(--bad)}
+.answer{display:block;margin-top:3px;color:var(--ink-soft);font-size:14.5px}
+.ract{display:flex;flex-wrap:wrap;gap:12px}
+@keyframes pop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media(max-width:520px){body{font-size:16px;padding:16px 10px 30px}.screen{padding:22px 16px 24px}.window{box-shadow:5px 5px 0 var(--ink)}.option{font-size:16px;padding:11px 12px}.btn{width:100%}.actions{justify-content:stretch}.lesson{font-size:15px}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main class="window" aria-label="Bài trắc nghiệm">
+  <div class="titlebar">
+    <span class="badge" aria-hidden="true">Tin</span>
+    <span class="names"><span class="subject">Tin học 7</span><span class="lesson">Bài 09. Trình bày bảng tính</span></span>
+  </div>
+
+  <section class="screen active" id="s-start">
+    <h1>Trắc nghiệm: Chương trình bảng tính</h1>
+    <p class="lead">Kiểm tra xem em đã nắm được nội dung bài hay chưa.</p>
+    <ul class="facts"><li>2 câu hỏi mỗi lượt</li><li>Có giải thích sau mỗi câu</li><li>Mỗi bạn một đề riêng</li></ul>
+    <button class="btn" id="b-start" type="button">Bắt đầu làm bài</button>
+  </section>
+
+  <section class="screen" id="s-quiz" aria-live="polite">
+    <div class="prow">
+      <span class="ptext" id="ptext">Câu 1/2</span>
+      <div class="ptrack" role="progressbar" aria-valuemin="0" aria-valuemax="2" aria-valuenow="0" id="pbar"><div class="pfill" id="pfill"></div></div>
+    </div>
+    <h2 id="qtext"></h2>
+    <div class="options" id="options" role="group" aria-labelledby="qtext"></div>
+    <div class="feedback" id="fb" role="status"></div>
+    <div class="actions"><button class="btn" id="b-next" type="button">Câu tiếp theo</button></div>
+  </section>
+
+  <section class="screen" id="s-result">
+    <div class="rtop">
+      <div class="ricon" id="ricon" aria-hidden="true">🎉</div>
+      <div class="rmsg"><h2 id="rtitle"></h2><p id="rdesc"></p><span class="count" id="rcount"></span></div>
+    </div>
+    <h3 class="rh">Xem lại từng câu</h3>
+    <ul class="review" id="review"></ul>
+    <div class="ract">
+      <button class="btn btn-ghost" id="b-retry" type="button">Làm lại</button>
+      <button class="btn" id="b-cont" type="button" style="display:none">Tiếp tục bài giảng</button>
+    </div>
+  </section>
+</main>
+
+<script>
+(function(){
+"use strict";
+// Ngân hàng 5 câu (nhận biết + thông hiểu). Mỗi lượt chỉ lấy ngẫu nhiên 2 câu.
+var BANK=[
+{"q": "Khi chèn thêm một cột mới trong bảng tính, cột mới được đặt ở vị trí nào so với cột em đã chọn?", "options": [{"t": "Bên phải cột đã chọn", "note": "Cột mới không được chèn vào bên phải cột đã chọn."}, {"t": "Bên trái cột đã chọn", "ok": true}, {"t": "Thay thế và xóa cột đã chọn", "note": "Chèn cột không xóa cột đã chọn; dữ liệu cũ chỉ dịch sang phải."}, {"t": "Ở cuối cùng của trang tính", "note": "Cột mới được chèn ngay tại vị trí cột đã chọn, không phải cuối trang tính."}], "explain": "Cột mới được chèn vào bên trái cột em chọn, dữ liệu của cột cũ được giữ nguyên và dịch sang phải."},
+{"q": "Khi chèn thêm một hàng mới trong bảng tính, hàng mới được đặt ở vị trí nào so với hàng em đã chọn?", "options": [{"t": "Bên dưới hàng đã chọn", "note": "Hàng mới không được chèn xuống bên dưới hàng đã chọn."}, {"t": "Ở đầu tiên của trang tính", "note": "Hàng mới được chèn ngay tại vị trí hàng đã chọn, không phải đầu trang tính."}, {"t": "Bên trên hàng đã chọn", "ok": true}, {"t": "Thay thế dữ liệu của hàng đã chọn", "note": "Chèn hàng không ghi đè lên dữ liệu; hàng cũ chỉ dịch xuống dưới."}], "explain": "Hàng mới được chèn vào bên trên hàng em chọn, dữ liệu của hàng cũ được giữ nguyên và dịch xuống dưới."},
+{"q": "Sau khi em ẩn một hàng hoặc một cột trong trang tính thì điều nào sau đây đúng?", "options": [{"t": "Dữ liệu trong hàng hoặc cột đó bị xóa khỏi trang tính", "note": "Ẩn không phải là xóa; dữ liệu vẫn còn và có thể hiện lại."}, {"t": "Dữ liệu của hàng hoặc cột đó được chuyển sang trang tính khác", "note": "Dữ liệu vẫn nằm trong trang tính hiện tại, không bị chuyển đi."}, {"t": "Bảng tính chỉ cho phép ẩn cột, không cho phép ẩn hàng", "note": "Bảng tính cho phép ẩn cả hàng lẫn cột."}, {"t": "Hàng hoặc cột không hiển thị nhưng dữ liệu vẫn còn", "ok": true}], "explain": "Ẩn hàng hoặc cột chỉ làm chúng tạm thời không hiển thị, dữ liệu vẫn còn và có thể hiện lại bằng lệnh hiện."},
+{"q": "Ngày 5 tháng 3 năm 2025 được định dạng kiểu ngày tháng d/mm/yyyy sẽ hiển thị như thế nào?", "options": [{"t": "5/03/2025", "ok": true}, {"t": "05/03/2025", "note": "Dạng d hiển thị ngày không có số 0 ở đầu nên ngày 5 chỉ viết là 5."}, {"t": "5/3/2025", "note": "Dạng mm luôn hiển thị hai chữ số cho tháng nên phải là 03."}, {"t": "5/03/25", "note": "Dạng yyyy hiển thị đủ bốn chữ số của năm nên phải là 2025."}], "explain": "Theo dạng d/mm/yyyy, ngày hiển thị không thêm số 0, tháng có hai chữ số và năm có bốn chữ số nên kết quả là 5/03/2025."},
+{"q": "Khi em định dạng dữ liệu và trình bày bảng tính, điều nào sau đây đúng?", "options": [{"t": "Giá trị các số trong bảng bị thay đổi theo kiểu định dạng", "note": "Định dạng không làm đổi nội dung dữ liệu, chỉ đổi cách hiển thị."}, {"t": "Dữ liệu ngày tháng không thể định dạng theo dạng khác", "note": "Dữ liệu ngày tháng có thể định dạng theo nhiều dạng khác nhau."}, {"t": "Chỉ thay đổi cách hiển thị, giúp bảng tính dễ đọc", "ok": true}, {"t": "Toàn bộ dữ liệu trong ô tính bị xóa để nhập lại", "note": "Định dạng không xóa dữ liệu trong ô tính."}], "explain": "Định dạng và trình bày bảng tính chỉ thay đổi cách hiển thị dữ liệu, giúp bảng tính rõ ràng, dễ đọc, dễ so sánh, không làm thay đổi nội dung dữ liệu."}
+];
+var LET=["A","B","C","D"],PER=2,total=PER,quiz=[],cur=0,right=0,answered=false;
+var $=function(id){return document.getElementById(id)};
+var scr={start:$("s-start"),quiz:$("s-quiz"),result:$("s-result")};
+function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t}return a}
+function build(){return shuffle(BANK).slice(0,PER).map(function(it){var o=shuffle(it.options),ans=0;o.forEach(function(x,i){if(x.ok)ans=i});return{q:it.q,options:o,answer:ans,explain:it.explain,pick:null}})}
+function show(n){Object.keys(scr).forEach(function(k){scr[k].classList.toggle("active",k===n)});window.scrollTo(0,0)}
+function start(){quiz=build();cur=0;right=0;show("quiz");render()}
+function render(){
+ var it=quiz[cur];answered=false;
+ $("ptext").textContent="Câu "+(cur+1)+"/"+total;
+ $("pfill").style.width=(cur/total*100)+"%";
+ $("pbar").setAttribute("aria-valuenow",String(cur));
+ $("qtext").textContent=it.q;
+ var box=$("options");box.innerHTML="";
+ it.options.forEach(function(op,i){
+  var b=document.createElement("button");b.type="button";b.className="option";
+  b.innerHTML='<span class="letter l'+i+'"></span><span class="text"></span>';
+  b.querySelector(".letter").textContent=LET[i];b.querySelector(".text").textContent=op.t;
+  b.addEventListener("click",function(){choose(i)});box.appendChild(b)});
+ var fb=$("fb");fb.className="feedback";fb.innerHTML="";
+ var n=$("b-next");n.classList.remove("show");n.textContent=cur===total-1?"Xem kết quả":"Câu tiếp theo";
+}
+function lf(s){return s.charAt(0).toLowerCase()+s.slice(1)}
+function choose(i){
+ if(answered)return;answered=true;
+ var it=quiz[cur],ok=i===it.answer;it.pick=i;if(ok)right++;
+ $("options").querySelectorAll(".option").forEach(function(b,x){b.disabled=true;b.classList.add(x===it.answer?"correct":x===i?"wrong":"dim")});
+ var fb=$("fb");fb.className="feedback show "+(ok?"ok":"no");fb.innerHTML="";
+ var v=document.createElement("div");v.className="verdict";
+ v.textContent=ok?"Chính xác! Em làm đúng câu này.":"Chưa đúng rồi. Đáp án đúng là "+LET[it.answer]+".";fb.appendChild(v);
+ if(!ok&&it.options[i].note){var w=document.createElement("p");w.textContent="Đáp án "+LET[i]+" chưa đúng vì: "+lf(it.options[i].note);fb.appendChild(w)}
+ var e=document.createElement("p");e.className="explain";e.textContent=it.explain;fb.appendChild(e);
+ $("pfill").style.width=((cur+1)/total*100)+"%";
+ $("b-next").classList.add("show");$("b-next").focus({preventScroll:true});
+ fb.scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+function next(){if(!answered)return;if(cur<total-1){cur++;render();window.scrollTo(0,0)}else result()}
+function result(){
+ show("result");
+ var t,d,ic;
+ if(right===total){t="Xuất sắc! Em làm đúng hết";d="Em đã nắm rất tốt nội dung bài học về Chủ đề 4. Ứng dụng Tin học.";ic="🎉"}
+ else if(right/total>=0.5){t="Khá tốt!";d="Em đã hiểu một phần nội dung bài. Xem lại giải thích bên dưới rồi làm lại để chắc hơn nhé.";ic="👏"}
+ else{t="Em cần ôn lại bài một chút";d="Đừng lo, hãy đọc lại Bài 09 trong sách giáo khoa, xem lại các câu bên dưới rồi thử lần nữa nhé.";ic="📘"}
+ $("rtitle").textContent=t;$("rdesc").textContent=d;$("ricon").textContent=ic;
+ $("rcount").textContent="Em trả lời đúng "+right+"/"+total+" câu";
+ var ul=$("review");ul.innerHTML="";
+ quiz.forEach(function(it,idx){
+  var ok=it.pick===it.answer,li=document.createElement("li");li.className=ok?"ok":"no";
+  var m=document.createElement("span");m.className="mark "+(ok?"ok":"no");m.textContent=ok?"✓":"✗";m.setAttribute("aria-label",ok?"Đúng":"Sai");
+  var b=document.createElement("div"),q=document.createElement("span");q.textContent="Câu "+(idx+1)+". "+it.q;
+  var a=document.createElement("span");a.className="answer";
+  var r=it.options[it.answer].t;
+  a.textContent=(ok?"Em chọn đúng: "+r:"Em chọn: "+it.options[it.pick].t+" — Đáp án đúng: "+r)+". "+it.explain;
+  b.appendChild(q);b.appendChild(a);li.appendChild(m);li.appendChild(b);ul.appendChild(li)});
+ try{parent.postMessage("quiz-completed","*")}catch(e){}
+}
+$("b-start").addEventListener("click",start);
+$("b-next").addEventListener("click",next);
+$("b-retry").addEventListener("click",start);
+var bc=$("b-cont");if(window.parent!==window)bc.style.display="inline-block";
+bc.addEventListener("click",function(){parent.postMessage("quiz-continue","*")});
+document.addEventListener("keydown",function(e){
+ if(!scr.quiz.classList.contains("active")||e.ctrlKey||e.metaKey||e.altKey)return;
+ var map={a:0,b:1,c:2,d:3,"1":0,"2":1,"3":2,"4":3},k=e.key.toLowerCase();
+ if(!answered&&Object.prototype.hasOwnProperty.call(map,k))choose(map[k]);
+});
+})();
+</script>
+</body>
+</html>

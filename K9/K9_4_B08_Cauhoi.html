@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Trắc nghiệm Tin học 9 – Bài 8. Thực hành: Sử dụng công cụ trực quan trình bày thông tin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#14213d;--ink-soft:#465272;--sky:#cfe8ff;--line:#cbd8ee;--blue:#2f6bff;--tint:#eaf1ff;--sun:#ffc933;--sun2:#ffb800;--pink:#e8478b;--teal:#0fa3a3;--amber:#f5a300;--ok:#12805a;--oktint:#e1f7ec;--bad:#c73838;--badtint:#fdeaea;--font:"Be Vietnam Pro","Segoe UI",Roboto,Arial,sans-serif;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+html,body{margin:0;min-height:100%}
+body{font-family:var(--font);color:var(--ink);background:var(--sky);display:flex;justify-content:center;align-items:flex-start;padding:28px 16px 40px;line-height:1.55;font-size:17px}
+.window{width:100%;max-width:720px;background:#fff;border:2px solid var(--ink);border-radius:16px;box-shadow:8px 8px 0 var(--ink);overflow:hidden}
+.titlebar{display:flex;align-items:center;gap:12px;padding:14px 18px;background:var(--blue);border-bottom:2px solid var(--ink);color:#fff}
+.badge{flex:none;width:34px;height:34px;display:grid;place-items:center;background:var(--sun);color:var(--ink);border:2px solid var(--ink);border-radius:9px;font-weight:800;font-size:15px}
+.names{display:flex;flex-direction:column;line-height:1.25}
+.subject{font-size:12.5px;font-weight:700;opacity:.9;text-transform:uppercase;letter-spacing:.02em}
+.lesson{font-size:16px;font-weight:800}
+.screen{display:none;padding:28px 28px 30px}
+.screen.active{display:block}
+h1,h2,h3,p{margin:0}
+h1{font-size:clamp(24px,5.2vw,32px);line-height:1.2;font-weight:800}
+h2{font-size:clamp(20px,4.2vw,25px);line-height:1.35;font-weight:700}
+.btn{font-family:inherit;font-size:17px;font-weight:800;color:var(--ink);background:var(--sun);border:2px solid var(--ink);border-radius:12px;padding:12px 26px;cursor:pointer;box-shadow:3px 3px 0 var(--ink);transition:transform .08s,box-shadow .08s,background .15s}
+.btn:hover{background:var(--sun2)}
+.btn:active{transform:translate(3px,3px);box-shadow:none}
+.btn-ghost{background:#fff}.btn-ghost:hover{background:var(--tint)}
+:focus-visible{outline:3px solid var(--pink);outline-offset:3px}
+.lead{margin-top:14px;color:var(--ink-soft);max-width:46ch}
+.facts{display:flex;flex-wrap:wrap;gap:10px;margin:22px 0 28px;padding:0;list-style:none}
+.facts li{border:2px solid var(--ink);border-radius:999px;padding:5px 16px;font-size:15px;font-weight:700}
+.facts li:nth-child(1){background:#d7e5ff}.facts li:nth-child(2){background:#ffe3ef}.facts li:nth-child(3){background:#fff0bd}
+.prow{display:flex;align-items:center;gap:14px;margin-bottom:22px}
+.ptext{font-weight:800;font-size:15px;white-space:nowrap}
+.ptrack{flex:1;height:14px;background:var(--tint);border:2px solid var(--ink);border-radius:999px;overflow:hidden}
+.pfill{height:100%;width:0;background:var(--teal);transition:width .35s}
+.options{display:grid;gap:12px;margin-top:22px}
+.option{display:flex;align-items:flex-start;gap:14px;width:100%;text-align:left;font-family:inherit;font-size:17px;color:var(--ink);background:#fff;border:2px solid var(--line);border-radius:12px;padding:12px 16px;cursor:pointer;transition:border-color .15s,background .15s}
+.option:hover:not(:disabled){border-color:var(--ink);background:#f6f9ff}
+.option:disabled{cursor:default}
+.letter{flex:none;width:34px;height:34px;display:grid;place-items:center;border-radius:9px;border:2px solid var(--ink);font-weight:800;font-size:15px;color:#fff}
+.l0{background:var(--blue)}.l1{background:var(--pink)}.l2{background:var(--amber);color:var(--ink)}.l3{background:var(--teal)}
+.option .text{padding-top:4px}
+.option.correct{border-color:var(--ok);background:var(--oktint)}.option.correct .letter{background:var(--ok);color:#fff}
+.option.wrong{border-color:var(--bad);background:var(--badtint)}.option.wrong .letter{background:var(--bad);color:#fff}
+.option.dim{opacity:.55}
+.feedback{display:none;margin-top:20px;border-radius:12px;padding:16px 18px;border:2px solid var(--ink)}
+.feedback.show{display:block;animation:pop .25s}
+.feedback.ok{background:var(--oktint);border-color:var(--ok)}.feedback.no{background:var(--badtint);border-color:var(--bad)}
+.verdict{font-weight:800;font-size:18px;margin-bottom:6px}
+.ok .verdict{color:var(--ok)}.no .verdict{color:var(--bad)}
+.feedback p+p{margin-top:8px}.explain{font-size:16px}
+.actions{display:flex;justify-content:flex-end;margin-top:22px;min-height:54px}
+.actions .btn{display:none}.actions .btn.show{display:inline-block}
+.rtop{display:flex;align-items:center;gap:22px;flex-wrap:wrap}
+.ricon{flex:none;width:84px;height:84px;display:grid;place-items:center;border:2px solid var(--ink);border-radius:50%;font-size:42px}
+.rmsg h2{margin-bottom:6px}.rmsg p{color:var(--ink-soft);max-width:36ch}
+.count{display:inline-block;margin-top:12px;border:2px solid var(--ink);border-radius:999px;padding:4px 16px;font-weight:800;font-size:15.5px}
+.rh{margin-top:26px;font-size:18px;font-weight:800}
+.review{list-style:none;margin:12px 0 26px;padding:0;display:grid;gap:10px}
+.review li{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border:2px solid var(--line);border-radius:12px;font-size:15.5px}
+.review li.ok{border-color:#9fdcc0;background:#f4fcf8}.review li.no{border-color:#f0b3b3;background:#fff7f7}
+.mark{flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:800;font-size:14px}
+.mark.ok{background:var(--ok)}.mark.no{background:var(--bad)}
+.answer{display:block;margin-top:3px;color:var(--ink-soft);font-size:14.5px}
+.ract{display:flex;flex-wrap:wrap;gap:12px}
+@keyframes pop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media(max-width:520px){body{font-size:16px;padding:16px 10px 30px}.screen{padding:22px 16px 24px}.window{box-shadow:5px 5px 0 var(--ink)}.option{font-size:16px;padding:11px 12px}.btn{width:100%}.actions{justify-content:stretch}.lesson{font-size:15px}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main class="window" aria-label="Bài trắc nghiệm">
+  <div class="titlebar">
+    <span class="badge" aria-hidden="true">Tin</span>
+    <span class="names"><span class="subject">Tin học 9</span><span class="lesson">Bài 8. Thực hành: Sử dụng công cụ trực quan trình bày thông tin</span></span>
+  </div>
+
+  <section class="screen active" id="s-start">
+    <h1>Trắc nghiệm: Công cụ trực quan trình bày thông tin</h1>
+    <p class="lead">Kiểm tra xem em đã biết dùng hình ảnh, biểu đồ, video hợp lí, và biết tạo sơ đồ tư duy, bài trình chiếu có đính kèm các thành phần trực quan hay chưa.</p>
+    <ul class="facts"><li>2 câu hỏi mỗi lượt</li><li>Có giải thích sau mỗi câu</li><li>Mỗi bạn một đề riêng</li></ul>
+    <button class="btn" id="b-start" type="button">Bắt đầu làm bài</button>
+  </section>
+
+  <section class="screen" id="s-quiz" aria-live="polite">
+    <div class="prow">
+      <span class="ptext" id="ptext">Câu 1/2</span>
+      <div class="ptrack" role="progressbar" aria-valuemin="0" aria-valuemax="2" aria-valuenow="0" id="pbar"><div class="pfill" id="pfill"></div></div>
+    </div>
+    <h2 id="qtext"></h2>
+    <div class="options" id="options" role="group" aria-labelledby="qtext"></div>
+    <div class="feedback" id="fb" role="status"></div>
+    <div class="actions"><button class="btn" id="b-next" type="button">Câu tiếp theo</button></div>
+  </section>
+
+  <section class="screen" id="s-result">
+    <div class="rtop">
+      <div class="ricon" id="ricon" aria-hidden="true">🎉</div>
+      <div class="rmsg"><h2 id="rtitle"></h2><p id="rdesc"></p><span class="count" id="rcount"></span></div>
+    </div>
+    <h3 class="rh">Xem lại từng câu</h3>
+    <ul class="review" id="review"></ul>
+    <div class="ract">
+      <button class="btn btn-ghost" id="b-retry" type="button">Làm lại</button>
+      <button class="btn" id="b-cont" type="button" style="display:none">Tiếp tục bài giảng</button>
+    </div>
+  </section>
+</main>
+
+<script>
+(function(){
+"use strict";
+// Ngân hàng 5 câu (nhận biết + thông hiểu). Mỗi lượt chỉ lấy ngẫu nhiên 2 câu.
+var BANK=[
+{q:"Việc sử dụng hình ảnh, biểu đồ, video trong bài trình bày có tác dụng chính nào sau đây?",
+ options:[
+  {t:"Làm thông tin trực quan, sinh động và dễ hiểu hơn",ok:true},
+  {t:"Làm bài trình bày dài hơn để đủ thời lượng",note:"Mục đích chính không phải kéo dài bài mà là giúp người xem hiểu thông tin dễ hơn."},
+  {t:"Thay thế hoàn toàn nội dung văn bản của bài",note:"Các thành phần trực quan hỗ trợ nội dung chứ không thay thế hoàn toàn nội dung cần trình bày."},
+  {t:"Chỉ để trang trí cho bài trình bày đẹp mắt",note:"Trang trí không phải mục đích chính; các thành phần này cần giúp truyền đạt thông tin."}],
+ explain:"Hình ảnh, biểu đồ, video giúp thông tin trực quan hơn, người xem dễ hiểu và dễ nhớ hơn so với chỉ đọc chữ."},
+{q:"Trong sơ đồ tư duy, em có thể đính kèm những loại nội dung nào để bổ sung thông tin cho một nhánh?",
+ options:[
+  {t:"Văn bản, hình ảnh, video và trang tính",ok:true},
+  {t:"Chỉ có văn bản",note:"Sơ đồ tư duy còn đính kèm được hình ảnh, video và trang tính, không chỉ văn bản."},
+  {t:"Chỉ có hình ảnh",note:"Ngoài hình ảnh, em còn đính kèm được văn bản, video và trang tính."},
+  {t:"Không đính kèm được gì, chỉ nhập chữ vào nhánh",note:"Sơ đồ tư duy cho phép đính kèm nhiều loại nội dung vào nhánh."}],
+ explain:"Sơ đồ tư duy có thể đính kèm văn bản, hình ảnh, video, trang tính để thông tin trong sơ đồ đầy đủ và trực quan hơn."},
+{q:"Em cần so sánh số liệu (ví dụ số học sinh của các lớp) trong bài trình chiếu. Cách trình bày nào dễ nhìn và dễ hiểu nhất?",
+ options:[
+  {t:"Dùng biểu đồ thể hiện số liệu của các lớp",ok:true},
+  {t:"Chèn một bức ảnh phong cảnh cho đẹp",note:"Ảnh phong cảnh không thể hiện được việc so sánh số liệu."},
+  {t:"Viết thật nhiều chữ mô tả từng con số",note:"Quá nhiều chữ làm người xem khó so sánh và khó nhớ."},
+  {t:"Chèn một video dài không liên quan đến số liệu",note:"Video không liên quan không giúp so sánh số liệu và còn làm bài lạc đề."}],
+ explain:"Biểu đồ giúp so sánh số liệu một cách trực quan, nhìn vào là thấy ngay lớp nào nhiều hơn, lớp nào ít hơn."},
+{q:"Thế nào là sử dụng hình ảnh, video \"hợp lí\" trong bài trình chiếu?",
+ options:[
+  {t:"Chọn hình ảnh, video phù hợp với nội dung, rõ ràng và dùng vừa đủ",ok:true},
+  {t:"Chèn càng nhiều hình ảnh, video càng tốt",note:"Quá nhiều hình ảnh, video làm bài rối và người xem khó tập trung vào nội dung chính."},
+  {t:"Chọn hình đẹp nhất dù không liên quan đến nội dung",note:"Hình ảnh cần liên quan và hỗ trợ nội dung, không chỉ cần đẹp."},
+  {t:"Dùng video dài thay cho toàn bộ phần trình bày",note:"Video chỉ nên minh hoạ cho nội dung, không thay cho toàn bộ phần trình bày."}],
+ explain:"Hợp lí nghĩa là hình ảnh, biểu đồ, video phù hợp nội dung, rõ ràng, có số lượng vừa đủ để hỗ trợ việc truyền đạt thông tin."},
+{q:"Em muốn người xem sơ đồ tư duy tra cứu được bảng số liệu chi tiết mà nhánh không bị rối chữ. Em nên làm gì?",
+ options:[
+  {t:"Đính kèm tệp trang tính chứa bảng số liệu vào nhánh phù hợp",ok:true},
+  {t:"Gõ toàn bộ bảng số liệu vào tên của nhánh",note:"Tên nhánh nên ngắn gọn; gõ cả bảng số liệu sẽ làm nhánh rối và khó đọc."},
+  {t:"Xoá nhánh đó để sơ đồ gọn hơn",note:"Xoá nhánh làm mất thông tin cần trình bày."},
+  {t:"Chụp bảng số liệu rồi bỏ ra ngoài sơ đồ",note:"Để ngoài sơ đồ thì bảng số liệu không còn gắn với nhánh liên quan."}],
+ explain:"Sơ đồ tư duy cho phép đính kèm trang tính vào nhánh, giúp nhánh gọn mà người xem vẫn mở được số liệu chi tiết."}
+];
+var LET=["A","B","C","D"],PER=2,total=PER,quiz=[],cur=0,right=0,answered=false;
+var $=function(id){return document.getElementById(id)};
+var scr={start:$("s-start"),quiz:$("s-quiz"),result:$("s-result")};
+function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t}return a}
+function build(){return shuffle(BANK).slice(0,PER).map(function(it){var o=shuffle(it.options),ans=0;o.forEach(function(x,i){if(x.ok)ans=i});return{q:it.q,options:o,answer:ans,explain:it.explain,pick:null}})}
+function show(n){Object.keys(scr).forEach(function(k){scr[k].classList.toggle("active",k===n)});window.scrollTo(0,0)}
+function start(){quiz=build();cur=0;right=0;show("quiz");render()}
+function render(){
+ var it=quiz[cur];answered=false;
+ $("ptext").textContent="Câu "+(cur+1)+"/"+total;
+ $("pfill").style.width=(cur/total*100)+"%";
+ $("pbar").setAttribute("aria-valuenow",String(cur));
+ $("qtext").textContent=it.q;
+ var box=$("options");box.innerHTML="";
+ it.options.forEach(function(op,i){
+  var b=document.createElement("button");b.type="button";b.className="option";
+  b.innerHTML='<span class="letter l'+i+'"></span><span class="text"></span>';
+  b.querySelector(".letter").textContent=LET[i];b.querySelector(".text").textContent=op.t;
+  b.addEventListener("click",function(){choose(i)});box.appendChild(b)});
+ var fb=$("fb");fb.className="feedback";fb.innerHTML="";
+ var n=$("b-next");n.classList.remove("show");n.textContent=cur===total-1?"Xem kết quả":"Câu tiếp theo";
+}
+function lf(s){return s.charAt(0).toLowerCase()+s.slice(1)}
+function choose(i){
+ if(answered)return;answered=true;
+ var it=quiz[cur],ok=i===it.answer;it.pick=i;if(ok)right++;
+ $("options").querySelectorAll(".option").forEach(function(b,x){b.disabled=true;b.classList.add(x===it.answer?"correct":x===i?"wrong":"dim")});
+ var fb=$("fb");fb.className="feedback show "+(ok?"ok":"no");fb.innerHTML="";
+ var v=document.createElement("div");v.className="verdict";
+ v.textContent=ok?"Chính xác! Em làm đúng câu này.":"Chưa đúng rồi. Đáp án đúng là "+LET[it.answer]+".";fb.appendChild(v);
+ if(!ok&&it.options[i].note){var w=document.createElement("p");w.textContent="Đáp án "+LET[i]+" chưa đúng vì: "+lf(it.options[i].note);fb.appendChild(w)}
+ var e=document.createElement("p");e.className="explain";e.textContent=it.explain;fb.appendChild(e);
+ $("pfill").style.width=((cur+1)/total*100)+"%";
+ $("b-next").classList.add("show");$("b-next").focus({preventScroll:true});
+ fb.scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+function next(){if(!answered)return;if(cur<total-1){cur++;render();window.scrollTo(0,0)}else result()}
+function result(){
+ show("result");
+ var t,d,ic;
+ if(right===total){t="Xuất sắc! Em làm đúng hết";d="Em đã nắm rất tốt nội dung bài học về công cụ trực quan trình bày thông tin.";ic="🎉"}
+ else if(right/total>=0.5){t="Khá tốt!";d="Em đã hiểu một phần nội dung bài. Xem lại giải thích bên dưới rồi làm lại để chắc hơn nhé.";ic="👏"}
+ else{t="Em cần ôn lại bài một chút";d="Đừng lo, hãy đọc lại Bài 8 trong sách giáo khoa, xem lại các câu bên dưới rồi thử lần nữa nhé.";ic="📘"}
+ $("rtitle").textContent=t;$("rdesc").textContent=d;$("ricon").textContent=ic;
+ $("rcount").textContent="Em trả lời đúng "+right+"/"+total+" câu";
+ var ul=$("review");ul.innerHTML="";
+ quiz.forEach(function(it,idx){
+  var ok=it.pick===it.answer,li=document.createElement("li");li.className=ok?"ok":"no";
+  var m=document.createElement("span");m.className="mark "+(ok?"ok":"no");m.textContent=ok?"✓":"✗";m.setAttribute("aria-label",ok?"Đúng":"Sai");
+  var b=document.createElement("div"),q=document.createElement("span");q.textContent="Câu "+(idx+1)+". "+it.q;
+  var a=document.createElement("span");a.className="answer";
+  var r=it.options[it.answer].t;
+  a.textContent=(ok?"Em chọn đúng: "+r:"Em chọn: "+it.options[it.pick].t+" — Đáp án đúng: "+r)+". "+it.explain;
+  b.appendChild(q);b.appendChild(a);li.appendChild(m);li.appendChild(b);ul.appendChild(li)});
+ try{parent.postMessage("quiz-completed","*")}catch(e){}
+}
+$("b-start").addEventListener("click",start);
+$("b-next").addEventListener("click",next);
+$("b-retry").addEventListener("click",start);
+var bc=$("b-cont");if(window.parent!==window)bc.style.display="inline-block";
+bc.addEventListener("click",function(){parent.postMessage("quiz-continue","*")});
+document.addEventListener("keydown",function(e){
+ if(!scr.quiz.classList.contains("active")||e.ctrlKey||e.metaKey||e.altKey)return;
+ var map={a:0,b:1,c:2,d:3,"1":0,"2":1,"3":2,"4":3},k=e.key.toLowerCase();
+ if(!answered&&Object.prototype.hasOwnProperty.call(map,k))choose(map[k]);
+});
+})();
+</script>
+</body>
+</html>
