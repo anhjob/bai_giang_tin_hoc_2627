@@ -6,7 +6,10 @@ window.DB = {
         { ten_bai: "K7_B03. Quản lý dữ liệu trong máy tính", ngay_tao: "2026-09-24", link: "./K7/K7_1_B03.pdf" ,youtube: "", cauhoi: "./K7/K7_1_B03_Cauhoi.html" },
 
         { ten_bai: "👉K7. Chủ đề 2. Tổ chức lưu trữ, tìm kiếm và trao đổi thông tin", ngay_tao: "--", link: "" ,youtube: "" },
-        { ten_bai: "K7_B04. Mạng xã hội và một số kênh trao đổi thông tin trên Internet", ngay_tao: "2026-10-10", link: "./K7/K7_2_B04.pdf" ,youtube: "./K7/K7_2_B04_Video.html", youtube2: "", cauhoi: "./K7/K7_2_B04_Cauhoi.html" }                
+        { ten_bai: "K7_B04. Mạng xã hội và một số kênh trao đổi thông tin trên Internet", ngay_tao: "2026-10-10", link: "./K7/K7_2_B04.pdf" ,youtube: "./K7/K7_2_B04_Video.html", youtube2: "", cauhoi: "./K7/K7_2_B04_Cauhoi.html" },
+        
+        { ten_bai: "👉K7. Chủ đề 3. Đạo đức, pháp luật và văn hóa trong môi trường số", ngay_tao: "--", link: "" ,youtube: "" },
+        { ten_bai: "K7_B05. Ứng xử trên mạng", ngay_tao: "2026-11-01", link: "./K7/K7_3_B05.pdf" ,youtube: "", cauhoi: "./K7/K7_3_B05_Cauhoi.html" },
     ],
 
     K9: [
@@ -19,6 +22,9 @@ window.DB = {
 
         { ten_bai: "👉K9. Chủ đề 3. Đạo đức, pháp luật và văn hóa trong môi trường số", ngay_tao: "--", link: "" ,youtube: "" },
         { ten_bai: "K9_B04. Bảo vệ thông tin cá nhân", ngay_tao: "2026-10-10", link: "./K9/K9_3_B04.pdf" ,youtube: "./K9/K9_3_B04_Video.html", cauhoi: "./K9/K9_3_B04_Cauhoi.html" },
+
+        { ten_bai: "👉K9. Chủ đề 4. Ứng dụng Tin học", ngay_tao: "--", link: "" ,youtube: "" },
+        { ten_bai: "K9_B05. Tìm hiểu phần mềm mô phỏng", ngay_tao: "2026-11-01", link: "./K9/K9_4_B05.pdf" ,youtube: "", cauhoi: "./K9/K9_4_B05_Cauhoi.html" },
 
     ],
 
