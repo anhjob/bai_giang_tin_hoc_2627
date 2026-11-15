@@ -10,6 +10,9 @@ window.DB = {
         
         { ten_bai: "👉K7. Chủ đề 3. Đạo đức, pháp luật và văn hóa trong môi trường số", ngay_tao: "--", link: "" ,youtube: "" },
         { ten_bai: "K7_B05. Ứng xử trên mạng", ngay_tao: "2026-11-01", link: "./K7/K7_3_B05.pdf" ,youtube: "", cauhoi: "./K7/K7_3_B05_Cauhoi.html" },
+
+        { ten_bai: "👉K7. Chủ đề 4. Ứng dụng Tin học", ngay_tao: "--", link: "" ,youtube: "" },
+        { ten_bai: "K7_B06. Thực hành: Tạo và trình bày thông tin", ngay_tao: "2026-11-10", link: "./K7/K7_4_B06.pdf" ,youtube: "./K7/K7_4_B06_Video.html", cauhoi: "./K7/K7_4_B06_Cauhoi.html" },
     ],
 
     K9: [
@@ -25,6 +28,7 @@ window.DB = {
 
         { ten_bai: "👉K9. Chủ đề 4. Ứng dụng Tin học", ngay_tao: "--", link: "" ,youtube: "" },
         { ten_bai: "K9_B05. Tìm hiểu phần mềm mô phỏng", ngay_tao: "2026-11-01", link: "./K9/K9_4_B05.pdf" ,youtube: "", cauhoi: "./K9/K9_4_B05_Cauhoi.html" },
+        { ten_bai: "K9_B06. Thực hành: Sử dụng phần mềm mô phỏng", ngay_tao: "2026-11-10", link: "./K9/K9_4_B06.pdf" ,youtube: "./K9/K9_4_B06_Video.html", cauhoi: "./K9/K9_4_B06_Cauhoi.html" },
 
     ],
 
