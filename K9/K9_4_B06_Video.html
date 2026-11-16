@@ -2,291 +2,188 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Bài học video tương tác</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tin học 9 – K9_4_B06. Thực hành. Khai thác phần mềm mô phỏng</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --primary: #2563eb;
-    --primary-dark: #1d4ed8;
-    --bg: #f3f4f6;
-    --card: #ffffff;
-    --text: #1f2937;
-    --muted: #6b7280;
-  }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    padding: 16px;
-  }
-  .wrap { max-width: 900px; margin: 0 auto; }
-  h1 { font-size: 1.4rem; margin: 0 0 12px; }
-  .player-box {
-    position: relative;
-    width: 100%;
-    aspect-ratio: 16 / 9;
-    background: #000;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.15);
-  }
-  #player { width: 100%; height: 100%; }
+:root{--ink:#14213d;--ink-soft:#465272;--sky:#cfe8ff;--blue:#2f6bff;--tint:#eaf1ff;--sun:#ffc933;--sun2:#ffb800;--pink:#e8478b;--ok:#12805a;--oktint:#e1f7ec;--font:"Be Vietnam Pro","Segoe UI",Roboto,Arial,sans-serif;color-scheme:light}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{font-family:var(--font);color:var(--ink);background:var(--sky);display:flex;justify-content:center;align-items:flex-start;padding:28px 16px 40px;line-height:1.55;font-size:16px}
+.window{width:100%;max-width:960px;background:#fff;border:2px solid var(--ink);border-radius:16px;box-shadow:8px 8px 0 var(--ink);overflow:hidden}
+.titlebar{display:flex;align-items:center;gap:12px;padding:14px 18px;background:var(--blue);border-bottom:2px solid var(--ink);color:#fff}
+.badge{flex:none;width:34px;height:34px;display:grid;place-items:center;background:var(--sun);color:var(--ink);border:2px solid var(--ink);border-radius:9px;font-weight:800;font-size:15px}
+.names{display:flex;flex-direction:column;line-height:1.25}
+.subject{font-size:12.5px;font-weight:700;opacity:.9;text-transform:uppercase;letter-spacing:.02em}
+.lesson{font-size:16px;font-weight:800}
+.stage{position:relative;width:100%;aspect-ratio:16/9;background:#000}
+.stage:fullscreen{aspect-ratio:auto;width:100vw;height:100vh}
+#player{position:absolute;top:0;left:0;width:100%;height:100%;border:0}
+.overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:1000;background:var(--sky)}
+.overlay.show{display:block}
+.overlay iframe{display:block;width:100%;height:100%;border:0}
+.timeline{display:flex;align-items:center;gap:12px;padding:16px 22px 12px;border-top:2px solid var(--ink)}
+.tl-time{font-weight:800;font-size:14px;min-width:44px;text-align:center;font-variant-numeric:tabular-nums}
+.track{position:relative;flex:1;height:14px;background:var(--tint);border:2px solid var(--ink);border-radius:999px;cursor:pointer}
+.fill{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--blue);border-radius:999px;pointer-events:none}
+.dot{position:absolute;top:50%;width:22px;height:22px;margin:-11px 0 0 -11px;padding:0;background:var(--sun);border:2px solid var(--ink);border-radius:50%;cursor:pointer;z-index:2;box-shadow:2px 2px 0 var(--ink)}
+.dot:hover{background:var(--sun2)}
+.note{padding:14px 18px 16px;border-top:2px dashed var(--ink);background:#f6f9ff;color:var(--ink-soft);font-size:15px;white-space:pre-line;overflow-wrap:anywhere}
+.bar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;padding:14px 18px;border-top:2px solid var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.chips .hint{font-weight:700;font-size:14px;color:var(--ink-soft)}
+.chip{border:2px solid var(--ink);border-radius:999px;padding:3px 12px;font-size:14px;font-weight:700;background:#fff0bd}
+.chip.done{background:var(--oktint);border-color:var(--ok);color:var(--ok)}
+.btn{font-family:inherit;font-size:15px;font-weight:800;color:var(--ink);background:var(--sun);border:2px solid var(--ink);border-radius:12px;padding:8px 18px;cursor:pointer;box-shadow:3px 3px 0 var(--ink);transition:transform .08s,box-shadow .08s,background .15s}
+.btn:hover{background:var(--sun2)}
+.btn:active{transform:translate(3px,3px);box-shadow:none}
+:focus-visible{outline:3px solid var(--pink);outline-offset:3px}
+@media(max-width:520px){body{padding:12px 8px 30px}.window{box-shadow:5px 5px 0 var(--ink)}.lesson{font-size:15px}}
 
-  .progress-track {
-    position: relative;
-    margin-top: 14px;
-    height: 8px;
-    background: #e5e7eb;
-    border-radius: 4px;
-    overflow: visible;
-  }
-  .progress-fill {
-    height: 100%;
-    width: 0%;
-    background: var(--primary);
-    border-radius: 4px;
-    transition: width 0.25s linear;
-  }
-  .cp-marker {
-    position: absolute;
-    top: 50%;
-    left: 0%;
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    background: #f59e0b;
-    border: 2px solid #fff;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.35);
-    transform: translate(-50%, -50%);
-    z-index: 2;
-  }
-  .marker {
-    margin-top: 8px;
-    font-size: 0.85rem;
-    color: var(--muted);
-  }
-
-  /* Overlay */
-  .overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.6);
-    align-items: center;
-    justify-content: center;
-    padding: 16px;
-    z-index: 100;
-  }
-  .overlay.show { display: flex; }
-  .q-card {
-    background: var(--card);
-    border-radius: 16px;
-    padding: 24px;
-    max-width: 640px;
-    width: 100%;
-    max-height: 88vh;
-    overflow-y: auto;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-    text-align: center;
-  }
-  .q-icon { font-size: 2.4rem; margin-bottom: 8px; }
-  .q-title { font-size: 1.15rem; font-weight: 700; margin: 0 0 8px; }
-  .q-desc { font-size: 0.95rem; color: var(--muted); margin: 0 0 20px; line-height: 1.5; }
-
-  .quiz-frame-box {
-    display: none;
-    margin-top: 10px;
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    overflow: hidden;
-    height: 70vh;
-  }
-  .quiz-frame-box.show { display: block; }
-  .quiz-frame-box iframe {
-    width: 100%;
-    height: 100%;
-    border: none;
-  }
-
-  .btn {
-    display: inline-block;
-    width: 100%;
-    padding: 14px;
-    font-size: 1.05rem;
-    font-weight: 600;
-    border: none;
-    border-radius: 12px;
-    cursor: pointer;
-    min-height: 48px;
-    margin-top: 10px;
-  }
-  .btn-primary { background: var(--primary); color: #fff; }
-  .btn-primary:active { background: var(--primary-dark); }
-  .btn-secondary { background: #e5e7eb; color: var(--text); }
-
-  .hint { margin-top: 10px; font-size: 0.85rem; color: var(--muted); }
-
-  .video-block {
-    width: 100%;
-  }
-
-  footer {
-    background: #0b1727;
-    color: #ffffff;
-    text-align: center;
-    padding: 16px;
-    margin-top: 20px;
-    border-radius: 8px;
-  }
-  footer p { margin: 0; font-size: 0.9rem; }
+footer {
+  background: #0b1727;
+  color: #ffffff;
+  text-align: center;
+  padding: 16px;
+  margin-top: 20px;
+  border-radius: 8px;
+}
+footer p { margin: 0; font-size: 0.9rem; }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <h1 id="lessonTitle">Bài học: (Đặt tên bài học ở đây)</h1>
-
-  <div class="video-block">
-    <div class="player-box">
-      <div id="player"></div>
-    </div>
-
-    <div class="progress-track">
-      <div class="progress-fill" id="progressFill"></div>
-      <div class="cp-marker" id="cpMarker" title="Mốc câu hỏi trắc nghiệm"></div>
-    </div>
+<main class="window" aria-label="Bài giảng video có câu hỏi">
+  <div class="titlebar">
+    <span class="badge" aria-hidden="true">Tin</span>
+    <span class="names"><span class="subject">Tin học 9</span><span class="lesson">K9_4_B06. Thực hành. Khai thác phần mềm mô phỏng</span></span>
   </div>
-  <div class="marker" id="markerText"></div>
-  <p class="hint">Video sẽ tự dừng tại mốc thời gian quy định để làm bài trắc nghiệm. Chấm tròn màu vàng trên thanh tiến trình đánh dấu vị trí đó.<br>Có tất cả 5 câu hỏi trắc nghiệm tương tác mỗi lần làm sẽ có 2 câu hỏi ngẫu nhiên.</p>
-</div>
-
-<!-- Overlay -->
-<div class="overlay" id="overlay">
-  <div class="q-card">
-    <div id="promptView">
-      <div class="q-icon">📝</div>
-      <p class="q-title">Đến giờ làm bài trắc nghiệm!</p>
-      <p class="q-desc">Hãy hoàn thành câu hỏi tương tác, sau đó bấm "Tiếp tục bài giảng".</p>
-      <button class="btn btn-primary" id="openQuizBtn">Mở bài trắc nghiệm</button>
-    </div>
-
-    <div class="quiz-frame-box" id="quizFrameBox">
-      <iframe id="quizIframe" title="Bài trắc nghiệm"></iframe>
-    </div>
+  <div class="stage" id="stage">
+    <div id="player"></div>
+    <div class="overlay" id="overlay"><iframe id="quiz" title="Câu hỏi trong bài giảng"></iframe></div>
   </div>
-</div>
-
-<!-- footer -->
+  <div class="timeline">
+    <span class="tl-time" id="t-cur">00:00</span>
+    <div class="track" id="track" aria-label="Thanh thời gian video"><div class="fill" id="fill"></div></div>
+    <span class="tl-time" id="t-dur">00:00</span>
+  </div>
+  <div class="bar">
+    <div class="chips" id="chips" aria-live="polite"></div>
+    <button class="btn" id="b-full" type="button">Toàn màn hình</button>
+  </div>
+<div class="note">Video sẽ tự dừng tại mốc thời gian quy định để làm bài trắc nghiệm. 
+Chấm tròn màu vàng trên thanh tiến trình đánh dấu vị trí đó.
+Có tất cả 5 câu hỏi trắc nghiệm tương tác mỗi lần làm sẽ có 2 câu hỏi ngẫu nhiên.</div>
 <footer>
   <p>&copy; 2026 GV. Vũ Nguyễn Hoàng Anh</p>
 </footer>
+</main>
 
 <script>
-/* ======================================================
-   CONFIG — CHỈNH SỬA Ở ĐÂY
-   ====================================================== */
-const CONFIG = {
-  videoId: "HedthlzwjMw",       // <-- Thay bằng ID video YouTube thật (sau v= trong URL)
-  lessonTitle: "K9_4_B06. Thực hành. Khai thác phần mềm mô phỏng",
+(function(){
+"use strict";
+var VIDEO_ID="HedthlzwjMw";
+// Mỗi điểm dừng: t = giây, label = mm:ss, html = trang trắc nghiệm hoàn chỉnh
+var STOPS=[{"t": 730, "label": "12:10", "html": "<!DOCTYPE html>\n<html lang=\"vi\">\n<head>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, viewport-fit=cover\">\n<title>Trắc nghiệm Tin học 9 – K9_4_B06. Thực hành. Khai thác phần mềm mô phỏng<\/title>\n<link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">\n<link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin>\n<link href=\"https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap\" rel=\"stylesheet\">\n<style>\n:root{--ink:#14213d;--ink-soft:#465272;--sky:#cfe8ff;--line:#cbd8ee;--blue:#2f6bff;--tint:#eaf1ff;--sun:#ffc933;--sun2:#ffb800;--pink:#e8478b;--teal:#0fa3a3;--amber:#f5a300;--ok:#12805a;--oktint:#e1f7ec;--bad:#c73838;--badtint:#fdeaea;--font:\"Be Vietnam Pro\",\"Segoe UI\",Roboto,Arial,sans-serif;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}\n*{box-sizing:border-box}\nhtml{scroll-padding-top:env(safe-area-inset-top,0px)}\nhtml,body{margin:0;min-height:100%}\nbody{font-family:var(--font);color:var(--ink);background:var(--sky);display:flex;justify-content:center;align-items:flex-start;padding:28px 16px 40px;line-height:1.55;font-size:17px}\n.window{width:100%;max-width:720px;background:#fff;border:2px solid var(--ink);border-radius:16px;box-shadow:8px 8px 0 var(--ink);overflow:hidden}\n.titlebar{display:flex;align-items:center;gap:12px;padding:14px 18px;background:var(--blue);border-bottom:2px solid var(--ink);color:#fff}\n.badge{flex:none;width:34px;height:34px;display:grid;place-items:center;background:var(--sun);color:var(--ink);border:2px solid var(--ink);border-radius:9px;font-weight:800;font-size:15px}\n.names{display:flex;flex-direction:column;line-height:1.25}\n.subject{font-size:12.5px;font-weight:700;opacity:.9;text-transform:uppercase;letter-spacing:.02em}\n.lesson{font-size:16px;font-weight:800}\n.screen{display:none;padding:28px 28px 30px}\n.screen.active{display:block}\nh1,h2,h3,p{margin:0}\nh1{font-size:clamp(24px,5.2vw,32px);line-height:1.2;font-weight:800}\nh2{font-size:clamp(20px,4.2vw,25px);line-height:1.35;font-weight:700}\n.btn{font-family:inherit;font-size:17px;font-weight:800;color:var(--ink);background:var(--sun);border:2px solid var(--ink);border-radius:12px;padding:12px 26px;cursor:pointer;box-shadow:3px 3px 0 var(--ink);transition:transform .08s,box-shadow .08s,background .15s}\n.btn:hover{background:var(--sun2)}\n.btn:active{transform:translate(3px,3px);box-shadow:none}\n.btn-ghost{background:#fff}.btn-ghost:hover{background:var(--tint)}\n:focus-visible{outline:3px solid var(--pink);outline-offset:3px}\n.lead{margin-top:14px;color:var(--ink-soft);max-width:46ch}\n.facts{display:flex;flex-wrap:wrap;gap:10px;margin:22px 0 28px;padding:0;list-style:none}\n.facts li{border:2px solid var(--ink);border-radius:999px;padding:5px 16px;font-size:15px;font-weight:700}\n.facts li:nth-child(1){background:#d7e5ff}.facts li:nth-child(2){background:#ffe3ef}.facts li:nth-child(3){background:#fff0bd}\n.prow{display:flex;align-items:center;gap:14px;margin-bottom:22px}\n.ptext{font-weight:800;font-size:15px;white-space:nowrap}\n.ptrack{flex:1;height:14px;background:var(--tint);border:2px solid var(--ink);border-radius:999px;overflow:hidden}\n.pfill{height:100%;width:0;background:var(--teal);transition:width .35s}\n.options{display:grid;gap:12px;margin-top:22px}\n.option{display:flex;align-items:flex-start;gap:14px;width:100%;text-align:left;font-family:inherit;font-size:17px;color:var(--ink);background:#fff;border:2px solid var(--line);border-radius:12px;padding:12px 16px;cursor:pointer;transition:border-color .15s,background .15s}\n.option:hover:not(:disabled){border-color:var(--ink);background:#f6f9ff}\n.option:disabled{cursor:default}\n.letter{flex:none;width:34px;height:34px;display:grid;place-items:center;border-radius:9px;border:2px solid var(--ink);font-weight:800;font-size:15px;color:#fff}\n.l0{background:var(--blue)}.l1{background:var(--pink)}.l2{background:var(--amber);color:var(--ink)}.l3{background:var(--teal)}\n.option .text{padding-top:4px}\n.option.correct{border-color:var(--ok);background:var(--oktint)}.option.correct .letter{background:var(--ok);color:#fff}\n.option.wrong{border-color:var(--bad);background:var(--badtint)}.option.wrong .letter{background:var(--bad);color:#fff}\n.option.dim{opacity:.55}\n.feedback{display:none;margin-top:20px;border-radius:12px;padding:16px 18px;border:2px solid var(--ink)}\n.feedback.show{display:block;animation:pop .25s}\n.feedback.ok{background:var(--oktint);border-color:var(--ok)}.feedback.no{background:var(--badtint);border-color:var(--bad)}\n.verdict{font-weight:800;font-size:18px;margin-bottom:6px}\n.ok .verdict{color:var(--ok)}.no .verdict{color:var(--bad)}\n.feedback p+p{margin-top:8px}.explain{font-size:16px}\n.actions{display:flex;justify-content:flex-end;margin-top:22px;min-height:54px}\n.actions .btn{display:none}.actions .btn.show{display:inline-block}\n.rtop{display:flex;align-items:center;gap:22px;flex-wrap:wrap}\n.ricon{flex:none;width:84px;height:84px;display:grid;place-items:center;border:2px solid var(--ink);border-radius:50%;font-size:42px}\n.rmsg h2{margin-bottom:6px}.rmsg p{color:var(--ink-soft);max-width:36ch}\n.count{display:inline-block;margin-top:12px;border:2px solid var(--ink);border-radius:999px;padding:4px 16px;font-weight:800;font-size:15.5px}\n.rh{margin-top:26px;font-size:18px;font-weight:800}\n.review{list-style:none;margin:12px 0 26px;padding:0;display:grid;gap:10px}\n.review li{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border:2px solid var(--line);border-radius:12px;font-size:15.5px}\n.review li.ok{border-color:#9fdcc0;background:#f4fcf8}.review li.no{border-color:#f0b3b3;background:#fff7f7}\n.mark{flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:800;font-size:14px}\n.mark.ok{background:var(--ok)}.mark.no{background:var(--bad)}\n.answer{display:block;margin-top:3px;color:var(--ink-soft);font-size:14.5px}\n.ract{display:flex;flex-wrap:wrap;gap:12px}\n@keyframes pop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}\n@media(max-width:520px){body{font-size:16px;padding:16px 10px 30px}.screen{padding:22px 16px 24px}.window{box-shadow:5px 5px 0 var(--ink)}.option{font-size:16px;padding:11px 12px}.btn{width:100%}.actions{justify-content:stretch}.lesson{font-size:15px}}\n@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}\n<\/style>\n<\/head>\n<body>\n<main class=\"window\" aria-label=\"Bài trắc nghiệm\">\n  <div class=\"titlebar\">\n    <span class=\"badge\" aria-hidden=\"true\">Tin<\/span>\n    <span class=\"names\"><span class=\"subject\">Tin học 9<\/span><span class=\"lesson\">K9_4_B06. Thực hành. Khai thác phần mềm mô phỏng<\/span><\/span>\n  <\/div>\n\n  <section class=\"screen active\" id=\"s-start\">\n    <h1>Trắc nghiệm: K9_4_B06. Thực hành. Khai thác phần mềm mô phỏng<\/h1>\n    <p class=\"lead\">Kiểm tra xem em đã nắm được nội dung bài hay chưa.<\/p>\n    <ul class=\"facts\"><li>2 câu hỏi mỗi lượt<\/li><li>Có giải thích sau mỗi câu<\/li><li>Mỗi bạn một đề riêng<\/li><\/ul>\n    <button class=\"btn\" id=\"b-start\" type=\"button\">Bắt đầu làm bài<\/button>\n  <\/section>\n\n  <section class=\"screen\" id=\"s-quiz\" aria-live=\"polite\">\n    <div class=\"prow\">\n      <span class=\"ptext\" id=\"ptext\">Câu 1/2<\/span>\n      <div class=\"ptrack\" role=\"progressbar\" aria-valuemin=\"0\" aria-valuemax=\"2\" aria-valuenow=\"0\" id=\"pbar\"><div class=\"pfill\" id=\"pfill\"><\/div><\/div>\n    <\/div>\n    <h2 id=\"qtext\"><\/h2>\n    <div class=\"options\" id=\"options\" role=\"group\" aria-labelledby=\"qtext\"><\/div>\n    <div class=\"feedback\" id=\"fb\" role=\"status\"><\/div>\n    <div class=\"actions\"><button class=\"btn\" id=\"b-next\" type=\"button\">Câu tiếp theo<\/button><\/div>\n  <\/section>\n\n  <section class=\"screen\" id=\"s-result\">\n    <div class=\"rtop\">\n      <div class=\"ricon\" id=\"ricon\" aria-hidden=\"true\">🎉<\/div>\n      <div class=\"rmsg\"><h2 id=\"rtitle\"><\/h2><p id=\"rdesc\"><\/p><span class=\"count\" id=\"rcount\"><\/span><\/div>\n    <\/div>\n    <h3 class=\"rh\">Xem lại từng câu<\/h3>\n    <ul class=\"review\" id=\"review\"><\/ul>\n    <div class=\"ract\">\n      <button class=\"btn btn-ghost\" id=\"b-retry\" type=\"button\">Làm lại<\/button>\n      <button class=\"btn\" id=\"b-cont\" type=\"button\" style=\"display:none\">Tiếp tục bài giảng<\/button>\n    <\/div>\n  <\/section>\n<\/main>\n\n<script>\n(function(){\n\"use strict\";\n// Ngân hàng 5 câu (nhận biết + thông hiểu). Mỗi lượt chỉ lấy ngẫu nhiên 2 câu.\nvar BANK=[\n{\"q\": \"Phần mềm mô phỏng giúp ích gì cho người học?\", \"options\": [{\"t\": \"Quan sát, thử nghiệm các hiện tượng khó hoặc không thể thực hiện trực tiếp ngoài đời thật\", \"ok\": true}, {\"t\": \"Thay thế hoàn toàn việc học trên lớp và đọc sách\", \"note\": \"Phần mềm mô phỏng chỉ hỗ trợ việc học, không thay thế hoàn toàn các hoạt động khác.\"}, {\"t\": \"Giúp máy tính chạy nhanh hơn\", \"note\": \"Tốc độ máy tính không phải là mục đích của phần mềm mô phỏng.\"}, {\"t\": \"Chỉ dùng để giải trí, không có tác dụng học tập\", \"note\": \"Phần mềm mô phỏng có nhiều ứng dụng trong học tập và nghiên cứu, không chỉ để giải trí.\"}], \"explain\": \"Phần mềm mô phỏng tái hiện hiện tượng thật trên máy tính, giúp em quan sát và thử nghiệm những điều quá nhỏ, quá lớn, quá nhanh, quá chậm, nguy hiểm hoặc tốn kém.\"},\n{\"q\": \"Khi khai thác phần mềm mô phỏng để tìm hiểu một hiện tượng, cách làm nào sau đây là phù hợp?\", \"options\": [{\"t\": \"Chỉ nhìn màn hình mà không thay đổi thông số nào\", \"note\": \"Không thay đổi thông số thì em khó phát hiện được mối quan hệ giữa các yếu tố.\"}, {\"t\": \"Đóng phần mềm ngay sau khi mở\", \"note\": \"Đóng phần mềm ngay thì em chưa khai thác được gì.\"}, {\"t\": \"Thay đổi các thông số rồi quan sát kết quả thay đổi như thế nào\", \"ok\": true}, {\"t\": \"Nhập thông số bất kì rồi không cần ghi nhận kết quả\", \"note\": \"Không ghi nhận kết quả thì em không rút ra được kiến thức từ lần thử nghiệm.\"}], \"explain\": \"Thay đổi thông số rồi quan sát kết quả là cách để em khám phá quy luật của hiện tượng đang được mô phỏng.\"},\n{\"q\": \"Mô phỏng thế giới thực bằng phần mềm giúp con người điều gì?\", \"options\": [{\"t\": \"Thay đổi các quy luật của tự nhiên\", \"note\": \"Mô phỏng chỉ tái hiện thế giới thực, không thay đổi được quy luật tự nhiên.\"}, {\"t\": \"Khám phá tri thức và giải quyết vấn đề\", \"ok\": true}, {\"t\": \"Không cần làm thí nghiệm hay quan sát thực tế trong bất kì trường hợp nào\", \"note\": \"Mô phỏng hỗ trợ, nhưng không phải lúc nào cũng thay thế được quan sát thực tế.\"}, {\"t\": \"Chỉ để tạo ra hình ảnh đẹp mắt\", \"note\": \"Hình ảnh chỉ là cách thể hiện, mục đích chính là giúp tìm hiểu và giải quyết vấn đề.\"}], \"explain\": \"Nhờ mô phỏng, con người có thể thử nghiệm, rút ra kiến thức mới và tìm giải pháp cho các vấn đề trong khoa học, kĩ thuật và đời sống.\"},\n{\"q\": \"Tình huống nào sau đây phù hợp nhất để sử dụng phần mềm mô phỏng?\", \"options\": [{\"t\": \"Soạn một lá thư mời họp lớp\", \"note\": \"Soạn thư mời dùng phần mềm soạn thảo văn bản, không cần mô phỏng.\"}, {\"t\": \"Sao chép tệp từ USB vào máy tính\", \"note\": \"Sao chép tệp là thao tác quản lí tệp, không liên quan đến mô phỏng.\"}, {\"t\": \"Gửi tin nhắn cho bạn bè\", \"note\": \"Gửi tin nhắn dùng ứng dụng trao đổi thông tin, không phải phần mềm mô phỏng.\"}, {\"t\": \"Quan sát chuyển động của các hành tinh trong Hệ Mặt Trời ngay trong lớp học\", \"ok\": true}], \"explain\": \"Chuyển động của các hành tinh rất lớn và chậm nên khó quan sát trực tiếp, phần mềm mô phỏng giúp em quan sát dễ dàng ngay trong lớp học.\"},\n{\"q\": \"Sau khi khai thác xong phần mềm mô phỏng, em nên làm gì để nêu được kiến thức đã thu nhận?\", \"options\": [{\"t\": \"Quên hết kết quả để bắt đầu lại từ đầu\", \"note\": \"Quên kết quả thì em không nêu được kiến thức đã thu nhận.\"}, {\"t\": \"Ghi lại những điều quan sát được và rút ra nhận xét từ kết quả mô phỏng\", \"ok\": true}, {\"t\": \"Chỉ nhớ tên phần mềm đã sử dụng\", \"note\": \"Tên phần mềm không phải là kiến thức thu nhận được từ việc khai thác mô phỏng.\"}, {\"t\": \"Xóa phần mềm khỏi máy tính\", \"note\": \"Xóa phần mềm không giúp em tổng hợp kiến thức.\"}], \"explain\": \"Ghi lại quan sát và rút ra nhận xét giúp em nêu được kiến thức thu nhận, đồng thời rèn tính trung thực, chăm chỉ khi thực hành.\"}\n];\nvar LET=[\"A\",\"B\",\"C\",\"D\"],PER=2,total=PER,quiz=[],cur=0,right=0,answered=false;\nvar $=function(id){return document.getElementById(id)};\nvar scr={start:$(\"s-start\"),quiz:$(\"s-quiz\"),result:$(\"s-result\")};\nfunction shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t}return a}\nfunction build(){return shuffle(BANK).slice(0,PER).map(function(it){var o=shuffle(it.options),ans=0;o.forEach(function(x,i){if(x.ok)ans=i});return{q:it.q,options:o,answer:ans,explain:it.explain,pick:null}})}\nfunction show(n){Object.keys(scr).forEach(function(k){scr[k].classList.toggle(\"active\",k===n)});window.scrollTo(0,0)}\nfunction start(){quiz=build();cur=0;right=0;show(\"quiz\");render()}\nfunction render(){\n var it=quiz[cur];answered=false;\n $(\"ptext\").textContent=\"Câu \"+(cur+1)+\"/\"+total;\n $(\"pfill\").style.width=(cur/total*100)+\"%\";\n $(\"pbar\").setAttribute(\"aria-valuenow\",String(cur));\n $(\"qtext\").textContent=it.q;\n var box=$(\"options\");box.innerHTML=\"\";\n it.options.forEach(function(op,i){\n  var b=document.createElement(\"button\");b.type=\"button\";b.className=\"option\";\n  b.innerHTML='<span class=\"letter l'+i+'\"><\/span><span class=\"text\"><\/span>';\n  b.querySelector(\".letter\").textContent=LET[i];b.querySelector(\".text\").textContent=op.t;\n  b.addEventListener(\"click\",function(){choose(i)});box.appendChild(b)});\n var fb=$(\"fb\");fb.className=\"feedback\";fb.innerHTML=\"\";\n var n=$(\"b-next\");n.classList.remove(\"show\");n.textContent=cur===total-1?\"Xem kết quả\":\"Câu tiếp theo\";\n}\nfunction lf(s){return s.charAt(0).toLowerCase()+s.slice(1)}\nfunction choose(i){\n if(answered)return;answered=true;\n var it=quiz[cur],ok=i===it.answer;it.pick=i;if(ok)right++;\n $(\"options\").querySelectorAll(\".option\").forEach(function(b,x){b.disabled=true;b.classList.add(x===it.answer?\"correct\":x===i?\"wrong\":\"dim\")});\n var fb=$(\"fb\");fb.className=\"feedback show \"+(ok?\"ok\":\"no\");fb.innerHTML=\"\";\n var v=document.createElement(\"div\");v.className=\"verdict\";\n v.textContent=ok?\"Chính xác! Em làm đúng câu này.\":\"Chưa đúng rồi. Đáp án đúng là \"+LET[it.answer]+\".\";fb.appendChild(v);\n if(!ok&&it.options[i].note){var w=document.createElement(\"p\");w.textContent=\"Đáp án \"+LET[i]+\" chưa đúng vì: \"+lf(it.options[i].note);fb.appendChild(w)}\n var e=document.createElement(\"p\");e.className=\"explain\";e.textContent=it.explain;fb.appendChild(e);\n $(\"pfill\").style.width=((cur+1)/total*100)+\"%\";\n $(\"b-next\").classList.add(\"show\");$(\"b-next\").focus({preventScroll:true});\n fb.scrollIntoView({behavior:\"smooth\",block:\"nearest\"});\n}\nfunction next(){if(!answered)return;if(cur<total-1){cur++;render();window.scrollTo(0,0)}else result()}\nfunction result(){\n show(\"result\");\n var t,d,ic;\n if(right===total){t=\"Xuất sắc! Em làm đúng hết\";d=\"Em đã nắm rất tốt nội dung bài học về Chủ đề 4. Ứng dụng Tin học.\";ic=\"🎉\"}\n else if(right/total>=0.5){t=\"Khá tốt!\";d=\"Em đã hiểu một phần nội dung bài. Xem lại giải thích bên dưới rồi làm lại để chắc hơn nhé.\";ic=\"👏\"}\n else{t=\"Em cần ôn lại bài một chút\";d=\"Đừng lo, hãy đọc lại K9_4_B06 trong sách giáo khoa, xem lại các câu bên dưới rồi thử lần nữa nhé.\";ic=\"📘\"}\n $(\"rtitle\").textContent=t;$(\"rdesc\").textContent=d;$(\"ricon\").textContent=ic;\n $(\"rcount\").textContent=\"Em trả lời đúng \"+right+\"/\"+total+\" câu\";\n var ul=$(\"review\");ul.innerHTML=\"\";\n quiz.forEach(function(it,idx){\n  var ok=it.pick===it.answer,li=document.createElement(\"li\");li.className=ok?\"ok\":\"no\";\n  var m=document.createElement(\"span\");m.className=\"mark \"+(ok?\"ok\":\"no\");m.textContent=ok?\"✓\":\"✗\";m.setAttribute(\"aria-label\",ok?\"Đúng\":\"Sai\");\n  var b=document.createElement(\"div\"),q=document.createElement(\"span\");q.textContent=\"Câu \"+(idx+1)+\". \"+it.q;\n  var a=document.createElement(\"span\");a.className=\"answer\";\n  var r=it.options[it.answer].t;\n  a.textContent=(ok?\"Em chọn đúng: \"+r:\"Em chọn: \"+it.options[it.pick].t+\" — Đáp án đúng: \"+r)+\". \"+it.explain;\n  b.appendChild(q);b.appendChild(a);li.appendChild(m);li.appendChild(b);ul.appendChild(li)});\n try{parent.postMessage(\"quiz-completed\",\"*\")}catch(e){}\n}\n$(\"b-start\").addEventListener(\"click\",start);\n$(\"b-next\").addEventListener(\"click\",next);\n$(\"b-retry\").addEventListener(\"click\",start);\nvar bc=$(\"b-cont\");if(window.parent!==window)bc.style.display=\"inline-block\";\nbc.addEventListener(\"click\",function(){parent.postMessage(\"quiz-continue\",\"*\")});\ndocument.addEventListener(\"keydown\",function(e){\n if(!scr.quiz.classList.contains(\"active\")||e.ctrlKey||e.metaKey||e.altKey)return;\n var map={a:0,b:1,c:2,d:3,\"1\":0,\"2\":1,\"3\":2,\"4\":3},k=e.key.toLowerCase();\n if(!answered&&Object.prototype.hasOwnProperty.call(map,k))choose(map[k]);\n});\n})();\n<\/script>\n<\/body>\n<\/html>"}];
+STOPS.sort(function(a,b){return a.t-b.t});
+var $=function(id){return document.getElementById(id)};
+var player=null,current=null,isOpen=false;
 
-  pauseTime: 729,                 // <-- Giây trong video sẽ tự dừng lại (VD: 60 = phút 1:00)
+function renderChips(){
+ var box=$("chips");box.innerHTML="";
+ var h=document.createElement("span");h.className="hint";h.textContent="Câu hỏi tại:";box.appendChild(h);
+ STOPS.forEach(function(s){
+  var c=document.createElement("span");c.className="chip"+(s.done?" done":"");
+  c.textContent=(s.done?"✓ ":"")+s.label;box.appendChild(c)});
+}
 
-  quizFile: "K9_4_B06_Cauhoi.html"   // <-- Đường dẫn tương đối tới file trắc nghiệm
+function openQuiz(s){
+ isOpen=true;current=s;
+ if(player.getCurrentTime()>s.t+1)player.seekTo(s.t,true); // tua qua điểm dừng: đưa về đúng chỗ
+ player.pauseVideo();
+ $("quiz").srcdoc=s.html;
+ $("overlay").classList.add("show");
+}
+function closeQuiz(){
+ $("overlay").classList.remove("show");
+ $("quiz").srcdoc="";
+ isOpen=false;
+ if(current){current.done=true;current=null;renderChips()}
+ player.playVideo();
+}
+
+function fmt(s){
+ s=Math.max(0,Math.floor(s));var h=Math.floor(s/3600),m=Math.floor(s%3600/60),r=s%60;
+ var p=function(n){return n<10?"0"+n:""+n};
+ return h?h+":"+p(m)+":"+p(r):p(m)+":"+p(r);
+}
+var lastDur=0;
+function renderDots(dur){
+ var tr=$("track");
+ Array.prototype.slice.call(tr.querySelectorAll(".dot")).forEach(function(d){tr.removeChild(d)});
+ if(!dur)return;
+ STOPS.forEach(function(s){
+  if(s.t>dur)return;
+  var d=document.createElement("button");d.type="button";d.className="dot";
+  d.style.left=(s.t/dur*100)+"%";d.title="Câu hỏi lúc "+s.label;
+  d.setAttribute("aria-label","Câu hỏi lúc "+s.label);
+  d.addEventListener("click",function(e){e.stopPropagation();player.seekTo(Math.max(0,s.t-5),true)});
+  tr.appendChild(d)});
+}
+function updateTimeline(){
+ var dur=player.getDuration?player.getDuration():0,cur=player.getCurrentTime();
+ if(dur!==lastDur){lastDur=dur;renderDots(dur);$("t-dur").textContent=fmt(dur)}
+ $("t-cur").textContent=fmt(cur);
+ $("fill").style.width=(dur?Math.min(100,cur/dur*100):0)+"%";
+}
+$("track").addEventListener("click",function(e){
+ var dur=player&&player.getDuration?player.getDuration():0;if(!dur)return;
+ var r=$("track").getBoundingClientRect();
+ player.seekTo(Math.min(1,Math.max(0,(e.clientX-r.left)/r.width))*dur,true);
+});
+
+function tick(){
+ if(!player||!player.getCurrentTime)return;
+ updateTimeline();
+ // Đang hiện câu hỏi: không cho video chạy phía sau
+ if(isOpen){if(player.getPlayerState()===1)player.pauseVideo();return}
+ var cur=player.getCurrentTime(),changed=false;
+ STOPS.forEach(function(s){if(s.done&&cur<s.t-2){s.done=false;changed=true}}); // tua lại thì hỏi lại
+ if(changed)renderChips();
+ // Bắt buộc: gặp hoặc tua qua điểm dừng chưa làm thì phải trả lời trước
+ for(var i=0;i<STOPS.length;i++){
+  var s=STOPS[i];
+  if(!s.done&&cur>=s.t){openQuiz(s);break}
+ }
+}
+
+window.addEventListener("message",function(e){
+ if(!isOpen||e.source!==$("quiz").contentWindow)return;
+ if(e.data==="quiz-completed"&&current){current.done=true;renderChips()}
+ else if(e.data==="quiz-continue")closeQuiz();
+});
+
+window.onYouTubeIframeAPIReady=function(){
+ var vars={rel:0,modestbranding:1,playsinline:1,fs:0};
+ if(location.protocol==="http:"||location.protocol==="https:")vars.origin=location.origin;
+ player=new YT.Player("player",{videoId:VIDEO_ID,playerVars:vars,
+  events:{onReady:function(){setInterval(tick,250)}}});
 };
-/* ====================================================== */
-
-document.getElementById("lessonTitle").textContent = CONFIG.lessonTitle;
-
-const pm = Math.floor(CONFIG.pauseTime / 60), ps = CONFIG.pauseTime % 60;
-document.getElementById("markerText").textContent =
-  "Mốc dừng làm bài: " + pm + ":" + String(ps).padStart(2, "0");
-
-let player;
-let checkInterval = null;
-let hasPaused = false;     // đảm bảo chỉ dừng 1 lần tại mốc
-let markerPositioned = false; // đảm bảo chỉ tính vị trí chấm tròn 1 lần
-
-const tag = document.createElement("script");
-tag.src = "https://www.youtube.com/iframe_api";
+var tag=document.createElement("script");tag.src="https://www.youtube.com/iframe_api";
 document.head.appendChild(tag);
 
-function onYouTubeIframeAPIReady() {
-  player = new YT.Player("player", {
-    videoId: CONFIG.videoId,
-    host: "https://www.youtube-nocookie.com",
-    playerVars: {
-      rel: 0,
-      modestbranding: 1,
-      playsinline: 1,
-      origin: window.location.origin
-    },
-    events: {
-      onReady: onPlayerReady,
-      onError: onPlayerError
-    }
-  });
-}
-
-function onPlayerError(e) {
-  const codes = {
-    2: "ID video không hợp lệ.",
-    5: "Lỗi trình phát HTML5.",
-    100: "Video không tồn tại hoặc đã bị xóa/ẩn.",
-    101: "Chủ video không cho phép nhúng (embed).",
-    150: "Chủ video không cho phép nhúng (embed).",
-    153: "Lỗi cấu hình phát video. Nguyên nhân thường gặp: trang đang mở không có origin hợp lệ (do mở file trực tiếp bằng file://). Hãy mở file này qua một web server (http/https) thay vì double-click mở trực tiếp."
-  };
-  alert("Lỗi phát video (mã " + e.data + "): " + (codes[e.data] || "Không xác định."));
-}
-
-function onPlayerReady() {
-  checkInterval = setInterval(checkTime, 300);
-}
-
-function positionMarker(duration) {
-  if (markerPositioned || !duration) return;
-  const pct = Math.min(100, Math.max(0, (CONFIG.pauseTime / duration) * 100));
-  document.getElementById("cpMarker").style.left = pct + "%";
-  markerPositioned = true;
-}
-
-function checkTime() {
-  if (!player || typeof player.getCurrentTime !== "function") return;
-  const t = player.getCurrentTime();
-  const dur = player.getDuration() || 1;
-
-  document.getElementById("progressFill").style.width = ((t / dur) * 100) + "%";
-  positionMarker(dur);
-
-  if (!hasPaused && t >= CONFIG.pauseTime) {
-    hasPaused = true;
-    pauseForQuiz();
-  }
-}
-
-function pauseForQuiz() {
-  player.pauseVideo();
-  document.getElementById("overlay").classList.add("show");
-}
-
-document.getElementById("openQuizBtn").addEventListener("click", () => {
-  document.getElementById("quizIframe").src = CONFIG.quizFile;
-  document.getElementById("promptView").style.display = "none";
-  document.getElementById("quizFrameBox").classList.add("show");
+$("b-full").addEventListener("click",function(){
+ var st=$("stage");
+ if(document.fullscreenElement||document.webkitFullscreenElement){
+  (document.exitFullscreen||document.webkitExitFullscreen).call(document);
+ }else{
+  var f=st.requestFullscreen||st.webkitRequestFullscreen;
+  if(f)f.call(st);
+ }
 });
-
-/* ======================================================
-   LẮNG NGHE TÍN HIỆU TỪ FILE TRẮC NGHIỆM (chạy trong iframe)
-   Khi học sinh bấm nút "Tiếp tục bài giảng" ở màn hình kết quả,
-   file trắc nghiệm gửi: parent.postMessage("quiz-continue", "*");
-   ====================================================== */
-window.addEventListener("message", function (event) {
-  if (event.data === "quiz-continue") {
-    document.getElementById("overlay").classList.remove("show");
-    player.playVideo();
-  }
-});
+renderChips();
+})();
 </script>
 </body>
 </html>
