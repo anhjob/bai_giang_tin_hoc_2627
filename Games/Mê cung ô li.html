@@ -1,0 +1,1079 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Mê cung ô li</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Bố cục: một tờ giấy ô li. Mê cung ở cột trái, bảng điều khiển ở cột phải, thu thành một cột trên điện thoại.
+   Giao diện sáng giống vở ô li (mực xanh, lề đỏ). Giao diện tối giống vở đêm (nét sáng trên nền xanh đen). */
+:root{
+  --page:#eef4fc;
+  --page-grid:#d6e4f7;
+  --paper:#fbfdff;
+  --grid:#e0ebf9;
+  --line:#c3d3ee;
+  --ink:#1c3a8c;
+  --fg:#14213d;
+  --muted:#566385;
+  --accent:#d93a45;
+  --good:#17835a;
+  --hint:#c97f00;
+  --danger:#b3261e;
+  --primary:#1c3a8c;
+  --on-primary:#ffffff;
+  --soft:#e6eefb;
+  --veil:rgba(251,253,255,.88);
+  --font-ui:"Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",Arial,sans-serif;
+  --font-num:ui-monospace,"SF Mono","Cascadia Mono",Consolas,"Liberation Mono",monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --page:#0f1526;
+    --page-grid:#1a2440;
+    --paper:#151d33;
+    --grid:#222e4d;
+    --line:#2b3857;
+    --ink:#dbe4ff;
+    --fg:#e8edff;
+    --muted:#9aa7c9;
+    --accent:#ff7a80;
+    --good:#5fd39a;
+    --hint:#f2b84b;
+    --danger:#ff9a9f;
+    --primary:#9db4ff;
+    --on-primary:#0f1730;
+    --soft:#1f2a47;
+    --veil:rgba(21,29,51,.88);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --page:#0f1526;
+  --page-grid:#1a2440;
+  --paper:#151d33;
+  --grid:#222e4d;
+  --line:#2b3857;
+  --ink:#dbe4ff;
+  --fg:#e8edff;
+  --muted:#9aa7c9;
+  --accent:#ff7a80;
+  --good:#5fd39a;
+  --hint:#f2b84b;
+  --danger:#ff9a9f;
+  --primary:#9db4ff;
+  --on-primary:#0f1730;
+  --soft:#1f2a47;
+  --veil:rgba(21,29,51,.88);
+  color-scheme:dark;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+h1,h2,p,dl,dd{margin:0}
+
+body{
+  margin:0;
+  background-color:var(--page);
+  background-image:
+    linear-gradient(var(--page-grid) 1px,transparent 1px),
+    linear-gradient(90deg,var(--page-grid) 1px,transparent 1px);
+  background-size:24px 24px;
+  color:var(--fg);
+  font-family:var(--font-ui);
+  font-size:15px;
+  line-height:1.5;
+  padding-block:20px 36px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+}
+
+.page{position:relative;max-width:1020px;margin:0 auto;display:grid;gap:16px}
+/* đường lề đỏ của vở */
+.page::before{content:"";position:absolute;left:-10px;top:0;bottom:0;width:2px;background:var(--accent);opacity:.5;pointer-events:none}
+
+.top h1{font-size:clamp(1.7rem,4.5vw,2.4rem);line-height:1.1;font-weight:800;letter-spacing:-.01em;color:var(--ink);text-wrap:balance}
+.top p{margin-top:6px;color:var(--muted);max-width:60ch}
+
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.stat{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:10px 14px;min-width:0}
+.stat dt{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.stat dd{margin-top:2px;font:700 1.55rem/1.2 var(--font-num);font-variant-numeric:tabular-nums;color:var(--fg)}
+
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+@media (max-width:820px){.layout{grid-template-columns:minmax(0,1fr)}}
+
+.canvas-wrap{position:relative;max-width:680px}
+#maze{display:block;width:100%;aspect-ratio:1/1;background:var(--paper);border:1px solid var(--line);border-radius:10px;touch-action:none}
+
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:16px;display:grid;gap:18px;min-width:0}
+.group{display:grid;gap:8px;min-width:0}
+.label{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-height:44px;padding:0 14px;
+  border:1px solid var(--line);border-radius:8px;
+  background:var(--paper);color:var(--fg);
+  font:inherit;font-weight:600;cursor:pointer;
+}
+.btn:hover{background:var(--soft)}
+.btn:focus-visible,#seed-input:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+.btn.primary,.btn[aria-pressed="true"],.btn[aria-current="page"]{background:var(--primary);border-color:var(--primary);color:var(--on-primary)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn:disabled:hover{background:var(--paper)}
+.btn.danger{border-color:var(--danger);color:var(--danger)}
+
+.levels{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.level{flex-direction:column;align-items:flex-start;justify-content:center;gap:0;min-height:52px;padding:8px 12px;text-align:left}
+.level .lv-size{font-size:.8rem;font-weight:500;opacity:.85;font-variant-numeric:tabular-nums}
+
+.seed-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
+#seed-input{
+  min-width:0;min-height:44px;padding:0 12px;
+  border:1px solid var(--line);border-radius:8px;
+  background:var(--paper);color:var(--fg);
+  font:600 1rem var(--font-num);
+}
+.msg{font-size:.85rem;color:var(--muted);min-height:1.3em}
+.msg.error{color:var(--danger)}
+
+.tools{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+
+.dpad{display:grid;grid-template-columns:repeat(3,56px);grid-template-rows:repeat(2,56px);gap:6px;justify-content:center}
+.dpad .btn{min-height:56px;padding:0}
+.dpad .up{grid-column:2;grid-row:1}
+.dpad .left{grid-column:1;grid-row:2}
+.dpad .down{grid-column:2;grid-row:2}
+.dpad .right{grid-column:3;grid-row:2}
+.dpad .left svg{transform:rotate(-90deg)}
+.dpad .down svg{transform:rotate(180deg)}
+.dpad .right svg{transform:rotate(90deg)}
+.keys{text-align:center;font-size:.85rem;color:var(--muted)}
+
+.win{position:absolute;inset:0;display:grid;place-items:center;padding:16px;background:var(--veil);border-radius:10px}
+.win-card{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:20px;width:min(100%,340px);display:grid;gap:12px;box-shadow:0 6px 24px rgba(20,33,61,.18)}
+.win-card h2{color:var(--good);font-size:1.4rem;line-height:1.2}
+.win-list{display:grid;gap:4px}
+.win-list div{display:flex;justify-content:space-between;gap:12px}
+.win-list dt{color:var(--muted)}
+.win-list dd{font-family:var(--font-num);font-weight:700;font-variant-numeric:tabular-nums}
+.win-note{font-size:.9rem;color:var(--muted)}
+.win-actions{display:grid;gap:8px}
+
+/* thanh chuyển màn hình */
+.view{display:grid;gap:16px;min-width:0}
+.tabs{display:flex;flex-wrap:wrap;gap:8px}
+.tab{gap:8px;min-width:120px}
+.count{min-width:1.6em;padding:0 7px;border-radius:99px;background:var(--soft);color:var(--ink);font:700 .8rem/1.5 var(--font-num);text-align:center;font-variant-numeric:tabular-nums}
+.btn[aria-current="page"] .count{background:var(--on-primary);color:var(--primary)}
+
+/* dải thông báo khi xem lại một lần chơi */
+.review{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 12px;max-width:680px;margin-bottom:10px;padding:10px 12px;background:var(--soft);border:1px solid var(--line);border-radius:8px}
+.review span{min-width:0}
+
+/* nhật ký */
+.log-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 12px}
+.log-title{font-size:1.25rem;font-weight:800;line-height:1.2;color:var(--ink)}
+.empty{background:var(--paper);border:1px dashed var(--line);border-radius:10px;padding:24px 16px;color:var(--muted);text-align:center}
+.confirm{display:grid;gap:10px;background:var(--paper);border:1px solid var(--danger);border-radius:10px;padding:14px}
+.confirm-actions{display:flex;flex-wrap:wrap;gap:8px}
+.log-list{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.entry{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 20px;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.entry-main{display:grid;gap:6px;min-width:0;flex:1 1 320px}
+.entry-title{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
+.entry-level{font-weight:800;color:var(--ink)}
+.entry-code{font:600 .9rem var(--font-num);color:var(--muted)}
+.badge{padding:1px 8px;border:1px solid var(--line);border-radius:99px;background:var(--soft);color:var(--fg);font-size:.72rem;font-weight:700;letter-spacing:.04em}
+.badge-good{border-color:var(--good)}
+.badge-hint{border-color:var(--hint)}
+.entry-date{font-size:.85rem;color:var(--muted)}
+.metrics{display:flex;flex-wrap:wrap;gap:6px 22px}
+.metric{display:grid}
+.metric-label{font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.metric-value{font:700 1.1rem var(--font-num);font-variant-numeric:tabular-nums}
+.entry-actions{display:flex;flex-wrap:wrap;gap:8px}
+
+/* nút Bắt đầu / Dừng nằm ngay trên mê cung */
+.runbar{display:flex;gap:8px;max-width:680px;margin-bottom:10px}
+.runbar .btn{flex:1 1 0}
+.win-card.stopped h2{color:var(--danger)}
+.badge-stop{border-color:var(--danger)}
+
+.note{font-size:.85rem;color:var(--muted);max-width:72ch}
+</style>
+
+<div class="page">
+  <header class="top">
+    <h1>Mê cung ô li</h1>
+    <p>Bấm Bắt đầu để hiện mê cung, rồi đưa chấm đỏ từ góc trên bên trái đến lá cờ xanh ở góc dưới bên phải. Bấm Dừng nếu không tìm được đường.</p>
+  </header>
+
+  <nav class="tabs" aria-label="Chọn màn hình">
+    <button type="button" id="tab-play" class="btn tab" aria-controls="view-play" aria-current="page">Chơi</button>
+    <button type="button" id="tab-log" class="btn tab" aria-controls="view-log">Nhật ký <span id="log-count" class="count">0</span></button>
+  </nav>
+
+  <div id="view-play" class="view">
+  <dl class="stats" aria-label="Kết quả ván chơi">
+    <div class="stat"><dt>Thời gian</dt><dd id="stat-time">0:00.0</dd></div>
+    <div class="stat"><dt>Số bước</dt><dd id="stat-steps">0</dd></div>
+    <div class="stat"><dt>Ngắn nhất</dt><dd id="stat-optimal">0</dd></div>
+    <div class="stat" title="Thời gian nhanh nhất trên mê cung này (cùng độ khó, cùng mã), lưu trong trình duyệt của bạn"><dt>Kỷ lục</dt><dd id="stat-record">—</dd></div>
+  </dl>
+
+  <main class="layout">
+    <section aria-label="Khu vực chơi">
+      <div id="review" class="review" role="status" hidden>
+        <span id="review-text"></span>
+        <button type="button" id="review-again" class="btn">Chơi lại mê cung này</button>
+      </div>
+      <div class="runbar">
+        <button type="button" id="start-btn" class="btn primary">Bắt đầu</button>
+        <button type="button" id="stop-btn" class="btn danger">Dừng</button>
+      </div>
+      <div class="canvas-wrap">
+        <canvas id="maze" role="img" aria-label="Mê cung"></canvas>
+        <div id="win" class="win" role="status" hidden>
+          <div class="win-card" id="win-card">
+            <h2 id="win-title">Đã đến đích!</h2>
+            <dl class="win-list">
+              <div><dt>Thời gian</dt><dd id="win-time">0:00.0</dd></div>
+              <div><dt>Số bước</dt><dd id="win-steps">0</dd></div>
+              <div><dt>Ngắn nhất</dt><dd id="win-optimal">0</dd></div>
+            </dl>
+            <p id="win-note" class="win-note"></p>
+            <div class="win-actions">
+              <button type="button" id="win-new" class="btn primary">Mê cung mới</button>
+              <button type="button" id="win-again" class="btn">Chơi lại mê cung này</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="panel" aria-label="Điều khiển">
+      <div class="group">
+        <h2 class="label">Độ khó</h2>
+        <div id="levels" class="levels"></div>
+      </div>
+
+      <form id="seed-form" class="group" novalidate>
+        <label class="label" for="seed-input">Mã mê cung</label>
+        <div class="seed-row">
+          <input id="seed-input" type="text" inputmode="numeric" autocomplete="off" aria-describedby="seed-msg">
+          <button type="submit" class="btn">Tạo</button>
+        </div>
+        <p id="seed-msg" class="msg" aria-live="polite"></p>
+        <button type="button" id="random-btn" class="btn">Mê cung ngẫu nhiên</button>
+      </form>
+
+      <div class="group">
+        <h2 class="label">Trong lúc chơi</h2>
+        <div class="tools">
+          <button type="button" id="reset-btn" class="btn">Chơi lại</button>
+          <button type="button" id="hint-btn" class="btn" aria-pressed="false">Gợi ý: Tắt</button>
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="dpad" role="group" aria-label="Nút di chuyển">
+          <button type="button" class="btn up" data-dir="up" aria-label="Đi lên"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M6 15l6-6 6 6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button type="button" class="btn left" data-dir="left" aria-label="Đi sang trái"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M6 15l6-6 6 6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button type="button" class="btn down" data-dir="down" aria-label="Đi xuống"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M6 15l6-6 6 6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button type="button" class="btn right" data-dir="right" aria-label="Đi sang phải"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M6 15l6-6 6 6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        </div>
+        <p class="keys">Phím mũi tên hoặc W A S D</p>
+      </div>
+    </aside>
+  </main>
+
+  <p class="note">Mê cung được tạo bằng thuật toán duyệt theo chiều sâu (DFS, quay lui) nên luôn có đúng một đường đi từ xuất phát đến đích. Gợi ý và số bước ngắn nhất được tính bằng duyệt theo chiều rộng (BFS). Cùng độ khó và cùng mã sẽ ra cùng một mê cung, vì vậy cả lớp có thể thi trên một mê cung bằng cách nhập chung một mã.</p>
+  </div>
+
+  <section id="view-log" class="view" aria-labelledby="log-title" hidden>
+    <div class="log-head">
+      <h2 id="log-title" class="log-title" tabindex="-1">Nhật ký các lần chơi</h2>
+      <button type="button" id="log-clear" class="btn">Xóa toàn bộ</button>
+    </div>
+    <p id="log-warn" class="msg error" role="alert" hidden>Trình duyệt không cho phép lưu Nhật ký, nên dữ liệu chỉ còn đến khi bạn đóng hoặc tải lại trang.</p>
+    <p id="log-progress" class="msg" hidden>Bạn đang chơi dở một ván. Bấm Tải lại ở dòng nào thì ván đang chơi sẽ được thay bằng mê cung của dòng đó.</p>
+    <div id="log-confirm" class="confirm" hidden>
+      <p id="log-confirm-text"></p>
+      <div class="confirm-actions">
+        <button type="button" id="log-confirm-yes" class="btn danger">Xóa toàn bộ</button>
+        <button type="button" id="log-confirm-no" class="btn">Giữ lại</button>
+      </div>
+    </div>
+    <p id="log-empty" class="empty">Chưa có lần chơi nào. Khi bạn về đến lá cờ ở tab Chơi, kết quả sẽ tự ghi vào đây.</p>
+    <ol id="log-list" class="log-list"></ol>
+    <p class="note">Nhật ký lưu trong trình duyệt này, tối đa 100 lần chơi gần nhất. Xóa dữ liệu trình duyệt hoặc đổi máy thì nhật ký không đi theo. Mỗi dòng nhớ cả đường đi nên Tải lại dựng lại đúng mê cung và vẽ lại đường bạn đã chọn. Đường đi dài hơn 4000 bước thì chỉ lưu kết quả.</p>
+  </section>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ====================================================================
+     PHẦN 1. THUẬT TOÁN (không đụng đến giao diện)
+     Mỗi ô là một số 4 bit, bit nào bằng 1 nghĩa là ô đó còn tường ở hướng ấy.
+     ==================================================================== */
+  // <pure>
+  var WALL_TOP = 1, WALL_RIGHT = 2, WALL_BOTTOM = 4, WALL_LEFT = 8;
+  var DIRS = {
+    up:    { dr: -1, dc: 0,  wall: WALL_TOP,    opposite: WALL_BOTTOM },
+    right: { dr: 0,  dc: 1,  wall: WALL_RIGHT,  opposite: WALL_LEFT },
+    down:  { dr: 1,  dc: 0,  wall: WALL_BOTTOM, opposite: WALL_TOP },
+    left:  { dr: 0,  dc: -1, wall: WALL_LEFT,   opposite: WALL_RIGHT }
+  };
+  var DIR_KEYS = ['up', 'right', 'down', 'left'];
+
+  // Bộ sinh số ngẫu nhiên có hạt giống (mulberry32): cùng mã và cùng kích thước thì cùng mê cung.
+  function createRng(seed, n) {
+    var a = (Math.imul(seed, 0x9E3779B1) ^ Math.imul(n, 0x85EBCA6B)) | 0;
+    return function () {
+      a = (a + 0x6D2B79F5) | 0;
+      var t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  // Duyệt theo chiều sâu có quay lui: từ ô hiện tại đi sang một ô láng giềng chưa thăm, phá tường giữa hai ô.
+  // Kết quả là mê cung "hoàn hảo": mọi ô đều nối được với nhau và chỉ có một đường đi giữa hai ô bất kỳ.
+  function generateMaze(n, seed) {
+    var rng = createRng(seed, n);
+    var cells = new Uint8Array(n * n).fill(15);
+    var visited = new Uint8Array(n * n);
+    var stack = [0];
+    visited[0] = 1;
+    while (stack.length) {
+      var idx = stack[stack.length - 1];
+      var r = Math.floor(idx / n), c = idx % n;
+      var options = [];
+      for (var i = 0; i < DIR_KEYS.length; i++) {
+        var d = DIRS[DIR_KEYS[i]];
+        var nr = r + d.dr, nc = c + d.dc;
+        if (nr >= 0 && nr < n && nc >= 0 && nc < n && !visited[nr * n + nc]) {
+          options.push({ d: d, next: nr * n + nc });
+        }
+      }
+      if (!options.length) { stack.pop(); continue; }
+      var pick = options[Math.floor(rng() * options.length)];
+      cells[idx] &= ~pick.d.wall;
+      cells[pick.next] &= ~pick.d.opposite;
+      visited[pick.next] = 1;
+      stack.push(pick.next);
+    }
+    return cells;
+  }
+
+  // Duyệt theo chiều rộng: trả về danh sách chỉ số ô của đường ngắn nhất từ ô from đến ô to.
+  function findPath(n, cells, from, to) {
+    var prev = new Int32Array(n * n).fill(-2);
+    var queue = [from], head = 0;
+    prev[from] = -1;
+    while (head < queue.length) {
+      var cur = queue[head++];
+      if (cur === to) break;
+      var r = Math.floor(cur / n), c = cur % n;
+      for (var i = 0; i < DIR_KEYS.length; i++) {
+        var d = DIRS[DIR_KEYS[i]];
+        if (cells[cur] & d.wall) continue;
+        var next = (r + d.dr) * n + (c + d.dc);
+        if (prev[next] === -2) { prev[next] = cur; queue.push(next); }
+      }
+    }
+    var path = [];
+    if (prev[to] === -2) return path;
+    for (var x = to; x !== -1; x = prev[x]) path.push(x);
+    path.reverse();
+    return path;
+  }
+
+  var LETTER_DIR = { U: 'up', R: 'right', D: 'down', L: 'left' };
+
+  // Đổi danh sách ô đã đi thành chuỗi hướng đi ngắn gọn, ví dụ "RRDL". Trả về null nếu có bước nhảy không hợp lệ.
+  function encodeRoute(n, history) {
+    var s = '';
+    for (var i = 1; i < history.length; i++) {
+      var diff = history[i] - history[i - 1];
+      if (diff === 1) s += 'R';
+      else if (diff === -1) s += 'L';
+      else if (diff === n) s += 'D';
+      else if (diff === -n) s += 'U';
+      else return null;
+    }
+    return s;
+  }
+
+  // Dựng lại danh sách ô từ chuỗi hướng đi và kiểm tra từng bước theo tường của mê cung.
+  // Trả về null nếu chuỗi sai chữ cái hoặc đi xuyên tường. Lần chơi hoàn thành phải kết thúc ở ô đích;
+  // allowPartial = true dành cho lần dừng giữa chừng, khi đó đường đi phải chưa tới ô đích.
+  function decodeRoute(n, cells, route, allowPartial) {
+    if (typeof route !== 'string') return null;
+    if (route.length === 0) return allowPartial ? [0] : null;
+    var pos = 0, history = [0];
+    for (var i = 0; i < route.length; i++) {
+      var key = LETTER_DIR[route.charAt(i)];
+      if (!key) return null;
+      var d = DIRS[key];
+      if (cells[pos] & d.wall) return null;
+      pos = (Math.floor(pos / n) + d.dr) * n + (pos % n) + d.dc;
+      history.push(pos);
+    }
+    var atExit = pos === n * n - 1;
+    return (allowPartial ? !atExit : atExit) ? history : null;
+  }
+  // </pure>
+
+  /* ====================================================================
+     PHẦN 2. TRẠNG THÁI VÀ GIAO DIỆN
+     ==================================================================== */
+  var LEVELS = [
+    { id: 'easy',   name: 'Dễ',      n: 8 },
+    { id: 'medium', name: 'Vừa',     n: 14 },
+    { id: 'hard',   name: 'Khó',     n: 20 },
+    { id: 'expert', name: 'Rất khó', n: 30 }
+  ];
+  var STORAGE_KEY = 'mecung-oli-ky-luc-v1';
+  var KEY_TO_DIR = {
+    ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right',
+    w: 'up', W: 'up', s: 'down', S: 'down', a: 'left', A: 'left', d: 'right', D: 'right'
+  };
+
+  function $(id) { return document.getElementById(id); }
+  var canvas = $('maze');
+  var ctx = canvas.getContext('2d');
+  var timeEl = $('stat-time'), stepsEl = $('stat-steps'), optimalEl = $('stat-optimal'), recordEl = $('stat-record');
+  var seedInput = $('seed-input'), seedMsg = $('seed-msg');
+  var hintBtn = $('hint-btn');
+  var winEl = $('win');
+  var levelsEl = $('levels');
+  var tabPlay = $('tab-play'), tabLog = $('tab-log'), viewPlay = $('view-play'), viewLog = $('view-log');
+  var logCount = $('log-count'), logList = $('log-list'), logEmpty = $('log-empty');
+  var logWarn = $('log-warn'), logProgress = $('log-progress'), logClearBtn = $('log-clear');
+  var logConfirm = $('log-confirm'), logConfirmText = $('log-confirm-text');
+  var reviewEl = $('review'), reviewText = $('review-text');
+  var startBtn = $('start-btn'), stopBtn = $('stop-btn');
+  var dpadBtns = document.querySelectorAll('.dpad [data-dir]');
+
+  var game = {
+    level: null, n: 0, seed: 0, cells: null, exit: 0, optimal: 0,
+    pos: 0, history: [0], steps: 0,
+    startTime: null, elapsed: 0, finished: false,
+    hintOn: false, hintUsed: false, timerId: null, pausedAt: null, started: false
+  };
+
+  /* ---------- Tiện ích ---------- */
+  function randomSeed() { return 100000 + Math.floor(Math.random() * 900000); }
+
+  // Mã hợp lệ là số nguyên dương tối đa 9 chữ số.
+  function parseSeed(text) {
+    var t = String(text).trim();
+    if (!/^\d{1,9}$/.test(t)) return null;
+    var v = parseInt(t, 10);
+    return v >= 1 ? v : null;
+  }
+
+  function formatTime(ms) {
+    var tenths = Math.floor(ms / 100);
+    var secs = Math.floor(tenths / 10);
+    var s = secs % 60, m = Math.floor(secs / 60);
+    return m + ':' + (s < 10 ? '0' : '') + s + '.' + (tenths % 10);
+  }
+
+  /* ---------- Kỷ lục (localStorage, có thể bị trình duyệt chặn) ---------- */
+  function loadRecords() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      var obj = raw ? JSON.parse(raw) : {};
+      return obj && typeof obj === 'object' ? obj : {};
+    } catch (e) { return {}; }
+  }
+  function saveRecords(records) {
+    try {
+      var keys = Object.keys(records);
+      if (keys.length > 100) keys.slice(0, keys.length - 100).forEach(function (k) { delete records[k]; });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+      return true;
+    } catch (e) { return false; }
+  }
+  function recordKey() { return game.level.id + '-' + game.seed; }
+  function showRecord() {
+    var r = loadRecords()[recordKey()];
+    recordEl.textContent = r ? formatTime(r.time) : '—';
+  }
+
+  /* ---------- Vẽ ---------- */
+  function palette() {
+    var cs = getComputedStyle(document.documentElement);
+    function get(name) { return cs.getPropertyValue(name).trim(); }
+    return { muted: get('--muted'), paper: get('--paper'), grid: get('--grid'), ink: get('--ink'), accent: get('--accent'), good: get('--good'), hint: get('--hint') };
+  }
+
+  function draw() {
+    if (!game.cells) return;
+    var css = canvas.clientWidth;
+    if (!css) return;
+    var px = Math.round(css * (window.devicePixelRatio || 1));
+    if (canvas.width !== px || canvas.height !== px) { canvas.width = px; canvas.height = px; }
+    var k = px / css;
+    ctx.setTransform(k, 0, 0, k, 0, 0);
+
+    var col = palette();
+    var n = game.n, pad = 12, cell = (css - 2 * pad) / n;
+    function X(c) { return pad + c * cell; }
+    function Y(r) { return pad + r * cell; }
+    function cx(idx) { return X(idx % n) + cell / 2; }
+    function cy(idx) { return Y(Math.floor(idx / n)) + cell / 2; }
+
+    ctx.clearRect(0, 0, css, css);
+    ctx.fillStyle = col.paper;
+    ctx.fillRect(0, 0, css, css);
+
+    // Chưa bấm Bắt đầu: chỉ vẽ trang giấy ô li và lời nhắc, chưa hiện mê cung.
+    if (!game.started) {
+      var step = css / 16;
+      ctx.strokeStyle = col.grid; ctx.lineWidth = 1; ctx.beginPath();
+      for (var g = 1; g < 16; g++) {
+        ctx.moveTo(g * step, 0); ctx.lineTo(g * step, css);
+        ctx.moveTo(0, g * step); ctx.lineTo(css, g * step);
+      }
+      ctx.stroke();
+      var fontFamily = getComputedStyle(document.body).fontFamily;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillStyle = col.ink; ctx.font = '800 ' + Math.round(css * 0.05) + 'px ' + fontFamily;
+      ctx.fillText('Bấm Bắt đầu để hiện mê cung', css / 2, css / 2 - css * 0.03);
+      ctx.fillStyle = col.muted; ctx.font = '500 ' + Math.round(css * 0.035) + 'px ' + fontFamily;
+      ctx.fillText('Mê cung ' + game.n + ' × ' + game.n + ' · mã ' + game.seed, css / 2, css / 2 + css * 0.04);
+      return;
+    }
+
+    // ô xuất phát và ô đích
+    ctx.globalAlpha = 0.16; ctx.fillStyle = col.ink; ctx.fillRect(X(0), Y(0), cell, cell);
+    ctx.globalAlpha = 0.24; ctx.fillStyle = col.good; ctx.fillRect(X(n - 1), Y(n - 1), cell, cell);
+    ctx.globalAlpha = 1;
+
+    // đường kẻ ô li
+    ctx.strokeStyle = col.grid; ctx.lineWidth = 1; ctx.beginPath();
+    for (var i = 0; i <= n; i++) {
+      ctx.moveTo(X(i), Y(0)); ctx.lineTo(X(i), Y(n));
+      ctx.moveTo(X(0), Y(i)); ctx.lineTo(X(n), Y(i));
+    }
+    ctx.stroke();
+
+    // gợi ý đường đi (từ vị trí hiện tại)
+    if (game.hintOn && !game.finished) {
+      var hintPath = findPath(n, game.cells, game.pos, game.exit);
+      ctx.save();
+      ctx.strokeStyle = col.hint; ctx.lineWidth = Math.max(2, cell * 0.16);
+      ctx.setLineDash([cell * 0.3, cell * 0.2]); ctx.lineJoin = 'round';
+      ctx.beginPath();
+      hintPath.forEach(function (idx, j) { if (j) ctx.lineTo(cx(idx), cy(idx)); else ctx.moveTo(cx(idx), cy(idx)); });
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // vết đã đi
+    if (game.history.length > 1) {
+      ctx.save();
+      ctx.globalAlpha = 0.38; ctx.strokeStyle = col.accent; ctx.lineWidth = cell * 0.28;
+      ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+      ctx.beginPath();
+      game.history.forEach(function (idx, j) { if (j) ctx.lineTo(cx(idx), cy(idx)); else ctx.moveTo(cx(idx), cy(idx)); });
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // tường (mực). Ô xuất phát mở ở cạnh trái, ô đích mở ở cạnh phải.
+    ctx.save();
+    ctx.strokeStyle = col.ink; ctx.lineWidth = Math.max(2, Math.min(4, cell * 0.14));
+    ctx.lineCap = 'round'; ctx.beginPath();
+    for (var r = 0; r < n; r++) {
+      for (var c = 0; c < n; c++) {
+        var w = game.cells[r * n + c], x = X(c), y = Y(r);
+        if (w & WALL_TOP) { ctx.moveTo(x, y); ctx.lineTo(x + cell, y); }
+        if ((w & WALL_LEFT) && !(r === 0 && c === 0)) { ctx.moveTo(x, y); ctx.lineTo(x, y + cell); }
+        if (c === n - 1 && r !== n - 1 && (w & WALL_RIGHT)) { ctx.moveTo(x + cell, y); ctx.lineTo(x + cell, y + cell); }
+        if (r === n - 1 && (w & WALL_BOTTOM)) { ctx.moveTo(x, y + cell); ctx.lineTo(x + cell, y + cell); }
+      }
+    }
+    ctx.stroke();
+    ctx.restore();
+
+    // lá cờ ở ô đích
+    var fx = cx(game.exit), fy = cy(game.exit);
+    ctx.save();
+    ctx.strokeStyle = col.good; ctx.fillStyle = col.good; ctx.lineWidth = Math.max(1.5, cell * 0.07); ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(fx - cell * 0.1, fy + cell * 0.28); ctx.lineTo(fx - cell * 0.1, fy - cell * 0.3); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(fx - cell * 0.1, fy - cell * 0.3); ctx.lineTo(fx + cell * 0.26, fy - cell * 0.14); ctx.lineTo(fx - cell * 0.1, fy + cell * 0.02); ctx.closePath(); ctx.fill();
+    ctx.restore();
+
+    // người chơi
+    ctx.save();
+    ctx.fillStyle = col.accent; ctx.strokeStyle = col.paper; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(cx(game.pos), cy(game.pos), cell * 0.3, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.restore();
+  }
+
+  /* ---------- Cập nhật chỉ số ---------- */
+  function updateStats() {
+    timeEl.textContent = formatTime(game.elapsed);
+    stepsEl.textContent = String(game.steps);
+    optimalEl.textContent = String(game.optimal);
+  }
+  function updateLevelButtons() {
+    Array.prototype.forEach.call(levelsEl.children, function (btn) {
+      btn.setAttribute('aria-pressed', btn.dataset.level === game.level.id ? 'true' : 'false');
+    });
+  }
+  function setHint(on) {
+    game.hintOn = on;
+    hintBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    hintBtn.textContent = on ? 'Gợi ý: Bật' : 'Gợi ý: Tắt';
+  }
+  function showSeedMessage(text, isError) {
+    seedMsg.textContent = text;
+    seedMsg.classList.toggle('error', !!isError);
+  }
+
+  /* ---------- Đồng hồ ---------- */
+  function stopTimer() { if (game.timerId !== null) { clearInterval(game.timerId); game.timerId = null; } }
+  function startTimer() {
+    stopTimer();
+    game.timerId = setInterval(function () {
+      if (game.startTime !== null && !game.finished && game.pausedAt === null) {
+        game.elapsed = performance.now() - game.startTime;
+        timeEl.textContent = formatTime(game.elapsed);
+      }
+    }, 100);
+  }
+
+  /* ---------- Vòng đời ván chơi ---------- */
+  function startMaze(levelId, seed) {
+    var level = LEVELS.filter(function (l) { return l.id === levelId; })[0];
+    game.level = level;
+    game.n = level.n;
+    game.seed = seed;
+    game.cells = generateMaze(level.n, seed);
+    game.exit = level.n * level.n - 1;
+    game.optimal = findPath(level.n, game.cells, 0, game.exit).length - 1;
+    seedInput.value = String(seed);
+    showSeedMessage('Nhập số từ 1 đến 999999999 hoặc để trống để chọn ngẫu nhiên.', false);
+    canvas.setAttribute('aria-label', 'Mê cung ' + level.n + ' nhân ' + level.n + ', mã ' + seed + '. Bấm Bắt đầu để hiện mê cung, rồi dùng phím mũi tên hoặc W A S D để di chuyển.');
+    updateLevelButtons();
+    resetRun();
+  }
+
+  function resetRun() {
+    stopTimer();
+    game.pos = 0; game.history = [0]; game.steps = 0;
+    game.startTime = null; game.elapsed = 0; game.started = false; game.finished = false; game.hintUsed = false; game.pausedAt = null;
+    setHint(false);
+    updateControls();
+    reviewEl.hidden = true;
+    winEl.hidden = true;
+    updateStats();
+    showRecord();
+    draw();
+  }
+
+  function move(dirKey) {
+    if (!game.started || game.finished || !game.cells) return;
+    var d = DIRS[dirKey];
+    if (game.cells[game.pos] & d.wall) return; // có tường chắn
+    var r = Math.floor(game.pos / game.n) + d.dr;
+    var c = (game.pos % game.n) + d.dc;
+    game.pos = r * game.n + c;
+    game.history.push(game.pos);
+    game.steps++;
+    stepsEl.textContent = String(game.steps);
+    if (game.pos === game.exit) finish();
+    draw();
+  }
+
+  function finish() {
+    game.finished = true;
+    game.elapsed = performance.now() - game.startTime;
+    stopTimer();
+    setHint(false);
+    updateControls();
+    timeEl.textContent = formatTime(game.elapsed);
+
+    var records = loadRecords(), key = recordKey(), prev = records[key], note, isRecord = false;
+    if (game.hintUsed) {
+      note = 'Bạn đã dùng gợi ý nên kết quả không được ghi kỷ lục.';
+    } else if (!prev || game.elapsed < prev.time) {
+      records[key] = { time: Math.round(game.elapsed), steps: game.steps };
+      isRecord = true;
+      var saved = saveRecords(records);
+      note = prev ? 'Kỷ lục mới, nhanh hơn kỷ lục cũ (' + formatTime(prev.time) + ').' : 'Kỷ lục đầu tiên của mê cung này.';
+      if (!saved) note += ' Trình duyệt không cho phép lưu kỷ lục.';
+    } else {
+      note = 'Kỷ lục của mê cung này vẫn là ' + formatTime(prev.time) + '.';
+    }
+    showRecord();
+
+    var logged = addJournalEntry(isRecord);
+    note += logged ? ' Đã ghi vào Nhật ký.' : ' Không lưu được Nhật ký vì trình duyệt chặn lưu trữ.';
+
+    showResult('win', note);
+  }
+
+  /* ---------- Gắn sự kiện ---------- */
+  function seedFromInputOrRandom() { return parseSeed(seedInput.value) || randomSeed(); }
+
+  LEVELS.forEach(function (level) {
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'btn level';
+    btn.dataset.level = level.id;
+    btn.setAttribute('aria-pressed', 'false');
+    btn.innerHTML = '<span class="lv-name"></span><span class="lv-size"></span>';
+    btn.querySelector('.lv-name').textContent = level.name;
+    btn.querySelector('.lv-size').textContent = level.n + ' × ' + level.n;
+    btn.addEventListener('click', function () { startMaze(level.id, seedFromInputOrRandom()); });
+    levelsEl.appendChild(btn);
+  });
+
+  $('seed-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var text = seedInput.value.trim();
+    if (text === '') { startMaze(game.level.id, randomSeed()); return; }
+    var seed = parseSeed(text);
+    if (seed === null) { showSeedMessage('Mã không hợp lệ. Hãy nhập số nguyên từ 1 đến 999999999.', true); return; }
+    startMaze(game.level.id, seed);
+  });
+  $('random-btn').addEventListener('click', function () { startMaze(game.level.id, randomSeed()); });
+  $('reset-btn').addEventListener('click', resetRun);
+  hintBtn.addEventListener('click', function () {
+    if (!game.started || game.finished) return;
+    setHint(!game.hintOn);
+    if (game.hintOn) game.hintUsed = true;
+    draw();
+  });
+  $('win-new').addEventListener('click', function () { startMaze(game.level.id, randomSeed()); });
+  $('win-again').addEventListener('click', resetRun);
+
+  Array.prototype.forEach.call(document.querySelectorAll('.dpad [data-dir]'), function (btn) {
+    btn.addEventListener('click', function () { move(btn.dataset.dir); });
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    var tag = e.target && e.target.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+    if (activeTab !== 'play') return;
+    var dir = KEY_TO_DIR[e.key];
+    if (!dir) return;
+    e.preventDefault();
+    move(dir);
+  });
+
+  // Vẽ lại khi đổi kích thước hoặc đổi giao diện sáng/tối
+  if (typeof ResizeObserver !== 'undefined') new ResizeObserver(draw).observe(canvas);
+  else window.addEventListener('resize', draw);
+  if (window.matchMedia) {
+    var mq = window.matchMedia('(prefers-color-scheme: dark)');
+    if (mq.addEventListener) mq.addEventListener('change', draw);
+  }
+  new MutationObserver(draw).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+  /* ====================================================================
+     PHẦN 3. TAB VÀ NHẬT KÝ
+     Mỗi lần về đích được ghi một dòng: độ khó, mã, kết quả và đường đi đã chọn.
+     Bấm "Tải lại" để dựng lại đúng mê cung đó và xem lại đường đã đi.
+     ==================================================================== */
+  var JOURNAL_KEY = 'mecung-oli-nhat-ky-v1';
+  var JOURNAL_MAX = 100;   // giữ tối đa 100 lần chơi gần nhất
+  var ROUTE_MAX = 4000;    // đường đi dài hơn thì chỉ lưu kết quả, không lưu đường đi
+  var journal = [];
+  var journalSaveFailed = false;
+  var pendingDeleteId = null, pendingClear = false;
+  var activeTab = 'play';
+
+  function el(tag, className, text) {
+    var node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text !== undefined) node.textContent = text;
+    return node;
+  }
+
+  function formatDate(ms) {
+    try {
+      return new Date(ms).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false });
+    } catch (e) {
+      return new Date(ms).toISOString().slice(0, 16).replace('T', ' ');
+    }
+  }
+
+  // Kiểm tra từng dòng đọc từ localStorage: dòng hỏng hoặc sai kiểu bị bỏ qua, không làm hỏng cả trang.
+  function sanitizeEntry(e) {
+    if (!e || typeof e !== 'object') return null;
+    var level = LEVELS.filter(function (l) { return l.id === e.level; })[0];
+    var seed = typeof e.seed === 'number' ? parseSeed(e.seed) : null;
+    function num(v, max) { return typeof v === 'number' && isFinite(v) && v >= 0 && v <= max ? v : null; }
+    var at = num(e.at, 8.64e15), time = num(e.time, 1e10), steps = num(e.steps, 1e7), optimal = num(e.optimal, 1e7);
+    if (!level || seed === null || at === null || time === null || steps === null || optimal === null) return null;
+    return {
+      id: typeof e.id === 'string' && e.id.length <= 40 ? e.id : String(at),
+      at: at, level: level.id, seed: seed,
+      time: Math.round(time), steps: Math.floor(steps), optimal: Math.floor(optimal),
+      hint: e.hint === true, record: e.record === true && e.status !== 'stop',
+      status: e.status === 'stop' ? 'stop' : 'win',
+      route: typeof e.route === 'string' && e.route.length <= ROUTE_MAX ? e.route : null
+    };
+  }
+
+  function loadJournal() {
+    try {
+      var raw = localStorage.getItem(JOURNAL_KEY);
+      var arr = raw ? JSON.parse(raw) : [];
+      if (!Array.isArray(arr)) return [];
+      return arr.map(function (item) { return sanitizeEntry(item); }).filter(Boolean)
+        .sort(function (a, b) { return b.at - a.at; }).slice(0, JOURNAL_MAX);
+    } catch (e) { return []; }
+  }
+
+  function saveJournal() {
+    try {
+      localStorage.setItem(JOURNAL_KEY, JSON.stringify(journal));
+      journalSaveFailed = false;
+      return true;
+    } catch (e) {
+      journalSaveFailed = true;
+      return false;
+    }
+  }
+
+  // Ghi ván vừa kết thúc (dùng trạng thái hiện tại của game). Trả về true nếu lưu được vào trình duyệt.
+  function addJournalEntry(isRecord, status) {
+    var route = encodeRoute(game.n, game.history);
+    var now = Date.now();
+    journal.unshift({
+      id: now + '-' + Math.random().toString(36).slice(2, 8),
+      at: now, level: game.level.id, seed: game.seed,
+      time: Math.round(game.elapsed), steps: game.steps, optimal: game.optimal,
+      hint: game.hintUsed, record: isRecord,
+      status: status === 'stop' ? 'stop' : 'win',
+      route: route !== null && route.length <= ROUTE_MAX ? route : null
+    });
+    if (journal.length > JOURNAL_MAX) journal.length = JOURNAL_MAX;
+    var ok = saveJournal();
+    renderLog();
+    return ok;
+  }
+
+  function renderEntry(entry) {
+    var level = LEVELS.filter(function (l) { return l.id === entry.level; })[0];
+    var when = formatDate(entry.at);
+    var li = el('li', 'entry');
+
+    var main = el('div', 'entry-main');
+    var title = el('div', 'entry-title');
+    title.appendChild(el('span', 'entry-level', level.name + ' ' + level.n + ' × ' + level.n));
+    title.appendChild(el('span', 'entry-code', 'mã ' + entry.seed));
+    if (entry.status === 'stop') title.appendChild(el('span', 'badge badge-stop', 'Chưa tìm được đường'));
+    if (entry.record) title.appendChild(el('span', 'badge badge-good', 'Kỷ lục'));
+    if (entry.hint) title.appendChild(el('span', 'badge badge-hint', 'Có gợi ý'));
+    main.appendChild(title);
+    main.appendChild(el('div', 'entry-date', when + (entry.route !== null ? '' : ' · không lưu đường đi')));
+    var metrics = el('div', 'metrics');
+    [['Thời gian', formatTime(entry.time)], ['Số bước', String(entry.steps)], ['Ngắn nhất', String(entry.optimal)]].forEach(function (m) {
+      var box = el('div', 'metric');
+      box.appendChild(el('span', 'metric-label', m[0]));
+      box.appendChild(el('span', 'metric-value', m[1]));
+      metrics.appendChild(box);
+    });
+    main.appendChild(metrics);
+    li.appendChild(main);
+
+    var actions = el('div', 'entry-actions');
+    var label = ' lần chơi ' + level.name + ' mã ' + entry.seed + ' lúc ' + when;
+    function addAction(text, act, cls, ariaPrefix) {
+      var b = el('button', 'btn' + (cls ? ' ' + cls : ''), text);
+      b.type = 'button';
+      b.dataset.action = act;
+      b.dataset.id = entry.id;
+      b.setAttribute('aria-label', ariaPrefix + label);
+      actions.appendChild(b);
+    }
+    if (pendingDeleteId === entry.id) {
+      addAction('Xóa thật', 'confirm-delete', 'danger', 'Xác nhận xóa');
+      addAction('Giữ lại', 'cancel-delete', '', 'Giữ lại');
+    } else {
+      addAction('Tải lại', 'load', 'primary', 'Tải lại');
+      addAction('Xóa', 'ask-delete', '', 'Xóa');
+    }
+    li.appendChild(actions);
+    return li;
+  }
+
+  function renderLog() {
+    var has = journal.length > 0;
+    logCount.textContent = String(journal.length);
+    logEmpty.hidden = has;
+    logClearBtn.hidden = !has || pendingClear;
+    logConfirm.hidden = !pendingClear;
+    logConfirmText.textContent = 'Xóa toàn bộ ' + journal.length + ' lần chơi trong Nhật ký? Kỷ lục ở ô Kỷ lục vẫn được giữ.';
+    logWarn.hidden = !journalSaveFailed;
+    logProgress.hidden = !(game.startTime !== null && !game.finished);
+    logList.textContent = '';
+    journal.forEach(function (entry) { logList.appendChild(renderEntry(entry)); });
+  }
+
+  function focusEntryButton(id, act) {
+    var btns = logList.querySelectorAll('button[data-action]');
+    for (var i = 0; i < btns.length; i++) {
+      if (btns[i].dataset.id === id && btns[i].dataset.action === act) { btns[i].focus(); return; }
+    }
+  }
+
+  // Chuyển tab. Rời tab Chơi thì đồng hồ tạm dừng, quay lại thì chạy tiếp, nên xem Nhật ký không mất giờ.
+  function showTab(name) {
+    var isPlay = name === 'play';
+    activeTab = name;
+    viewPlay.hidden = !isPlay;
+    viewLog.hidden = isPlay;
+    if (isPlay) { tabPlay.setAttribute('aria-current', 'page'); tabLog.removeAttribute('aria-current'); }
+    else { tabLog.setAttribute('aria-current', 'page'); tabPlay.removeAttribute('aria-current'); }
+    if (isPlay) {
+      if (game.pausedAt !== null) { game.startTime += performance.now() - game.pausedAt; game.pausedAt = null; }
+      draw();
+    } else {
+      if (game.startTime !== null && !game.finished && game.pausedAt === null) game.pausedAt = performance.now();
+      pendingDeleteId = null; pendingClear = false;
+      renderLog();
+    }
+  }
+
+  // Tải lại một dòng nhật ký: dựng lại mê cung từ độ khó + mã, rồi vẽ lại đường đã đi nếu còn dữ liệu hợp lệ.
+  function loadEntry(id) {
+    var entry = journal.filter(function (x) { return x.id === id; })[0];
+    if (!entry) return;
+    showTab('play');
+    startMaze(entry.level, entry.seed);
+    var when = formatDate(entry.at);
+    var stopped = entry.status === 'stop';
+    var route = decodeRoute(game.n, game.cells, entry.route, stopped);
+    if (route) {
+      game.history = route;
+      game.pos = route[route.length - 1];
+      game.steps = route.length - 1;
+      game.elapsed = entry.time;
+      game.started = true;
+      game.finished = true;
+      game.hintUsed = entry.hint;
+      updateControls();
+      updateStats();
+      reviewText.textContent = 'Đang xem lại ' + (stopped ? 'lần dừng chưa tìm được đường' : 'lần chơi') + ' lúc ' + when + ': ' + formatTime(entry.time) + ', ' + game.steps + ' bước' + (entry.hint ? ', có dùng gợi ý' : '') + '.';
+      reviewEl.hidden = false;
+      draw();
+    } else {
+      showSeedMessage('Đã tải mê cung của lần chơi lúc ' + when + '. Lần chơi này không có đường đi đã lưu nên bạn bấm Bắt đầu để chơi từ đầu.', false);
+    }
+  }
+
+  tabPlay.addEventListener('click', function () { showTab('play'); });
+  tabLog.addEventListener('click', function () { showTab('log'); });
+  $('review-again').addEventListener('click', resetRun);
+
+  logList.addEventListener('click', function (e) {
+    var btn = e.target.closest ? e.target.closest('button[data-action]') : null;
+    if (!btn) return;
+    var id = btn.dataset.id, action = btn.dataset.action;
+    if (action === 'load') {
+      loadEntry(id);
+    } else if (action === 'ask-delete') {
+      pendingDeleteId = id; pendingClear = false;
+      renderLog();
+      focusEntryButton(id, 'confirm-delete');
+    } else if (action === 'cancel-delete') {
+      pendingDeleteId = null;
+      renderLog();
+      focusEntryButton(id, 'ask-delete');
+    } else if (action === 'confirm-delete') {
+      journal = journal.filter(function (x) { return x.id !== id; });
+      pendingDeleteId = null;
+      saveJournal();
+      renderLog();
+      $('log-title').focus();
+    }
+  });
+  logClearBtn.addEventListener('click', function () {
+    pendingClear = true; pendingDeleteId = null;
+    renderLog();
+    $('log-confirm-yes').focus();
+  });
+  $('log-confirm-yes').addEventListener('click', function () {
+    journal = [];
+    pendingClear = false;
+    saveJournal();
+    renderLog();
+    $('log-title').focus();
+  });
+  $('log-confirm-no').addEventListener('click', function () {
+    pendingClear = false;
+    renderLog();
+    logClearBtn.focus();
+  });
+
+  /* ====================================================================
+     PHẦN 4. BẮT ĐẦU VÀ DỪNG
+     ==================================================================== */
+  // Bật/tắt các nút theo trạng thái: chưa bắt đầu, đang chơi, đã kết thúc (về đích, dừng hoặc đang xem lại).
+  function updateControls() {
+    var playing = game.started && !game.finished;
+    startBtn.disabled = game.started;
+    stopBtn.disabled = !playing;
+    hintBtn.disabled = !playing;
+    Array.prototype.forEach.call(dpadBtns, function (b) { b.disabled = !playing; });
+  }
+
+  function showResult(kind, note) {
+    var stopped = kind === 'stop';
+    $('win-card').classList.toggle('stopped', stopped);
+    $('win-title').textContent = stopped ? 'Đã dừng' : 'Đã đến đích!';
+    $('win-time').textContent = formatTime(game.elapsed);
+    $('win-steps').textContent = String(game.steps);
+    $('win-optimal').textContent = String(game.optimal);
+    $('win-note').textContent = note;
+    winEl.hidden = false;
+    $('win-new').focus();
+  }
+
+  // Bắt đầu: hiện mê cung và cho đồng hồ chạy.
+  function startRun() {
+    if (game.started || !game.cells) return;
+    game.started = true;
+    game.startTime = performance.now();
+    game.elapsed = 0;
+    startTimer();
+    updateControls();
+    draw();
+  }
+
+  // Dừng: người chơi không tìm được đường. Ghi lần chơi vào Nhật ký với trạng thái "dừng" (không tính kỷ lục).
+  function stopRun() {
+    if (!game.started || game.finished) return;
+    game.finished = true;
+    game.elapsed = performance.now() - game.startTime;
+    stopTimer();
+    setHint(false);
+    updateControls();
+    timeEl.textContent = formatTime(game.elapsed);
+    var logged = addJournalEntry(false, 'stop');
+    showResult('stop', 'Bạn chưa tìm được đường đến đích.' + (logged ? ' Đã ghi lần chơi vào Nhật ký.' : ' Không lưu được Nhật ký vì trình duyệt chặn lưu trữ.'));
+    draw();
+  }
+
+  startBtn.addEventListener('click', startRun);
+  stopBtn.addEventListener('click', stopRun);
+
+  journal = loadJournal();
+  renderLog();
+  startMaze('medium', randomSeed());
+})();
+</script>
+
+</body></html>

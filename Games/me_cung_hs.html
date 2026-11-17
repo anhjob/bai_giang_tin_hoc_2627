@@ -1,0 +1,1994 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Mê cung 100 lối</title>
+<style>
+/* Bố cục: thanh điều khiển 2 thẻ (tạo mê cung | chạy thử) ở trên; dưới là mê cung (canvas) và bảng kết quả 1-100. */
+:root {
+  /* Màu: nền xanh xám nhạt, tường xanh mực, nhấn xanh dương; vàng cho đích; xanh lá/đỏ chỉ dùng cho kết quả */
+  --bg: #eef1f6;
+  --surface: #ffffff;
+  --surface-2: #f3f5f9;
+  --ink: #17202e;
+  --muted: #566275;
+  --line: #d5dbe6;
+  --wall: #1f2a44;
+  --floor: #ffffff;
+  --goal: #ffe9a8;
+  --accent: #2457d6;
+  --accent-ink: #ffffff;
+  --ok: #14733b;
+  --ok-bg: #d9f3e2;
+  --bad: #a82a2a;
+  --bad-bg: #fbe0e0;
+  --solution: rgba(20, 115, 59, 0.28);
+  --route: #e8590c;
+  /* Khay kết quả kiểu bàn billiard: nỉ xanh, thành gỗ. Giữ nguyên ở cả hai giao diện sáng và tối */
+  --felt: #0d5c3a;
+  --felt-hi: #16804f;
+  --rail: #5a3a22;
+  --felt-ink: #e6f4ea;
+  /* Chữ: dùng phông hệ thống để chạy được hoàn toàn offline */
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1521; --surface: #171f2e; --surface-2: #1e2839; --ink: #e7ecf5; --muted: #9aa7bc;
+    --line: #2c3850; --wall: #9fb4e0; --floor: #131b29; --goal: #4a3d12; --accent: #6f95ff;
+    --accent-ink: #0b1220; --ok: #5fd68c; --ok-bg: #16382a; --bad: #ff8c8c; --bad-bg: #432020;
+    --solution: rgba(95, 214, 140, 0.30); --route: #ff9a52; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1521; --surface: #171f2e; --surface-2: #1e2839; --ink: #e7ecf5; --muted: #9aa7bc;
+  --line: #2c3850; --wall: #9fb4e0; --floor: #131b29; --goal: #4a3d12; --accent: #6f95ff;
+  --accent-ink: #0b1220; --ok: #5fd68c; --ok-bg: #16382a; --bad: #ff8c8c; --bad-bg: #432020;
+  --solution: rgba(95, 214, 140, 0.30); --route: #ff9a52; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 15px;
+  line-height: 1.5;
+  padding-block: 20px 32px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.app { max-width: 1180px; margin: 0 auto; display: grid; gap: 16px; }
+h1 { font-size: 1.6rem; line-height: 1.2; margin: 0 0 4px; text-wrap: balance; }
+h2 { font-size: 1rem; margin: 0 0 10px; }
+.sub { margin: 0; color: var(--muted); max-width: 70ch; }
+
+.toolbar { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 16px; }
+.modes { display: grid; gap: 4px; margin: 0 0 12px; font-size: 0.88rem; }
+.modes .lbl { font-weight: 600; }
+.modes label { display: flex; gap: 8px; align-items: center; min-height: 30px; }
+.btnrow { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; min-width: 0; }
+.card h2 .step { color: var(--muted); font-weight: 500; }
+.field { display: grid; gap: 6px; margin-bottom: 12px; }
+.field label, .field .lbl { font-size: 0.85rem; font-weight: 600; }
+.row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.row > * { min-width: 0; }
+input[type="number"], input[type="text"] {
+  font: inherit; color: var(--ink); background: var(--surface-2);
+  border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; min-height: 40px;
+}
+input[type="number"] { width: 84px; }
+input[type="text"] { width: 100%; }
+input[type="range"] { flex: 1 1 140px; accent-color: var(--accent); min-height: 40px; }
+input[aria-invalid="true"] { border-color: var(--bad); }
+.btn {
+  font: inherit; font-weight: 600; cursor: pointer; min-height: 40px; padding: 8px 14px;
+  border-radius: 8px; border: 1px solid var(--line); background: var(--surface-2); color: var(--ink);
+}
+.btn:hover:not(:disabled) { border-color: var(--accent); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.check { display: flex; gap: 8px; align-items: center; font-size: 0.9rem; min-height: 32px; }
+.hint { color: var(--muted); font-size: 0.85rem; margin: 6px 0 0; }
+.status { min-height: 1.4em; margin: 0; font-size: 0.9rem; }
+.status.error { color: var(--bad); font-weight: 600; }
+.status.ok { color: var(--ok); }
+
+.main { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 16px; align-items: start; }
+.stage { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 8px; min-width: 0; }
+canvas { display: block; margin: 0 auto; max-width: 100%; cursor: pointer; }
+.chips { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 4px; margin: 12px 0; }
+.chip {
+  font: inherit; font-size: 0.78rem; font-variant-numeric: tabular-nums; cursor: pointer;
+  min-height: 30px; padding: 0; border-radius: 6px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--ink);
+}
+.chip--run { border-color: var(--accent); }
+.chip--sel { outline: 3px solid var(--route); outline-offset: 1px; }
+.chip--out { opacity: 0.4; border-style: dashed; }
+h2.gap { margin-top: 20px; }
+
+/* Khay kết quả: các viên bi lăn vào theo thứ tự về đích */
+.rack {
+  background: radial-gradient(ellipse at 50% 20%, var(--felt-hi), var(--felt) 70%);
+  border: 6px solid var(--rail); border-radius: 12px;
+  box-shadow: inset 0 3px 12px rgba(0, 0, 0, 0.5);
+  padding: 10px; min-height: 96px; max-height: 340px; overflow-y: auto;
+}
+.rack-empty { margin: 0; padding: 6px 2px; color: var(--felt-ink); font-size: 0.88rem; }
+.rack-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(66px, 1fr)); gap: 12px 6px; }
+.rk { display: grid; justify-items: center; gap: 4px; }
+.rk--new { animation: rk-drop 0.5s cubic-bezier(0.2, 0.8, 0.3, 1.15) both; }
+.rk-cap { font-size: 0.72rem; line-height: 1.25; color: var(--felt-ink); text-align: center; font-variant-numeric: tabular-nums; }
+.rk-cap span, .rk-cap strong { display: block; }
+.rk-cap strong { font-size: 0.8rem; }
+@keyframes rk-drop { from { transform: translateY(-30px) scale(0.6); opacity: 0; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .rk--new { animation: none; } }
+
+/* Viên bi billiard: bi 1-8 màu đặc, bi 9-15 có sọc; số lớn hơn 15 quay vòng lại bộ màu */
+.ball {
+  --d: 46px; --c: #f2c200;
+  position: relative; display: inline-grid; place-items: center; flex: none;
+  width: var(--d); height: var(--d); border-radius: 50%;
+  background:
+    radial-gradient(circle at 32% 26%, rgba(255, 255, 255, 0.8) 0 7%, rgba(255, 255, 255, 0) 26%),
+    radial-gradient(circle at 68% 80%, rgba(0, 0, 0, 0.34), rgba(0, 0, 0, 0) 58%),
+    var(--c);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(0, 0, 0, 0.3);
+}
+.ball.stripe {
+  background:
+    radial-gradient(circle at 32% 26%, rgba(255, 255, 255, 0.8) 0 7%, rgba(255, 255, 255, 0) 26%),
+    radial-gradient(circle at 68% 80%, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0) 58%),
+    linear-gradient(to bottom, #f7f4ec 0 20%, var(--c) 20% 80%, #f7f4ec 80% 100%);
+}
+.ball b {
+  width: 52%; height: 52%; border-radius: 50%; background: #f7f4ec; color: #161616;
+  display: grid; place-items: center; line-height: 1; font-weight: 800;
+  font-size: calc(var(--d) * 0.26); font-variant-numeric: tabular-nums;
+}
+.ball b.d1 { font-size: calc(var(--d) * 0.3); }
+.ball b.d3 { font-size: calc(var(--d) * 0.19); }
+.ball.c1 { --c: #f2c200; } .ball.c2 { --c: #1550b8; } .ball.c3 { --c: #d62828; } .ball.c4 { --c: #5b2a86; }
+.ball.c5 { --c: #f07f13; } .ball.c6 { --c: #1b8a3a; } .ball.c7 { --c: #7a1f1f; } .ball.c8 { --c: #161616; }
+.ball.mini { --d: 32px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.45), inset 0 0 0 1px rgba(0, 0, 0, 0.3); }
+.ball.mini b { width: 62%; height: 62%; }
+.ball.mini b.d2 { font-size: calc(var(--d) * 0.3); }
+.ball.mini b.d3 { font-size: calc(var(--d) * 0.21); }
+
+/* Nhóm người chơi */
+.gdot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; flex: none; border: 1px solid rgba(0, 0, 0, 0.35); }
+.grp-add { margin-bottom: 8px; align-items: end; }
+.grp-add label { font-size: 0.85rem; font-weight: 600; }
+.grp-add input[type="text"] { flex: 1 1 220px; width: auto; }
+.grp-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin: 10px 0; }
+.grp { display: grid; gap: 8px; min-width: 0; padding: 12px; background: var(--surface-2); border: 1px solid var(--line); border-left: 6px solid var(--line); border-radius: 10px; }
+.grp-head { display: flex; gap: 8px; align-items: center; }
+.grp-head input[type="text"] { flex: 1; min-width: 0; font-weight: 700; }
+.grp-meta { color: var(--muted); font-size: 0.85rem; }
+.grp-active { display: flex; gap: 8px; align-items: center; font-size: 0.85rem; min-height: 32px; }
+.btn.sm { min-height: 34px; padding: 4px 10px; font-size: 0.85rem; }
+.btn.danger { color: var(--bad); }
+.rk { min-width: 0; }
+.rk-grp { display: flex; gap: 4px; align-items: center; max-width: 100%; font-size: 0.68rem; color: var(--felt-ink); }
+.rk-grp .nm { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tablewrap { overflow-x: auto; }
+.rank-table { width: 100%; min-width: 560px; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.rank-table th, .rank-table td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: middle; }
+.rank-table th { font-size: 0.8rem; font-weight: 600; color: var(--muted); }
+.rank-table tr.first td { background: var(--goal); }
+.rk-no { font-size: 1.15rem; font-weight: 800; }
+.tname { display: inline-flex; gap: 8px; align-items: center; font-weight: 600; }
+.mini-balls { display: flex; flex-wrap: wrap; gap: 4px; }
+
+/* Nhật ký các lần chơi */
+.log-bar { margin: 8px 0; }
+.panel { display: grid; gap: 16px; min-width: 0; }
+.tabs { display: flex; gap: 4px; flex-wrap: wrap; border-bottom: 2px solid var(--line); }
+.tab {
+  font: inherit; font-weight: 600; cursor: pointer; min-height: 42px; padding: 8px 16px;
+  border: 1px solid transparent; border-bottom: 0; border-radius: 8px 8px 0 0;
+  background: transparent; color: var(--muted); margin-bottom: -2px;
+}
+.tab:hover { color: var(--ink); }
+.tab[aria-selected="true"] { background: var(--surface); color: var(--ink); border-color: var(--line); border-bottom: 2px solid var(--surface); }
+.badge {
+  display: inline-block; min-width: 1.6em; padding: 0 6px; margin-left: 4px; border-radius: 999px;
+  background: var(--accent); color: var(--accent-ink); font-size: 0.78rem; line-height: 1.5; text-align: center;
+}
+.log-wrap { max-height: 380px; overflow: auto; }
+.log-table { min-width: 760px; }
+.log-table th { position: sticky; top: 0; z-index: 1; background: var(--surface); }
+.log-table th:first-child, .log-table td:first-child { width: 44px; }
+.log-table tr.sel td { background: var(--surface-2); }
+.log-table .sub { display: block; color: var(--muted); font-size: 0.8rem; overflow-wrap: anywhere; }
+.log-table td.sum { min-width: 220px; }
+.log-table input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent); }
+.summary { margin: 0 0 8px; font-weight: 600; }
+.selinfo { margin: 8px 0 0; font-size: 0.9rem; color: var(--muted); }
+
+@media (max-width: 920px) {
+  .main { grid-template-columns: minmax(0, 1fr); }
+  .toolbar { grid-template-columns: minmax(0, 1fr); }
+}
+@media print {
+  body { background: #fff; color: #000; }
+  .toolbar, .btn { display: none; }
+  .main { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<main class="app">
+  <header>
+    <h1>Mê cung 100 lối vào</h1>
+    <p class="sub">Quanh mê cung có 100 lối vào đánh số từ 1 đến 100. Em chọn có bao nhiêu số đến được trung tâm, tạo mê cung rồi cho các số tự tìm đường. Số nào về đích sẽ hiện thành một viên bi billiard trong khay kết quả, số về nhanh nhất đứng đầu. Có thể chơi cá nhân hoặc chia thành các nhóm để xếp hạng nhóm.</p>
+  </header>
+
+  <div class="tabs" role="tablist" aria-label="Các tab">
+    <button type="button" class="tab" role="tab" id="tabPlay" aria-controls="panelPlay" aria-selected="true">Chơi</button>
+    <button type="button" class="tab" role="tab" id="tabLog" aria-controls="panelLog" aria-selected="false" tabindex="-1">Nhật ký các lần chơi <span class="badge" id="logBadge">0</span></button>
+  </div>
+
+  <div class="panel" id="panelPlay" role="tabpanel" aria-labelledby="tabPlay">
+  <section class="toolbar" aria-label="Điều khiển">
+    <form class="card" id="form" novalidate>
+      <h2><span class="step">Bước 1.</span> Tạo mê cung</h2>
+      <div class="field">
+        <label for="kNum">Số lối đến được trung tâm (từ 0 đến 100)</label>
+        <div class="row">
+          <input type="range" id="kRange" min="0" max="100" step="1" value="20" aria-label="Kéo để chọn số lối đến được trung tâm">
+          <input type="number" id="kNum" min="0" max="100" step="1" value="20" inputmode="numeric">
+        </div>
+      </div>
+      <div class="field">
+        <label for="seed">Mã mê cung (để trống thì chọn ngẫu nhiên)</label>
+        <input type="text" id="seed" maxlength="40" autocomplete="off" placeholder="Ví dụ: lop8a1">
+      </div>
+      <button type="submit" class="btn primary" id="btnGen">Tạo mê cung</button>
+      <p class="hint" id="seedInfo">Cùng số lối và cùng mã thì luôn ra cùng một mê cung.</p>
+    </form>
+
+    <form class="card" id="pickForm" novalidate>
+      <h2><span class="step">Bước 2.</span> Chọn người chơi</h2>
+      <div class="modes" role="radiogroup" aria-label="Cách chơi">
+        <label><input type="radio" name="play" id="playSolo" value="solo" checked> Chơi cá nhân: tự chọn các số tham gia</label>
+        <label><input type="radio" name="play" id="playGroup" value="group"> Chơi theo nhóm: mỗi nhóm có các số riêng</label>
+      </div>
+      <div id="soloBox">
+        <div class="field">
+          <label for="pick">Các số tham gia (ví dụ: 1-30, 45, 60-75)</label>
+          <input type="text" id="pick" autocomplete="off" value="1-100">
+        </div>
+        <div class="btnrow">
+          <button type="submit" class="btn primary" id="btnPick">Áp dụng</button>
+          <button type="button" class="btn" id="btnAll">Chọn tất cả</button>
+          <button type="button" class="btn" id="btnNone">Bỏ chọn hết</button>
+        </div>
+        <p class="hint">Chỉ các số được chọn mới đi vào mê cung. Có thể bấm trực tiếp vào số trên mê cung hoặc trong bảng bên dưới.</p>
+      </div>
+      <p class="hint" id="groupHint" hidden>Đang chơi theo nhóm. Các số tham gia lấy từ các nhóm ở khung «Nhóm người chơi» bên dưới.</p>
+    </form>
+
+    <div class="card">
+      <h2><span class="step">Bước 3.</span> Cho các số tự tìm đường</h2>
+      <div class="row" style="margin-bottom:12px">
+        <button type="button" class="btn primary" id="btnRun">▶ Cho các số tự tìm đường</button>
+        <button type="button" class="btn" id="btnSkip">Hiện kết quả ngay</button>
+        <button type="button" class="btn" id="btnReset">Đặt lại</button>
+      </div>
+      <div class="field">
+        <label for="speed">Tốc độ: <output id="speedOut">80 bước/giây</output></label>
+        <input type="range" id="speed" min="5" max="400" step="5" value="80">
+      </div>
+      <label class="check"><input type="checkbox" id="chkSolution"> Hiện lời giải (đường đến trung tâm)</label>
+      <p class="status" id="status" role="status" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <section class="card" id="groupsSection" aria-label="Nhóm người chơi" hidden>
+    <h2>Nhóm người chơi</h2>
+    <form class="row grp-add" id="groupAddForm" novalidate>
+      <label for="groupName">Tên nhóm mới</label>
+      <input type="text" id="groupName" maxlength="30" autocomplete="off" placeholder="Ví dụ: Nhóm Sao Mai (để trống thì tự đặt tên)">
+      <button type="submit" class="btn primary" id="btnAddGroup">Thêm nhóm</button>
+    </form>
+    <p class="status" id="groupStatus" role="status" aria-live="polite"></p>
+    <p class="hint" id="groupEmpty">Chưa có nhóm nào. Gõ tên nhóm rồi bấm «Thêm nhóm».</p>
+    <div class="grp-list" id="groupList"></div>
+    <p class="hint">Chọn nhóm đang thêm số (nút tròn), rồi bấm các số trong bảng 1–100 hoặc trên mê cung, hoặc gõ danh sách như 1-10, 25 rồi bấm «Lưu nhóm». Mỗi số chỉ thuộc một nhóm. Các nhóm được lưu trên trình duyệt này.</p>
+  </section>
+
+  <section class="main">
+    <div class="stage">
+      <canvas id="maze" role="img" aria-label="Mê cung 27 × 27 ô, 100 lối vào đánh số từ 1 đến 100 quanh viền, đích ở giữa"></canvas>
+    </div>
+    <aside class="card" aria-label="Kết quả">
+      <h2>Khay kết quả: số về đích</h2>
+      <p class="summary" id="summary"></p>
+      <div class="rack" id="rackWrap">
+        <p class="rack-empty" id="rackEmpty"></p>
+        <ol class="rack-list" id="rack" aria-label="Các số về đích theo thứ tự nhanh nhất trước"></ol>
+      </div>
+      <h2 class="gap">Bảng các số 1 đến 100</h2>
+      <div class="modes" role="radiogroup" aria-label="Khi bấm vào một số">
+        <span class="lbl">Khi bấm vào một số:</span>
+        <label><input type="radio" name="mode" id="modeJoin" value="join" checked> <span id="joinLabel">Chọn / bỏ chọn tham gia</span></label>
+        <label><input type="radio" name="mode" id="modeView" value="view"> Xem đường đi của số đó</label>
+      </div>
+      <div class="chips" id="chips" role="group" aria-label="Các số từ 1 đến 100"></div>
+      <p class="hint">Số mờ, viền nét đứt là số không tham gia.</p>
+      <p class="selinfo" id="selInfo">Chọn chế độ «Xem đường đi của số đó» rồi bấm vào một số để xem đường đi.</p>
+    </aside>
+  </section>
+
+  <section class="card" id="groupResults" aria-label="Xếp hạng nhóm" hidden>
+    <h2>Xếp hạng nhóm</h2>
+    <p class="hint">Nhóm có nhiều số về đích hơn xếp trên. Bằng nhau thì nhóm có tổng số bước ít hơn xếp trên.</p>
+    <p class="rank-msg" id="rankMsg"></p>
+    <div class="tablewrap" id="rankWrap" hidden>
+      <table class="rank-table">
+        <thead><tr><th>Hạng</th><th>Nhóm</th><th>Về đích</th><th>Tổng bước</th><th>Các số về đích (nhanh nhất trước)</th></tr></thead>
+        <tbody id="rankBody"></tbody>
+      </table>
+    </div>
+  </section>
+  </div>
+
+  <div class="panel" id="panelLog" role="tabpanel" aria-labelledby="tabLog" hidden>
+  <section class="card" id="logSection" aria-label="Nhật ký các lần chơi">
+    <h2>Nhật ký các lần chơi</h2>
+    <p class="hint">Mỗi lần các số chạy xong (kể cả bấm «Hiện kết quả ngay»), kết quả được tự ghi vào đây, cả chơi cá nhân và chơi nhóm. Nhật ký lưu trên trình duyệt này, tối đa 200 lần chơi; đầy thì lần cũ nhất bị xóa. Dùng «Lưu file JSON» để giữ một bản trên máy hoặc chuyển sang máy khác, «Mở file JSON» để nạp lại.</p>
+    <div class="row log-bar log-file">
+      <button type="button" class="btn sm" id="btnLogSave" disabled>Lưu file JSON</button>
+      <button type="button" class="btn sm" id="btnLogOpen">Mở file JSON</button>
+      <input type="file" id="logFile" accept=".json,application/json" hidden>
+    </div>
+    <div class="row log-bar">
+      <button type="button" class="btn sm primary" id="btnLogLoad" disabled>Nạp lại lần chơi đã chọn</button>
+      <button type="button" class="btn sm danger" id="btnLogDel" disabled>Xóa các lần chơi đã chọn</button>
+      <button type="button" class="btn sm danger" id="btnLogClear" disabled>Xóa tất cả</button>
+      <span class="grp-meta" id="logCount"></span>
+    </div>
+    <p class="status" id="logStatus" role="status" aria-live="polite"></p>
+    <p class="hint" id="logEmpty">Chưa có lần chơi nào. Hãy cho các số chạy xong, kết quả sẽ được ghi ở đây.</p>
+    <div class="tablewrap log-wrap" id="logWrap" hidden>
+      <table class="rank-table log-table">
+        <thead><tr>
+          <th><input type="checkbox" id="logAll" aria-label="Chọn tất cả các lần chơi"></th>
+          <th>Lần</th><th>Thời gian</th><th>Mê cung</th><th>Cách chơi</th><th>Kết quả</th>
+        </tr></thead>
+        <tbody id="logBody"></tbody>
+      </table>
+    </div>
+  </section>
+  </div>
+</main>
+
+<script>
+(function () {
+'use strict';
+
+// ==== CORE:START ====
+/* LÕI THUẬT TOÁN (không dùng DOM). Mê cung N x N ô, khối trung tâm 3 x 3 ô.
+   Có 100 lối vào: 25 lối mỗi cạnh (không tính 4 ô góc), đánh số theo chiều kim đồng hồ từ góc trên trái.
+   Ý tưởng: chọn ngẫu nhiên K lối "thắng"; chia lưới thành các vùng:
+     vùng 0   = vùng chứa trung tâm và K lối thắng;
+     vùng 1.. = mỗi dải lối vào "thua" liên tiếp là một vùng riêng, bị tường bao kín với vùng 0.
+   Trong mỗi vùng dựng một cây khung (không có vòng lặp), nên đúng K lối nối với trung tâm. */
+const N = 27;
+const SIDE = 25;
+const TOTAL = 4 * SIDE;
+const CENTER_MIN = 12;
+const CENTER_MAX = 14;
+const DR = [-1, 0, 1, 0];      // 0 = Bắc, 1 = Đông, 2 = Nam, 3 = Tây
+const DC = [0, 1, 0, -1];
+const BIT = [1, 2, 4, 8];
+const OPP = [2, 3, 0, 1];
+const TURN_ORDER = [3, 0, 1, 2]; // bám tường trái: rẽ trái, đi thẳng, rẽ phải, quay lại
+
+function idxOf(r, c) { return r * N + c; }
+function inBounds(r, c) { return r >= 0 && r < N && c >= 0 && c < N; }
+function inCenterIdx(i) {
+  const r = (i / N) | 0, c = i % N;
+  return r >= CENTER_MIN && r <= CENTER_MAX && c >= CENTER_MIN && c <= CENTER_MAX;
+}
+
+// Bộ sinh số ngẫu nhiên có mã (seed) để dựng lại đúng mê cung cũ
+function hashSeed(str) {
+  let h = 1779033703 ^ str.length;
+  for (let i = 0; i < str.length; i++) {
+    h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
+    h = (h << 13) | (h >>> 19);
+  }
+  h = Math.imul(h ^ (h >>> 16), 2246822507);
+  h = Math.imul(h ^ (h >>> 13), 3266489909);
+  return (h ^ (h >>> 16)) >>> 0;
+}
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function shuffle(arr, rng) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = (rng() * (i + 1)) | 0;
+    const t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+  }
+  return arr;
+}
+
+// 100 lối vào theo chiều kim đồng hồ; out = hướng mở ra ngoài của lối vào
+function buildEntrances() {
+  const list = [];
+  let num = 1;
+  for (let c = 1; c <= SIDE; c++) list.push({ num: num++, r: 0, c: c, out: 0 });
+  for (let r = 1; r <= SIDE; r++) list.push({ num: num++, r: r, c: N - 1, out: 1 });
+  for (let c = SIDE; c >= 1; c--) list.push({ num: num++, r: N - 1, c: c, out: 2 });
+  for (let r = SIDE; r >= 1; r--) list.push({ num: num++, r: r, c: 0, out: 3 });
+  list.forEach(function (e) { e.idx = idxOf(e.r, e.c); });
+  return list;
+}
+
+// 104 ô viền (100 lối vào + 4 góc) theo chiều kim đồng hồ; hai ô liên tiếp luôn kề nhau
+function buildRing(entrances) {
+  const ring = [];
+  const addCorner = function (r, c) { ring.push({ r: r, c: c, ent: -1 }); };
+  const addSide = function (from, to) {
+    for (let k = from; k < to; k++) ring.push({ r: entrances[k].r, c: entrances[k].c, ent: k });
+  };
+  addCorner(0, 0); addSide(0, SIDE);
+  addCorner(0, N - 1); addSide(SIDE, 2 * SIDE);
+  addCorner(N - 1, N - 1); addSide(2 * SIDE, 3 * SIDE);
+  addCorner(N - 1, 0); addSide(3 * SIDE, 4 * SIDE);
+  return ring;
+}
+
+function makeHeap() {
+  const keys = [], vals = [];
+  return {
+    size: function () { return keys.length; },
+    push: function (k, v) {
+      let i = keys.length; keys.push(k); vals.push(v);
+      while (i > 0) {
+        const p = (i - 1) >> 1;
+        if (keys[p] <= k) break;
+        keys[i] = keys[p]; vals[i] = vals[p]; i = p;
+      }
+      keys[i] = k; vals[i] = v;
+    },
+    pop: function () {
+      const topK = keys[0], topV = vals[0];
+      const lastK = keys.pop(), lastV = vals.pop();
+      const n = keys.length;
+      if (n > 0) {
+        let i = 0;
+        for (;;) {
+          let l = 2 * i + 1;
+          if (l >= n) break;
+          const r = l + 1;
+          if (r < n && keys[r] < keys[l]) l = r;
+          if (keys[l] >= lastK) break;
+          keys[i] = keys[l]; vals[i] = vals[l]; i = l;
+        }
+        keys[i] = lastK; vals[i] = lastV;
+      }
+      return [topK, topV];
+    }
+  };
+}
+
+function generateMaze(K, seedText) {
+  if (!Number.isInteger(K) || K < 0 || K > TOTAL) {
+    throw new RangeError('Số lối đến được trung tâm phải là số nguyên từ 0 đến ' + TOTAL + '.');
+  }
+  const seed = String(seedText);
+  const rng = mulberry32(hashSeed(seed));
+  const entrances = buildEntrances();
+  const gate = new Int8Array(N * N).fill(-1);
+  entrances.forEach(function (e) { gate[e.idx] = e.out; });
+
+  // 1. Chọn ngẫu nhiên K lối vào đến được trung tâm
+  const order = shuffle(Array.from({ length: TOTAL }, function (_, i) { return i; }), rng);
+  const isWinner = new Array(TOTAL).fill(false);
+  for (let k = 0; k < K; k++) isWinner[order[k]] = true;
+
+  // 2. Gán nhãn vùng. Nhãn 0 = vùng thông với trung tâm
+  const lab = new Int16Array(N * N).fill(-1);
+  for (let r = CENTER_MIN; r <= CENTER_MAX; r++) {
+    for (let c = CENTER_MIN; c <= CENTER_MAX; c++) lab[idxOf(r, c)] = 0;
+  }
+  const ring = buildRing(entrances);
+  const L = ring.length;
+  const entLoser = ring.map(function (cell) { return cell.ent >= 0 && !isWinner[cell.ent]; });
+  // ô góc thuộc dải "thua" khi cả hai lối vào kề nó đều "thua"
+  const flag = ring.map(function (cell, i) {
+    return cell.ent >= 0 ? entLoser[i] : (entLoser[(i + L - 1) % L] && entLoser[(i + 1) % L]);
+  });
+  let groupCount = 0;
+  const groupSize = [0];
+  if (flag.every(Boolean)) {
+    groupCount = 1; groupSize[1] = 0;
+    ring.forEach(function (cell) { lab[idxOf(cell.r, cell.c)] = 1; groupSize[1]++; });
+  } else {
+    for (let i = 0; i < L; i++) {
+      if (flag[i] && !flag[(i + L - 1) % L]) {
+        groupCount++; groupSize[groupCount] = 0;
+        for (let j = i; flag[j % L] && j < i + L; j++) {
+          const cell = ring[j % L];
+          lab[idxOf(cell.r, cell.c)] = groupCount;
+          groupSize[groupCount]++;
+        }
+      }
+    }
+  }
+
+  // 3. Nối mỗi lối "thắng" vào vùng 0 bằng một hành lang đi qua các ô bên trong (chi phí ngẫu nhiên để đường uốn lượn)
+  const cost = new Float64Array(N * N);
+  for (let i = 0; i < N * N; i++) cost[i] = 1 + rng() * 2.5;
+  for (let k = 0; k < K; k++) {
+    const e = entrances[order[k]];
+    lab[e.idx] = 0;
+    const inward = (e.out + 2) % 4;
+    const start = e.idx + DR[inward] * N + DC[inward];
+    if (lab[start] === 0) continue;
+    const dist = new Float64Array(N * N).fill(Infinity);
+    const prev = new Int32Array(N * N).fill(-1);
+    const heap = makeHeap();
+    dist[start] = cost[start]; heap.push(dist[start], start);
+    let goal = -1;
+    while (heap.size() > 0) {
+      const top = heap.pop(), d = top[0], u = top[1];
+      if (d > dist[u]) continue;
+      if (lab[u] === 0) { goal = u; break; }
+      const ur = (u / N) | 0, uc = u % N;
+      for (let dir = 0; dir < 4; dir++) {
+        const vr = ur + DR[dir], vc = uc + DC[dir];
+        if (vr < 1 || vr > N - 2 || vc < 1 || vc > N - 2) continue; // chỉ đi qua ô bên trong
+        const v = vr * N + vc;
+        if (lab[v] > 0) continue;
+        const nd = d + cost[v];
+        if (nd < dist[v]) { dist[v] = nd; prev[v] = u; heap.push(nd, v); }
+      }
+    }
+    if (goal < 0) throw new Error('Không nối được lối vào ' + e.num + ' với trung tâm.');
+    for (let x = goal; x !== -1; x = prev[x]) lab[x] = 0;
+  }
+
+  // 4. Cho các vùng lan rộng ngẫu nhiên cho đến khi phủ kín lưới. Vùng lan từ ô đã có nên luôn liền một khối.
+  const regionCount = groupCount + 1;
+  const cand = Array.from({ length: regionCount }, function () { return []; });
+  let unlabeled = 0;
+  const pushNeighbors = function (i, g) {
+    const r = (i / N) | 0, c = i % N;
+    for (let d = 0; d < 4; d++) {
+      const nr = r + DR[d], nc = c + DC[d];
+      if (inBounds(nr, nc) && lab[nr * N + nc] === -1) cand[g].push(nr * N + nc);
+    }
+  };
+  for (let i = 0; i < N * N; i++) if (lab[i] === -1) unlabeled++;
+  for (let i = 0; i < N * N; i++) if (lab[i] >= 0) pushNeighbors(i, lab[i]);
+  const weight = [K + 25];                       // vùng 0 lớn dần theo K
+  for (let g = 1; g < regionCount; g++) weight[g] = groupSize[g];
+  while (unlabeled > 0) {
+    let total = 0;
+    for (let g = 0; g < regionCount; g++) if (cand[g].length) total += weight[g];
+    if (total === 0) throw new Error('Không chia được mê cung thành các vùng.');
+    let pick = rng() * total, chosen = -1;
+    for (let g = 0; g < regionCount; g++) {
+      if (!cand[g].length) continue;
+      chosen = g; pick -= weight[g];
+      if (pick <= 0) break;
+    }
+    const list = cand[chosen];
+    const k = (rng() * list.length) | 0;
+    const v = list[k];
+    list[k] = list[list.length - 1]; list.pop();
+    if (lab[v] !== -1) continue;
+    lab[v] = chosen; unlabeled--;
+    pushNeighbors(v, chosen);
+  }
+
+  // 5. Dựng cây khung ngẫu nhiên đều (thuật toán Wilson) trong từng vùng, không mở tường giữa hai vùng
+  const open = new Uint8Array(N * N);
+  const visited = new Uint8Array(N * N);
+  const carve = function (a, d) {
+    const b = a + DR[d] * N + DC[d];
+    open[a] |= BIT[d]; open[b] |= BIT[OPP[d]];
+  };
+  const wilson = function (g, roots) {
+    roots.forEach(function (i) { visited[i] = 1; });
+    const cells = [];
+    for (let i = 0; i < N * N; i++) if (lab[i] === g && !visited[i]) cells.push(i);
+    shuffle(cells, rng);
+    const next = new Int8Array(N * N).fill(-1);
+    for (let n = 0; n < cells.length; n++) {
+      const s = cells[n];
+      if (visited[s]) continue;
+      let u = s, guard = 0;
+      while (!visited[u]) {                      // đi bộ ngẫu nhiên đến khi chạm cây
+        const ur = (u / N) | 0, uc = u % N;
+        const opts = [];
+        for (let d = 0; d < 4; d++) {
+          const nr = ur + DR[d], nc = uc + DC[d];
+          if (inBounds(nr, nc) && lab[nr * N + nc] === g) opts.push(d);
+        }
+        if (!opts.length || ++guard > 5000000) throw new Error('Vùng ' + g + ' không liền một khối.');
+        const d = opts[(rng() * opts.length) | 0];
+        next[u] = d;
+        u += DR[d] * N + DC[d];
+      }
+      u = s;
+      while (!visited[u]) {                      // khắc đường đã xóa vòng lặp
+        const d = next[u];
+        carve(u, d);
+        visited[u] = 1;
+        u += DR[d] * N + DC[d];
+      }
+    }
+  };
+  const centerCells = [];
+  for (let r = CENTER_MIN; r <= CENTER_MAX; r++) {
+    for (let c = CENTER_MIN; c <= CENTER_MAX; c++) centerCells.push(idxOf(r, c));
+  }
+  centerCells.forEach(function (i) {              // khối trung tâm là một phòng mở thông
+    const r = (i / N) | 0, c = i % N;
+    if (c < CENTER_MAX) carve(i, 1);
+    if (r < CENTER_MAX) carve(i, 2);
+  });
+  wilson(0, centerCells);
+  for (let g = 1; g < regionCount; g++) {
+    let first = -1;
+    for (let i = 0; i < N * N; i++) if (lab[i] === g) { first = i; break; }
+    if (first < 0) throw new Error('Vùng ' + g + ' rỗng.');
+    wilson(g, [first]);
+  }
+  for (let i = 0; i < N * N; i++) if (!visited[i]) throw new Error('Còn ô chưa được nối.');
+
+  // 6. Tìm đường từ trung tâm ra (BFS) để biết lối nào thông và để vẽ lời giải
+  const dist = new Int32Array(N * N).fill(-1);
+  const parent = new Int32Array(N * N).fill(-1);
+  const queue = new Int32Array(N * N);
+  let qh = 0, qt = 0;
+  centerCells.forEach(function (i) { dist[i] = 0; queue[qt++] = i; });
+  while (qh < qt) {
+    const u = queue[qh++];
+    for (let d = 0; d < 4; d++) {
+      if (!(open[u] & BIT[d])) continue;
+      const v = u + DR[d] * N + DC[d];
+      if (dist[v] === -1) { dist[v] = dist[u] + 1; parent[v] = u; queue[qt++] = v; }
+    }
+  }
+
+  const maze = {
+    n: N, seed: seed, K: K, open: open, lab: lab, gate: gate, entrances: entrances,
+    isWinner: isWinner, dist: dist, parent: parent, regionCount: regionCount
+  };
+  maze.routes = entrances.map(function (_, i) { return wallFollow(maze, i); });
+  maze.solutions = entrances.map(function (_, i) { return solutionPath(maze, i); });
+
+  // 7. Tự kiểm tra: đúng K lối thông, và cách đi bám tường cho cùng kết luận với BFS
+  let reachedCount = 0;
+  for (let i = 0; i < TOTAL; i++) {
+    const viaBfs = dist[entrances[i].idx] >= 0;
+    if (viaBfs) reachedCount++;
+    if (viaBfs !== isWinner[i] || maze.routes[i].reached !== isWinner[i]) {
+      throw new Error('Kết quả không khớp ở lối vào ' + entrances[i].num + '.');
+    }
+  }
+  if (reachedCount !== K) throw new Error('Số lối thông là ' + reachedCount + ' thay vì ' + K + '.');
+  return maze;
+}
+
+// Đường đơn từ lối vào đến trung tâm (null nếu không thông)
+function solutionPath(maze, i) {
+  let u = maze.entrances[i].idx;
+  if (maze.dist[u] < 0) return null;
+  const path = [];
+  while (!inCenterIdx(u)) { path.push(u); u = maze.parent[u]; }
+  path.push(u);
+  return Int16Array.from(path);
+}
+
+// Một số tự tìm đường theo luật "bám tường trái". Trả về các ô đã đi qua và kết quả.
+// Với số không có đường: đi hết cả vùng rồi quay ra đúng lối vào của mình.
+function wallFollow(maze, i) {
+  const e = maze.entrances[i];
+  const start = e.idx;
+  let cur = start;
+  let heading = (e.out + 2) % 4;                 // lúc đầu quay mặt vào trong
+  const route = [start];
+  const limit = 6 * N * N;
+  for (let step = 0; step < limit; step++) {
+    let moved = false;
+    for (let t = 0; t < 4; t++) {
+      const d = (heading + TURN_ORDER[t]) % 4;
+      if (maze.open[cur] & BIT[d]) {
+        cur += DR[d] * N + DC[d];
+        heading = d;
+        route.push(cur);
+        moved = true;
+        break;
+      }
+      if (cur === start && d === e.out) {        // ra ngoài bằng chính lối vào của mình
+        return { route: Int16Array.from(route), reached: false };
+      }
+    }
+    if (!moved) return { route: Int16Array.from(route), reached: false };
+    if (inCenterIdx(cur)) return { route: Int16Array.from(route), reached: true };
+  }
+  return { route: Int16Array.from(route), reached: false };
+}
+// ==== CORE:END ====
+
+// ==== UI:START ====
+/* GIAO DIỆN: vẽ canvas, hoạt ảnh, bảng kết quả */
+const $ = function (id) { return document.getElementById(id); };
+const el = {
+  form: $('form'), kRange: $('kRange'), kNum: $('kNum'), seed: $('seed'), seedInfo: $('seedInfo'),
+  btnRun: $('btnRun'), btnSkip: $('btnSkip'), btnReset: $('btnReset'),
+  speed: $('speed'), speedOut: $('speedOut'), chkSolution: $('chkSolution'),
+  canvas: $('maze'), chips: $('chips'), summary: $('summary'),
+  rack: $('rack'), rackWrap: $('rackWrap'), rackEmpty: $('rackEmpty'),
+  status: $('status'), selInfo: $('selInfo'),
+  pickForm: $('pickForm'), pick: $('pick'), btnAll: $('btnAll'), btnNone: $('btnNone'),
+  modeJoin: $('modeJoin'), modeView: $('modeView'), joinLabel: $('joinLabel'),
+  playSolo: $('playSolo'), playGroup: $('playGroup'), soloBox: $('soloBox'), groupHint: $('groupHint'),
+  groupsSection: $('groupsSection'), groupAddForm: $('groupAddForm'), groupName: $('groupName'),
+  groupStatus: $('groupStatus'), groupList: $('groupList'), groupEmpty: $('groupEmpty'),
+  groupResults: $('groupResults'), rankMsg: $('rankMsg'), rankWrap: $('rankWrap'), rankBody: $('rankBody'),
+  btnLogLoad: $('btnLogLoad'), btnLogDel: $('btnLogDel'), btnLogClear: $('btnLogClear'), logCount: $('logCount'),
+  logStatus: $('logStatus'), logEmpty: $('logEmpty'), logWrap: $('logWrap'), logBody: $('logBody'), logAll: $('logAll'),
+  tabPlay: $('tabPlay'), tabLog: $('tabLog'), logBadge: $('logBadge'), panelPlay: $('panelPlay'), panelLog: $('panelLog'),
+  btnLogSave: $('btnLogSave'), btnLogOpen: $('btnLogOpen'), logFile: $('logFile')
+};
+const ctx = el.canvas.getContext('2d');
+const MARGIN = 1.6;               // lề chứa số thứ tự, tính theo ô
+const geom = { s: 20, size: 600 };
+
+let maze = null;
+let maxSteps = 1;
+let tick = 0;                     // số bước đã đi (số thực, để chuyển động mượt)
+let started = false;
+let playing = false;
+let lastTs = 0;
+let selected = -1;
+let speed = 80;
+let lastSig = '';
+const participants = new Array(TOTAL).fill(true);   // số nào tham gia đi vào mê cung
+let pickMode = 'join';                               // 'join' = bấm để chọn tham gia, 'view' = bấm để xem đường đi
+let partVer = 0;
+
+/* Chơi theo nhóm: mỗi nhóm có tên, màu và danh sách số riêng; một số chỉ thuộc một nhóm.
+   Khi chơi theo nhóm, các số tham gia chính là các số có trong nhóm. */
+const STORE_KEY = 'web_me_cung_hs.v1';
+const GROUP_COLORS = ['#e03131', '#1c7ed6', '#2f9e44', '#f08c00', '#7048e8', '#d6336c', '#1098ad', '#8d5524', '#7c8a00', '#495057'];
+const MAX_GROUPS = GROUP_COLORS.length;
+const NAME_MAX = 30;
+let playMode = 'solo';                               // 'solo' = chơi cá nhân, 'group' = chơi theo nhóm
+let soloSaved = null;                                // nhớ lựa chọn cá nhân khi chuyển sang chơi theo nhóm
+let groups = [];                                     // {id, name, color, nums: boolean[100], ui}
+let activeGroupId = 0;                               // nhóm đang được thêm số khi bấm vào bảng số
+let groupSeq = 0;
+let groupVer = 0;                                    // tăng mỗi khi nhóm đổi, để vẽ lại khay và bảng
+let armedGroupId = 0, armTimer = 0;                  // xóa nhóm có số phải bấm hai lần
+const groupOf = new Int16Array(TOTAL).fill(-1);      // chỉ số nhóm của từng số, -1 là chưa vào nhóm nào
+
+function countParticipants() { let n = 0; for (let i = 0; i < TOTAL; i++) if (participants[i]) n++; return n; }
+let finishOrder = [];                                // các số về đích, nhanh nhất trước: {i, steps, rank}
+const rankOf = new Int16Array(TOTAL);
+let fontFamily = 'sans-serif';
+let rackShown = 0, rackKey = '';
+
+/* Tính thứ tự về đích của các số tham gia: ít bước nhất đứng đầu, bằng bước thì xếp cùng hạng.
+   Hoạt ảnh dừng ngay khi số cuối cùng về đích; nếu không số nào về đích thì chạy hết đường dài nhất. */
+function recomputeMax() {
+  finishOrder = []; rankOf.fill(0);
+  maxSteps = 1;
+  if (!maze) return;
+  let longest = 1, lastWinner = 0;
+  for (let i = 0; i < TOTAL; i++) {
+    if (!participants[i]) continue;
+    const steps = maze.routes[i].route.length - 1;
+    longest = Math.max(longest, steps);
+    if (maze.routes[i].reached) { finishOrder.push({ i: i, steps: steps, rank: 0 }); lastWinner = Math.max(lastWinner, steps); }
+  }
+  finishOrder.sort(function (a, b) { return a.steps - b.steps || a.i - b.i; });
+  finishOrder.forEach(function (f, k) {
+    f.rank = k > 0 && finishOrder[k - 1].steps === f.steps ? finishOrder[k - 1].rank : k + 1;
+    rankOf[f.i] = f.rank;
+  });
+  maxSteps = lastWinner > 0 ? lastWinner : longest;
+}
+
+function css(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+
+function setStatus(msg, kind) {
+  el.status.textContent = msg;
+  el.status.className = 'status' + (kind ? ' ' + kind : '');
+}
+
+/* ---------- Trạng thái từng số ---------- */
+function statusOf(i, t) {
+  if (!maze) return 'idle';
+  if (!participants[i]) return 'out';
+  if (!started) return 'idle';
+  const r = maze.routes[i];
+  if (t >= r.route.length - 1) return r.reached ? 'ok' : 'done';   // số không về đích chỉ lặng lẽ dừng, không hiện kết quả
+  if (t >= maxSteps) return 'done';
+  return 'run';
+}
+
+/* ---------- Bố cục canvas ---------- */
+function setupCanvas() {
+  const stage = el.canvas.parentElement;
+  const avail = Math.max(280, Math.min(stage.clientWidth - 16, 820));
+  geom.size = avail;
+  geom.s = avail / (N + 2 * MARGIN);
+  const dpr = window.devicePixelRatio || 1;
+  el.canvas.style.width = avail + 'px';
+  el.canvas.style.height = avail + 'px';
+  el.canvas.width = Math.round(avail * dpr);
+  el.canvas.height = Math.round(avail * dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+function cellX(c) { return (MARGIN + c + 0.5) * geom.s; }
+function cellY(r) { return (MARGIN + r + 0.5) * geom.s; }
+function cellPos(i) { return [cellX(i % N), cellY((i / N) | 0)]; }
+function labelPos(i) {
+  const e = maze.entrances[i], s = geom.s, m = MARGIN * s;
+  if (e.out === 0) return [cellX(e.c), m - 0.8 * s];
+  if (e.out === 1) return [m + N * s + 0.8 * s, cellY(e.r)];
+  if (e.out === 2) return [cellX(e.c), m + N * s + 0.8 * s];
+  return [m - 0.8 * s, cellY(e.r)];
+}
+
+/* ---------- Viên bi billiard ---------- */
+// Màu bi 1-8 như bàn billiard thật: vàng, xanh dương, đỏ, tím, cam, xanh lá, nâu đỏ, đen. Phải khớp với .ball.c1-c8 trong CSS.
+const BALL_COLORS = ['', '#f2c200', '#1550b8', '#d62828', '#5b2a86', '#f07f13', '#1b8a3a', '#7a1f1f', '#161616'];
+// Số 1-100 quay vòng theo bộ 15 bi: 1-8 màu đặc, 9-15 bi sọc cùng màu với bi 1-7
+function ballInfo(num) {
+  const k = ((num - 1) % 15) + 1;
+  return k <= 8 ? { c: k, stripe: false } : { c: k - 8, stripe: true };
+}
+function drawBall(x, y, r, num) {
+  const info = ballInfo(num), col = BALL_COLORS[info.c];
+  ctx.save();
+  ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.closePath();
+  ctx.fillStyle = info.stripe ? '#f7f4ec' : col; ctx.fill();
+  if (info.stripe) {
+    ctx.save(); ctx.clip();
+    ctx.fillStyle = col; ctx.fillRect(x - r, y - r * 0.6, r * 2, r * 1.2);
+    ctx.restore();
+  }
+  const shade = ctx.createRadialGradient(x - r * 0.25, y - r * 0.3, r * 0.3, x, y, r);   // phần tối ở mép bi
+  shade.addColorStop(0, 'rgba(0,0,0,0)'); shade.addColorStop(1, 'rgba(0,0,0,0.38)');
+  ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fillStyle = shade; ctx.fill();
+  ctx.beginPath(); ctx.arc(x, y, r * 0.52, 0, Math.PI * 2); ctx.fillStyle = '#f7f4ec'; ctx.fill();  // vòng trắng chứa số
+  const digits = String(num).length;
+  ctx.fillStyle = '#161616'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.font = '800 ' + (r * (digits === 1 ? 0.85 : digits === 2 ? 0.66 : 0.48)).toFixed(1) + 'px ' + fontFamily;
+  ctx.fillText(String(num), x, y + r * 0.03);
+  const shine = ctx.createRadialGradient(x - r * 0.38, y - r * 0.42, 0, x - r * 0.38, y - r * 0.42, r * 0.34);  // điểm sáng
+  shine.addColorStop(0, 'rgba(255,255,255,0.85)'); shine.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.beginPath(); ctx.arc(x - r * 0.38, y - r * 0.42, r * 0.34, 0, Math.PI * 2); ctx.fillStyle = shine; ctx.fill();
+  ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.lineWidth = 1; ctx.strokeStyle = 'rgba(0,0,0,0.45)'; ctx.stroke();
+  ctx.restore();
+}
+
+/* ---------- Vẽ ---------- */
+function polyline(cells, upto, color, width, alpha) {
+  if (!cells || upto < 1) return;
+  ctx.save();
+  ctx.strokeStyle = color; ctx.lineWidth = width; ctx.globalAlpha = alpha;
+  ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+  ctx.beginPath();
+  for (let k = 0; k <= upto && k < cells.length; k++) {
+    const p = cellPos(cells[k]);
+    if (k === 0) ctx.moveTo(p[0], p[1]); else ctx.lineTo(p[0], p[1]);
+  }
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawWalls() {
+  const s = geom.s, m = MARGIN * s;
+  ctx.strokeStyle = css('--wall');
+  ctx.lineWidth = Math.max(1.5, s * 0.1);
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  const seg = function (x1, y1, x2, y2) { ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); };
+  for (let r = 0; r < N; r++) {
+    for (let c = 0; c < N; c++) {
+      const i = r * N + c, x = m + c * s, y = m + r * s, g = maze.gate[i];
+      if (!(maze.open[i] & 1) && !(r === 0 && g === 0)) seg(x, y, x + s, y);
+      if (!(maze.open[i] & 8) && !(c === 0 && g === 3)) seg(x, y, x, y + s);
+      if (r === N - 1 && g !== 2) seg(x, y + s, x + s, y + s);
+      if (c === N - 1 && g !== 1) seg(x + s, y, x + s, y + s);
+    }
+  }
+  ctx.stroke();
+}
+
+function drawLabels(t) {
+  const s = geom.s;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.font = '700 ' + (s * 0.4).toFixed(1) + 'px ' + css('--font');
+  for (let i = 0; i < TOTAL; i++) {
+    const p = labelPos(i), st = statusOf(i, t);
+    ctx.globalAlpha = st === 'out' ? 0.35 : 1;
+    const gc = groupColor(i);                        // màu nhóm, chỉ có khi chơi theo nhóm
+    if (st === 'ok') {                               // đã về đích: số trở thành viên bi
+      drawBall(p[0], p[1], s * 0.47, i + 1);
+      if (i === selected || gc) {
+        ctx.beginPath(); ctx.arc(p[0], p[1], s * 0.5, 0, Math.PI * 2);
+        ctx.lineWidth = i === selected ? 3 : 2.5; ctx.strokeStyle = i === selected ? css('--route') : gc; ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+      continue;
+    }
+    ctx.beginPath(); ctx.arc(p[0], p[1], s * 0.47, 0, Math.PI * 2);
+    ctx.fillStyle = css('--surface-2'); ctx.fill();
+    ctx.lineWidth = i === selected ? 3 : gc ? 2.5 : 1;
+    ctx.strokeStyle = i === selected ? css('--route') : (gc || (st === 'run' ? css('--accent') : css('--line'))); ctx.stroke();
+    ctx.fillStyle = css('--ink'); ctx.fillText(String(i + 1), p[0], p[1] + 0.5);
+    ctx.globalAlpha = 1;
+  }
+}
+
+function drawTokens(t) {
+  const s = geom.s;
+  const frac = tick - t;
+  const order = [];
+  for (let i = 0; i < TOTAL; i++) if (statusOf(i, t) === 'run' && i !== selected) order.push(i);
+  if (selected >= 0 && statusOf(selected, t) === 'run') order.push(selected);
+  order.forEach(function (i) {
+    const route = maze.routes[i].route;
+    const a = cellPos(route[t]), b = cellPos(route[Math.min(t + 1, route.length - 1)]);
+    const x = a[0] + (b[0] - a[0]) * frac, y = a[1] + (b[1] - a[1]) * frac;
+    drawBall(x, y, s * 0.4, i + 1);                  // số đang đi là một viên bi lăn trong mê cung
+    const gc = groupColor(i);
+    if (i === selected || gc) {
+      ctx.beginPath(); ctx.arc(x, y, s * 0.44, 0, Math.PI * 2);
+      ctx.lineWidth = i === selected ? 3 : 2.5; ctx.strokeStyle = i === selected ? css('--route') : gc; ctx.stroke();
+    }
+  });
+}
+
+function drawCenter(t) {
+  const s = geom.s, m = MARGIN * s;
+  let arrived = 0;
+  for (let i = 0; i < TOTAL; i++) if (statusOf(i, t) === 'ok') arrived++;
+  const cx = m + (CENTER_MIN + 1.5) * s, cy = m + (CENTER_MIN + 1.5) * s;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillStyle = css('--ink');
+  ctx.font = '700 ' + (s * 0.75).toFixed(1) + 'px ' + css('--font');
+  ctx.fillText('ĐÍCH', cx, cy - s * 0.35);
+  ctx.font = '600 ' + (s * 0.6).toFixed(1) + 'px ' + css('--font');
+  ctx.fillText(started ? String(arrived) : '★', cx, cy + s * 0.5);
+}
+
+function draw() {
+  const size = geom.size, s = geom.s, m = MARGIN * s;
+  ctx.clearRect(0, 0, size, size);
+  ctx.fillStyle = css('--surface'); ctx.fillRect(0, 0, size, size);
+  if (!maze) return;
+  const t = Math.floor(tick);
+  fontFamily = css('--font');
+  ctx.fillStyle = css('--floor'); ctx.fillRect(m, m, N * s, N * s);
+  ctx.fillStyle = css('--goal'); ctx.fillRect(m + CENTER_MIN * s, m + CENTER_MIN * s, 3 * s, 3 * s);
+  if (el.chkSolution.checked) {
+    for (let i = 0; i < TOTAL; i++) {
+      const p = maze.solutions[i];
+      if (p && participants[i]) polyline(p, p.length, css('--solution'), s * 0.5, 1);
+    }
+  }
+  if (selected >= 0 && started) {
+    const r = maze.routes[selected].route;
+    polyline(r, Math.min(t, r.length - 1), css('--route'), Math.max(2.5, s * 0.2), 0.9);
+  }
+  drawWalls();
+  drawCenter(t);
+  drawLabels(t);
+  if (started) drawTokens(t);
+}
+
+/* ---------- Bảng kết quả ---------- */
+/* Một viên bi bằng HTML/CSS (khay kết quả và bảng xếp hạng nhóm) */
+function makeBall(num, mini) {
+  const info = ballInfo(num);
+  const ball = document.createElement('span');
+  ball.className = 'ball c' + info.c + (info.stripe ? ' stripe' : '') + (mini ? ' mini' : '');
+  const b = document.createElement('b');
+  b.className = 'd' + String(num).length;
+  b.textContent = String(num);
+  ball.appendChild(b);
+  return ball;
+}
+/* Một ô trong khay: viên bi, hạng, số bước và (khi chơi nhóm) tên nhóm */
+function rackItem(f, animate, delayMs) {
+  const li = document.createElement('li');
+  li.className = 'rk' + (animate ? ' rk--new' : '');
+  if (animate && delayMs) li.style.animationDelay = delayMs + 'ms';
+  const cap = document.createElement('span');
+  cap.className = 'rk-cap';
+  const rank = document.createElement('strong'); rank.textContent = 'Hạng ' + f.rank;
+  const steps = document.createElement('span'); steps.textContent = f.steps + ' bước';
+  cap.appendChild(rank); cap.appendChild(steps);
+  li.appendChild(makeBall(f.i + 1, false)); li.appendChild(cap);
+  const gi = playMode === 'group' ? groupOf[f.i] : -1;
+  if (gi >= 0) {
+    const tag = document.createElement('span');
+    tag.className = 'rk-grp'; tag.setAttribute('title', groups[gi].name);
+    const dot = document.createElement('i'); dot.className = 'gdot'; dot.style.background = groups[gi].color;
+    const nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = groups[gi].name;
+    tag.appendChild(dot); tag.appendChild(nm); li.appendChild(tag);
+  }
+  return li;
+}
+/* Thêm các viên bi mới về đích vào cuối khay; dựng lại từ đầu khi chạy lại hoặc đổi dữ liệu */
+function renderRack(count, finished) {
+  const key = maze.seed + '|' + maze.K + '|' + partVer + '|' + groupVer + '|' + playMode;
+  const fresh = key !== rackKey || count < rackShown;
+  if (fresh) { el.rack.textContent = ''; rackShown = 0; rackKey = key; }
+  const from = rackShown;
+  for (let k = from; k < count; k++) {
+    el.rack.appendChild(rackItem(finishOrder[k], !fresh, Math.min(k - from, 40) * 35));
+  }
+  rackShown = count;
+  if (count > from) el.rackWrap.scrollTop = finished ? 0 : el.rackWrap.scrollHeight;   // xong thì cuộn về bi hạng 1
+}
+
+function updatePanel(force) {
+  if (!maze) return;
+  const t = Math.floor(tick);
+  const np = countParticipants();
+  const states = [];
+  let ok = 0, run = 0;
+  for (let i = 0; i < TOTAL; i++) {
+    const s = statusOf(i, t);
+    states.push(s);
+    if (s === 'ok') ok++; else if (s === 'run') run++;
+  }
+  const selSteps = selected >= 0 ? Math.min(t, maze.routes[selected].route.length - 1) : -1;
+  const sig = [started ? 1 : 0, ok, run, selected, selSteps, maze.seed, maze.K, partVer, groupVer, playMode].join('|');
+  if (!force && sig === lastSig) return;
+  lastSig = sig;
+
+  // Bảng 1-100 chỉ cho biết số nào tham gia, đang đi; không tô màu thắng hay thua
+  const chips = el.chips.children;
+  for (let i = 0; i < TOTAL; i++) {
+    const cls = states[i] === 'out' ? 'out' : states[i] === 'run' ? 'run' : 'idle';
+    chips[i].className = 'chip chip--' + cls + (i === selected ? ' chip--sel' : '');
+    chips[i].setAttribute('aria-pressed', i === selected ? 'true' : 'false');
+    const gc = groupColor(i);                      // gạch màu dưới ô số cho biết số thuộc nhóm nào
+    chips[i].style.boxShadow = gc ? 'inset 0 -4px 0 ' + gc : '';
+  }
+
+  const finished = started && run === 0;
+  const grp = playMode === 'group';
+  const gr = grp && finished ? computeGroupRanking() : null;   // xếp hạng nhóm chỉ tính khi các số chạy xong
+  if (np === 0) {
+    el.summary.textContent = grp ? 'Chưa có số nào trong các nhóm. Hãy thêm số vào nhóm ở khung «Nhóm người chơi».'
+      : 'Chưa chọn số nào tham gia. Hãy chọn ở Bước 2.';
+    el.rackEmpty.textContent = 'Chưa có số nào tham gia.';
+  } else if (!started) {
+    el.summary.textContent = 'Đã chọn ' + np + ' số tham gia' + (grp ? ' của ' + countActiveGroups() + ' nhóm' : '')
+      + '. Bấm «Cho các số tự tìm đường».';
+    el.rackEmpty.textContent = 'Chưa có số nào về đích.';
+  } else if (!finished) {
+    el.summary.textContent = 'Đã về đích: ' + ok + '. Đang đi: ' + run + '.';
+    el.rackEmpty.textContent = 'Đang chạy, chưa có số nào về đích.';
+  } else {
+    let msg = ok > 0 ? 'Xong: ' + ok + ' số về đích.' : 'Xong: không có số nào về đích.';
+    if (gr && gr.length && gr[0].won.length > 0) {
+      msg += ' Nhóm hạng 1: ' + gr.filter(function (r) { return r.rank === 1; }).map(function (r) { return r.g.name; }).join(', ') + '.';
+    }
+    el.summary.textContent = msg;
+    el.rackEmpty.textContent = 'Không có số nào về đích.';
+  }
+  el.rackEmpty.hidden = ok > 0;
+  renderRack(ok, finished);
+  renderGroupResults(gr, finished);
+
+  // Ghi nhật ký đúng một lần cho mỗi lần chạy xong
+  if (!started) runLogged = false;
+  else if (finished && !runLogged) { runLogged = true; if (!suppressLog) logRun(gr); }
+
+  if (selected < 0) {
+    el.selInfo.textContent = 'Chọn chế độ «Xem đường đi của số đó» rồi bấm vào một số để xem đường đi.';
+  } else {
+    const r = maze.routes[selected], steps = r.route.length - 1, num = selected + 1;
+    const gtxt = grp && groupOf[selected] >= 0 ? ' Nhóm «' + groups[groupOf[selected]].name + '».' : '';
+    if (!started) el.selInfo.textContent = 'Số ' + num + ' đã được chọn. Đường đi sẽ hiện khi chạy.' + gtxt;
+    else if (selSteps < steps && t < maxSteps) el.selInfo.textContent = 'Số ' + num + ' đang đi: bước ' + selSteps + '.' + gtxt;
+    else if (r.reached) el.selInfo.textContent = 'Số ' + num + ' về đích sau ' + steps + ' bước, hạng ' + rankOf[selected] + ' (đường cam).' + gtxt;
+    else el.selInfo.textContent = 'Số ' + num + ' đã dừng.' + gtxt;
+  }
+}
+
+/* ---------- Xếp hạng nhóm ---------- */
+function countOf(g) { let n = 0; for (let i = 0; i < TOTAL; i++) if (g.nums[i]) n++; return n; }
+function countActiveGroups() { let n = 0; groups.forEach(function (g) { if (countOf(g) > 0) n++; }); return n; }
+/* Quy tắc: nhiều số về đích hơn thì xếp trên; bằng nhau thì tổng số bước của các số về đích ít hơn xếp trên;
+   bằng cả hai thì cùng hạng. Nhóm chưa có số nào không được xếp hạng. */
+function computeGroupRanking() {
+  const rows = [];
+  groups.forEach(function (g, gi) {
+    const size = countOf(g);
+    if (!size) return;
+    const won = finishOrder.filter(function (f) { return groupOf[f.i] === gi; });
+    rows.push({ g: g, size: size, won: won, steps: won.reduce(function (sum, f) { return sum + f.steps; }, 0), rank: 0 });
+  });
+  rows.sort(function (a, b) { return b.won.length - a.won.length || a.steps - b.steps; });
+  rows.forEach(function (r, k) {
+    const p = rows[k - 1];
+    r.rank = p && p.won.length === r.won.length && p.steps === r.steps ? p.rank : k + 1;
+  });
+  return rows;
+}
+function textCell(tag, text) { const c = document.createElement(tag); c.textContent = text; return c; }
+function renderGroupResults(gr, finished) {
+  const grp = playMode === 'group';
+  el.groupResults.hidden = !grp;
+  el.rankBody.textContent = '';
+  if (!grp) return;
+  const has = countActiveGroups() > 0;
+  const showTable = finished && has && gr;
+  el.rankWrap.hidden = !showTable;
+  el.rankMsg.hidden = !!showTable;
+  el.rankMsg.textContent = has ? 'Bảng xếp hạng nhóm sẽ hiện khi các số chạy xong.' : 'Chưa nhóm nào có số tham gia.';
+  if (!showTable) return;
+  gr.forEach(function (r) {
+    const tr = document.createElement('tr');
+    tr.className = r.rank === 1 && r.won.length > 0 ? 'first' : '';
+    const c1 = document.createElement('td');
+    const no = textCell('span', String(r.rank)); no.className = 'rk-no'; c1.appendChild(no);
+    const c2 = document.createElement('td');
+    const nm = document.createElement('span'); nm.className = 'tname';
+    const dot = document.createElement('i'); dot.className = 'gdot'; dot.style.background = r.g.color;
+    nm.appendChild(dot); nm.appendChild(textCell('span', r.g.name)); c2.appendChild(nm);
+    const c3 = textCell('td', r.won.length + ' / ' + r.size);
+    const c4 = textCell('td', r.won.length ? String(r.steps) : '—');
+    const c5 = document.createElement('td');
+    if (r.won.length) {
+      const mb = document.createElement('div'); mb.className = 'mini-balls';
+      r.won.forEach(function (f) { mb.appendChild(makeBall(f.i + 1, true)); });
+      c5.appendChild(mb);
+    } else c5.textContent = '—';
+    tr.appendChild(c1); tr.appendChild(c2); tr.appendChild(c3); tr.appendChild(c4); tr.appendChild(c5);
+    el.rankBody.appendChild(tr);
+  });
+}
+
+function updateButtons() {
+  let label = '▶ Cho các số tự tìm đường';
+  if (playing) label = '⏸ Tạm dừng';
+  else if (started && tick >= maxSteps) label = '↻ Chạy lại';
+  else if (started && tick > 0) label = '▶ Tiếp tục';
+  el.btnRun.textContent = label;
+  const none = !maze || countParticipants() === 0;
+  el.btnRun.disabled = none;
+  el.btnSkip.disabled = none || (started && tick >= maxSteps);
+  el.btnReset.disabled = !maze || (!started && selected < 0);
+}
+
+/* ---------- Hoạt ảnh ---------- */
+function frame(ts) {
+  if (!playing) return;
+  if (lastTs) tick += Math.min((ts - lastTs) / 1000, 0.25) * speed;
+  lastTs = ts;
+  if (tick >= maxSteps) { tick = maxSteps; playing = false; }
+  draw(); updatePanel(false); updateButtons();
+  if (playing) requestAnimationFrame(frame);
+}
+function play() {
+  if (!maze || countParticipants() === 0) return;
+  if (playing) { playing = false; updateButtons(); return; }
+  if (tick >= maxSteps) { tick = 0; runLogged = false; }   // chạy lại là một lần chơi mới
+  started = true; playing = true; lastTs = 0;
+  requestAnimationFrame(frame);
+  updateButtons();
+}
+function skipToEnd() {
+  if (!maze || countParticipants() === 0) return;
+  tick = maxSteps; started = true; playing = false;
+  draw(); updatePanel(true); updateButtons();
+}
+function resetRun() {
+  tick = 0; started = false; playing = false; selected = -1;
+  draw(); updatePanel(true); updateButtons();
+}
+function select(i) {
+  if (!maze) return;
+  selected = selected === i ? -1 : i;
+  draw(); updatePanel(true); updateButtons();
+}
+
+/* ---------- Tạo mê cung ---------- */
+function readK() {
+  const raw = el.kNum.value.trim();
+  if (!/^\d+$/.test(raw) || Number(raw) > TOTAL) {
+    el.kNum.setAttribute('aria-invalid', 'true');
+    setStatus('Hãy nhập số nguyên từ 0 đến 100 vào ô «Số lối đến được trung tâm».', 'error');
+    return null;
+  }
+  el.kNum.removeAttribute('aria-invalid');
+  return Number(raw);
+}
+function generate() {
+  const K = readK();
+  if (K === null) return;                         // giữ nguyên mê cung hiện tại
+  const typed = el.seed.value.trim();
+  const seed = typed || String(Math.floor(Math.random() * 1e9));
+  try {
+    maze = generateMaze(K, seed);
+  } catch (err) {
+    setStatus('Không tạo được mê cung: ' + err.message + ' Hãy thử mã khác.', 'error');
+    return;
+  }
+  recomputeMax();
+  tick = 0; started = false; playing = false; selected = -1;
+  el.seedInfo.textContent = 'Mã mê cung đang dùng: ' + seed + '. Nhập lại mã này cùng số lối để có đúng mê cung này.';
+  setStatus('Đã tạo mê cung: ' + K + ' trong 100 lối đến được trung tâm.', 'ok');
+  draw(); updatePanel(true); updateButtons();
+}
+
+/* ---------- Chọn các số tham gia ---------- */
+function participantsChanged() {
+  partVer++;
+  tick = 0; started = false; playing = false;
+  if (selected >= 0 && !participants[selected]) selected = -1;
+  recomputeMax();
+  el.pick.value = formatRanges(participants);
+  draw(); updatePanel(true); updateButtons();
+}
+function formatRanges(flags) {                    // [1,2,3,7,9,10] -> "1-3, 7, 9-10"
+  const parts = [];
+  let i = 0;
+  while (i < TOTAL) {
+    if (!flags[i]) { i++; continue; }
+    let j = i;
+    while (j + 1 < TOTAL && flags[j + 1]) j++;
+    parts.push(j > i ? (i + 1) + '-' + (j + 1) : String(i + 1));
+    i = j + 1;
+  }
+  return parts.join(', ');
+}
+function parsePick(text, allowEmpty) {             // "1-10, 25" -> mảng 100 giá trị true/false, hoặc báo lỗi
+  const tokens = text.split(/[\s,;]+/).filter(Boolean);
+  if (!tokens.length && allowEmpty) return { flags: new Array(TOTAL).fill(false) };
+  if (!tokens.length) return { error: 'Hãy nhập các số tham gia, ví dụ 1-30, 45. Muốn bỏ hết thì bấm «Bỏ chọn hết».' };
+  const flags = new Array(TOTAL).fill(false);
+  for (let k = 0; k < tokens.length; k++) {
+    const m = /^(\d+)(?:[-–](\d+))?$/.exec(tokens[k]);
+    if (!m) return { error: '«' + tokens[k] + '» không đúng dạng. Dùng số hoặc khoảng, ví dụ 5 hoặc 10-20.' };
+    const a = Number(m[1]), b = m[2] !== undefined ? Number(m[2]) : a;
+    if (a < 1 || b > TOTAL || a > b) return { error: '«' + tokens[k] + '» nằm ngoài phạm vi 1 đến 100 hoặc bị ngược.' };
+    for (let n = a; n <= b; n++) flags[n - 1] = true;
+  }
+  return { flags: flags };
+}
+function setParticipants(flags, message) {
+  for (let i = 0; i < TOTAL; i++) participants[i] = flags[i];
+  participantsChanged();
+  setStatus(message(countParticipants()), 'ok');
+}
+function numberClicked(i) {
+  if (!maze) return;
+  if (pickMode === 'join' && playMode === 'group') {
+    toggleInGroup(i);
+  } else if (pickMode === 'join') {
+    participants[i] = !participants[i];
+    participantsChanged();
+    setStatus('Số ' + (i + 1) + (participants[i] ? ' tham gia' : ' không tham gia') + '. Đang chọn ' + countParticipants() + ' số.', 'ok');
+  } else if (!participants[i]) {
+    setStatus('Số ' + (i + 1) + ' không tham gia nên chưa có đường đi. Chọn lại số này ở chế độ «Chọn / bỏ chọn tham gia».', 'error');
+  } else {
+    select(i);
+  }
+}
+
+/* ---------- Nhóm người chơi ---------- */
+function setGroupStatus(msg, kind) {
+  el.groupStatus.textContent = msg;
+  el.groupStatus.className = 'status' + (kind ? ' ' + kind : '');
+}
+function groupColor(i) { return playMode === 'group' && groupOf[i] >= 0 ? groups[groupOf[i]].color : null; }
+function activeGroup() { return groups.find(function (g) { return g.id === activeGroupId; }) || null; }
+function rebuildGroupOf() {
+  groupOf.fill(-1);
+  groups.forEach(function (g, gi) { for (let i = 0; i < TOTAL; i++) if (g.nums[i]) groupOf[i] = gi; });
+}
+function validateGroupName(name, self) {
+  if (!name) return 'Tên nhóm không được để trống.';
+  if (name.length > NAME_MAX) return 'Tên nhóm tối đa ' + NAME_MAX + ' ký tự.';
+  const dup = groups.find(function (o) { return o !== self && o.name.toLowerCase() === name.toLowerCase(); });
+  return dup ? 'Đã có nhóm tên «' + dup.name + '». Hãy đặt tên khác.' : '';
+}
+function autoGroupName() {
+  let k = 1;
+  while (groups.some(function (o) { return o.name.toLowerCase() === ('nhóm ' + k).toLowerCase(); })) k++;
+  return 'Nhóm ' + k;
+}
+/* Các số trong flags đang thuộc nhóm khác g (không cho một số thuộc hai nhóm) */
+function conflictMessage(flags, g) {
+  const by = {};
+  for (let i = 0; i < TOTAL; i++) {
+    if (flags[i] && groupOf[i] >= 0 && groups[groupOf[i]] !== g) {
+      const nm = groups[groupOf[i]].name;
+      (by[nm] = by[nm] || []).push(i + 1);
+    }
+  }
+  const names = Object.keys(by);
+  if (!names.length) return '';
+  return names.map(function (nm) {
+    const list = by[nm];
+    return 'Số ' + list.slice(0, 8).join(', ') + (list.length > 8 ? ' và ' + (list.length - 8) + ' số khác' : '') + ' đang thuộc «' + nm + '»';
+  }).join('; ') + '. Mỗi số chỉ thuộc một nhóm, hãy bỏ khỏi nhóm kia trước.';
+}
+function sameFlags(a, b) { for (let i = 0; i < TOTAL; i++) if (a[i] !== b[i]) return false; return true; }
+
+/* Mỗi lần nhóm đổi: dựng lại bảng số-thuộc-nhóm; nếu danh sách số đổi (reset) thì đặt lại lượt chạy */
+function groupsChanged(reset, g) {
+  groupVer++;
+  rebuildGroupOf();
+  if (playMode === 'group') for (let i = 0; i < TOTAL; i++) participants[i] = groupOf[i] >= 0;
+  if (g) refreshGroupRow(g);
+  el.groupEmpty.hidden = groups.length > 0;
+  if (reset) participantsChanged();
+  else { draw(); updatePanel(true); updateButtons(); }
+  saveState();
+}
+function refreshGroupRow(g) {
+  if (!g.ui) return;
+  g.ui.nums.value = formatRanges(g.nums);
+  g.ui.meta.textContent = countOf(g) + ' số';
+}
+
+function addGroup(raw) {
+  if (groups.length >= MAX_GROUPS) { setGroupStatus('Tối đa ' + MAX_GROUPS + ' nhóm. Hãy xóa bớt nhóm không dùng.', 'error'); return; }
+  const name = raw.trim() || autoGroupName();
+  const err = validateGroupName(name, null);
+  if (err) { el.groupName.setAttribute('aria-invalid', 'true'); setGroupStatus(err, 'error'); return; }
+  el.groupName.removeAttribute('aria-invalid');
+  const used = groups.map(function (o) { return o.color; });
+  const g = {
+    id: ++groupSeq, name: name, ui: null,
+    color: GROUP_COLORS.find(function (c) { return used.indexOf(c) < 0; }),
+    nums: new Array(TOTAL).fill(false)
+  };
+  groups.push(g);
+  activeGroupId = g.id;
+  el.groupName.value = '';
+  renderGroups();
+  groupsChanged(false);
+  setGroupStatus('Đã thêm «' + name + '». Bấm các số để thêm vào nhóm này, hoặc gõ danh sách số rồi bấm «Lưu nhóm».', 'ok');
+}
+function removeGroup(g) {
+  const hadNums = countOf(g) > 0;
+  groups.splice(groups.indexOf(g), 1);
+  if (activeGroupId === g.id) activeGroupId = groups.length ? groups[0].id : 0;
+  clearTimeout(armTimer); armedGroupId = 0;
+  renderGroups();
+  groupsChanged(hadNums);
+  setGroupStatus('Đã xóa nhóm «' + g.name + '».', 'ok');
+}
+function toggleInGroup(i) {
+  const g = activeGroup();
+  if (!g) { setGroupStatus('Hãy thêm một nhóm trước rồi chọn nhóm đang thêm số.', 'error'); return; }
+  const owner = groupOf[i] >= 0 ? groups[groupOf[i]] : null;
+  if (owner && owner !== g) {
+    setGroupStatus('Số ' + (i + 1) + ' đang thuộc «' + owner.name + '». Hãy bỏ số này khỏi nhóm đó trước.', 'error');
+    return;
+  }
+  g.nums[i] = !g.nums[i];
+  groupsChanged(true, g);
+  setGroupStatus('Số ' + (i + 1) + (g.nums[i] ? ' đã vào «' : ' đã ra khỏi «') + g.name + '». Nhóm có ' + countOf(g) + ' số.', 'ok');
+}
+
+/* Một thẻ nhóm: tên, danh sách số, chọn làm nhóm đang thêm số, lưu, xóa */
+function buildGroupRow(g) {
+  const form = document.createElement('form');
+  form.className = 'grp'; form.setAttribute('novalidate', '');
+  form.style.borderLeftColor = g.color;
+
+  const head = document.createElement('div'); head.className = 'grp-head';
+  const dot = document.createElement('i'); dot.className = 'gdot'; dot.style.background = g.color;
+  const name = document.createElement('input');
+  name.type = 'text'; name.id = 'gname' + g.id; name.value = g.name; name.maxLength = NAME_MAX;
+  name.setAttribute('autocomplete', 'off'); name.setAttribute('aria-label', 'Tên nhóm');
+  head.appendChild(dot); head.appendChild(name);
+
+  const nums = document.createElement('input');
+  nums.type = 'text'; nums.id = 'gnums' + g.id; nums.value = formatRanges(g.nums);
+  nums.placeholder = 'Các số của nhóm, ví dụ 1-10, 25';
+  nums.setAttribute('autocomplete', 'off'); nums.setAttribute('aria-label', 'Các số của nhóm');
+
+  const meta = document.createElement('div'); meta.className = 'grp-meta'; meta.textContent = countOf(g) + ' số';
+
+  const act = document.createElement('label'); act.className = 'grp-active';
+  const radio = document.createElement('input');
+  radio.type = 'radio'; radio.name = 'activeGroup'; radio.id = 'gact' + g.id; radio.checked = g.id === activeGroupId;
+  act.appendChild(radio); act.appendChild(textCell('span', 'Đang thêm số vào nhóm này'));
+
+  const btns = document.createElement('div'); btns.className = 'btnrow';
+  const save = document.createElement('button'); save.type = 'submit'; save.className = 'btn sm primary'; save.textContent = 'Lưu nhóm';
+  const del = document.createElement('button'); del.type = 'button'; del.className = 'btn sm danger'; del.textContent = 'Xóa nhóm';
+  btns.appendChild(save); btns.appendChild(del);
+
+  form.appendChild(head); form.appendChild(nums); form.appendChild(meta); form.appendChild(act); form.appendChild(btns);
+  g.ui = { form: form, name: name, nums: nums, meta: meta, radio: radio, del: del };
+
+  radio.addEventListener('change', function () {
+    if (!radio.checked) return;
+    activeGroupId = g.id; saveState();
+    setGroupStatus('Đang thêm số vào «' + g.name + '». Bấm các số để thêm hoặc bỏ.', 'ok');
+  });
+  form.addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    const newName = name.value.trim();
+    const errName = validateGroupName(newName, g);
+    if (errName) { name.setAttribute('aria-invalid', 'true'); setGroupStatus(errName, 'error'); return; }
+    name.removeAttribute('aria-invalid');
+    const res = parsePick(nums.value, true);
+    if (res.error) { nums.setAttribute('aria-invalid', 'true'); setGroupStatus(res.error, 'error'); return; }
+    const conflict = conflictMessage(res.flags, g);
+    if (conflict) { nums.setAttribute('aria-invalid', 'true'); setGroupStatus(conflict, 'error'); return; }
+    nums.removeAttribute('aria-invalid');
+    const numsChanged = !sameFlags(res.flags, g.nums), renamed = newName !== g.name;
+    g.name = newName; g.nums = res.flags;
+    if (numsChanged || renamed) groupsChanged(numsChanged, g);
+    else refreshGroupRow(g);
+    setGroupStatus('Đã lưu «' + g.name + '»: ' + countOf(g) + ' số.', 'ok');
+  });
+  del.addEventListener('click', function () {
+    if (countOf(g) > 0 && armedGroupId !== g.id) {      // nhóm đã có số: bấm lần hai mới xóa
+      armedGroupId = g.id; del.textContent = 'Bấm lần nữa để xóa';
+      clearTimeout(armTimer);
+      armTimer = setTimeout(function () { armedGroupId = 0; del.textContent = 'Xóa nhóm'; }, 4000);
+      return;
+    }
+    removeGroup(g);
+  });
+  return form;
+}
+function renderGroups() {
+  el.groupList.textContent = '';
+  groups.forEach(function (g) { el.groupList.appendChild(buildGroupRow(g)); });
+  el.groupEmpty.hidden = groups.length > 0;
+}
+
+/* Chuyển giữa chơi cá nhân và chơi theo nhóm; lựa chọn cá nhân được giữ lại */
+function applyModeUI() {
+  const grp = playMode === 'group';
+  el.playSolo.checked = !grp; el.playGroup.checked = grp;
+  el.soloBox.hidden = grp; el.groupHint.hidden = !grp;
+  el.groupsSection.hidden = !grp; el.groupResults.hidden = !grp;
+  el.joinLabel.textContent = grp ? 'Thêm / bỏ số trong nhóm đang chọn' : 'Chọn / bỏ chọn tham gia';
+}
+function setPlayMode(mode) {
+  if (mode === playMode) return;
+  if (mode === 'group') { soloSaved = participants.slice(); playMode = 'group'; }
+  else { playMode = 'solo'; if (soloSaved) for (let i = 0; i < TOTAL; i++) participants[i] = soloSaved[i]; }
+  rebuildGroupOf();
+  if (playMode === 'group') for (let i = 0; i < TOTAL; i++) participants[i] = groupOf[i] >= 0;
+  groupVer++;
+  applyModeUI();
+  participantsChanged();
+  saveState();
+}
+
+/* Lưu nhóm trên trình duyệt (localStorage) để tải lại trang không mất */
+function saveState() {
+  try {
+    localStorage.setItem(STORE_KEY, JSON.stringify({
+      v: 1, mode: playMode,
+      active: groups.findIndex(function (g) { return g.id === activeGroupId; }),
+      groups: groups.map(function (g) {
+        const list = [];
+        for (let i = 0; i < TOTAL; i++) if (g.nums[i]) list.push(i + 1);
+        return { name: g.name, nums: list };
+      })
+    }));
+  } catch (e) { /* trình duyệt chặn lưu trữ: vẫn dùng bình thường, chỉ không nhớ được */ }
+}
+function loadState() {
+  let data = null;
+  try { data = JSON.parse(localStorage.getItem(STORE_KEY) || 'null'); } catch (e) { data = null; }
+  if (!data || data.v !== 1 || !Array.isArray(data.groups)) return;
+  const taken = new Array(TOTAL).fill(false);
+  data.groups.slice(0, MAX_GROUPS).forEach(function (raw) {
+    if (!raw || typeof raw.name !== 'string') return;
+    const name = raw.name.trim().slice(0, NAME_MAX);
+    if (!name || groups.some(function (o) { return o.name.toLowerCase() === name.toLowerCase(); })) return;
+    const nums = new Array(TOTAL).fill(false);
+    (Array.isArray(raw.nums) ? raw.nums : []).forEach(function (n) {
+      if (Number.isInteger(n) && n >= 1 && n <= TOTAL && !taken[n - 1]) { nums[n - 1] = true; taken[n - 1] = true; }
+    });
+    const used = groups.map(function (o) { return o.color; });
+    groups.push({
+      id: ++groupSeq, name: name, nums: nums, ui: null,
+      color: GROUP_COLORS.find(function (c) { return used.indexOf(c) < 0; })
+    });
+  });
+  const act = groups[Number.isInteger(data.active) && data.active >= 0 ? data.active : 0];
+  activeGroupId = act ? act.id : (groups.length ? groups[0].id : 0);
+  rebuildGroupOf();
+  if (data.mode === 'group') {
+    soloSaved = participants.slice();
+    playMode = 'group';
+    for (let i = 0; i < TOTAL; i++) participants[i] = groupOf[i] >= 0;
+  }
+}
+
+/* ---------- Nhật ký các lần chơi ---------- */
+const LOG_KEY = 'web_me_cung_hs.log.v1';
+const MAX_LOG = 200;
+let logEntries = [];                                 // cũ → mới
+let logSeq = 0;                                      // số thứ tự lần chơi, không đổi khi xóa lần khác
+const logSel = new Set();                            // id các lần chơi đang được chọn
+const logArm = { load: 0, del: false, all: false };  // nút nạp thay nhóm / xóa phải bấm hai lần
+let logArmTimer = 0;
+let runLogged = true;                                // lần chạy hiện tại đã được ghi chưa
+let suppressLog = false;                             // tạm tắt ghi khi nạp lại một lần chơi cũ
+
+function setLogStatus(msg, kind) {
+  el.logStatus.textContent = msg;
+  el.logStatus.className = 'status' + (kind ? ' ' + kind : '');
+}
+function pad2(n) { return n < 10 ? '0' + n : String(n); }
+function fmtTime(t) {
+  if (!t) return '—';
+  const d = new Date(t);
+  return pad2(d.getHours()) + ':' + pad2(d.getMinutes()) + ' ' + pad2(d.getDate()) + '/' + pad2(d.getMonth() + 1) + '/' + d.getFullYear();
+}
+function listOf(flags) { const out = []; for (let i = 0; i < TOTAL; i++) if (flags[i]) out.push(i + 1); return out; }
+function flagsOf(list) { const f = new Array(TOTAL).fill(false); list.forEach(function (n) { f[n - 1] = true; }); return f; }
+
+/* Đọc và làm sạch dữ liệu nhật ký từ trình duyệt; bản ghi hỏng bị bỏ qua */
+function intList(a, lo, hi) {
+  const out = [];
+  (Array.isArray(a) ? a : []).forEach(function (n) { if (Number.isInteger(n) && n >= lo && n <= hi && out.indexOf(n) < 0) out.push(n); });
+  return out;
+}
+function sanitizeEntry(raw) {
+  if (!raw || !Number.isInteger(raw.id) || raw.id < 1 || typeof raw.seed !== 'string') return null;
+  if (!Number.isInteger(raw.K) || raw.K < 0 || raw.K > TOTAL || (raw.mode !== 'solo' && raw.mode !== 'group')) return null;
+  const str = function (s) { return typeof s === 'string' ? s.slice(0, NAME_MAX) : ''; };
+  const col = function (c) { return GROUP_COLORS.indexOf(c) >= 0 ? c : ''; };
+  const int0 = function (n) { return Number.isInteger(n) && n >= 0 ? n : 0; };
+  const finish = [];
+  (Array.isArray(raw.finish) ? raw.finish : []).forEach(function (p) {
+    if (Array.isArray(p) && Number.isInteger(p[0]) && p[0] >= 1 && p[0] <= TOTAL && Number.isInteger(p[1]) && p[1] >= 0) finish.push([p[0], p[1]]);
+  });
+  const grps = [];
+  (Array.isArray(raw.groups) ? raw.groups : []).slice(0, MAX_GROUPS).forEach(function (g) {
+    if (g && str(g.name)) grps.push({ name: str(g.name), color: col(g.color), nums: intList(g.nums, 1, TOTAL) });
+  });
+  const ranking = [];
+  (Array.isArray(raw.ranking) ? raw.ranking : []).slice(0, MAX_GROUPS).forEach(function (r) {
+    if (r && str(r.name)) ranking.push({ name: str(r.name), color: col(r.color), won: int0(r.won), size: int0(r.size), steps: int0(r.steps), rank: int0(r.rank) });
+  });
+  return {
+    id: raw.id, t: Number.isFinite(raw.t) ? raw.t : 0, seed: raw.seed, K: raw.K, mode: raw.mode,
+    players: intList(raw.players, 1, TOTAL), finish: finish, groups: grps, ranking: ranking
+  };
+}
+function loadLog() {
+  let data = null;
+  try { data = JSON.parse(localStorage.getItem(LOG_KEY) || 'null'); } catch (e) { data = null; }
+  if (!data || data.v !== 1 || !Array.isArray(data.entries)) return;
+  const seen = {};
+  let maxId = 0;
+  data.entries.slice(-MAX_LOG).forEach(function (raw) {
+    const e = sanitizeEntry(raw);
+    if (!e || seen[e.id]) return;
+    seen[e.id] = true; maxId = Math.max(maxId, e.id);
+    logEntries.push(e);
+  });
+  logSeq = Math.max(Number.isInteger(data.seq) ? data.seq : 0, maxId);
+}
+function saveLog() {
+  try { localStorage.setItem(LOG_KEY, JSON.stringify({ v: 1, seq: logSeq, entries: logEntries })); return true; }
+  catch (e) { return false; }
+}
+
+/* Ghi một lần chơi vừa chạy xong: cấu hình, thứ tự về đích và (nếu chơi nhóm) xếp hạng nhóm */
+function logRun(gr) {
+  const entry = {
+    id: ++logSeq, t: Date.now(), seed: maze.seed, K: maze.K, mode: playMode,
+    players: listOf(participants),
+    finish: finishOrder.map(function (f) { return [f.i + 1, f.steps]; }),
+    groups: playMode === 'group'
+      ? groups.filter(function (g) { return countOf(g) > 0; }).map(function (g) { return { name: g.name, color: g.color, nums: listOf(g.nums) }; })
+      : [],
+    ranking: gr ? gr.map(function (r) {
+      return { name: r.g.name, color: r.g.color, won: r.won.length, size: r.size, steps: r.steps, rank: r.rank };
+    }) : []
+  };
+  logEntries.push(entry);
+  let note = '';
+  while (logEntries.length > MAX_LOG) {
+    const old = logEntries.shift();
+    logSel.delete(old.id);
+    note = ' Nhật ký đầy nên lần chơi cũ nhất (#' + old.id + ') đã bị xóa.';
+  }
+  const ok = saveLog();
+  disarmLog();
+  renderLog();
+  setStatus(ok ? 'Đã ghi lần chơi #' + entry.id + ' vào tab «Nhật ký các lần chơi».' : 'Lần chơi #' + entry.id + ' chưa lưu được vào nhật ký.', ok ? 'ok' : 'error');
+  setLogStatus(ok ? 'Đã ghi lần chơi #' + entry.id + ' vào nhật ký.' + note
+    : 'Lần chơi #' + entry.id + ' chưa lưu được vào trình duyệt (bộ nhớ đầy hoặc bị chặn). Nhật ký chỉ còn trong trang này cho đến khi tải lại.', ok ? 'ok' : 'error');
+}
+
+function logSummary(e) {
+  if (e.mode === 'group') {
+    const top = e.ranking.filter(function (r) { return r.rank === 1 && r.won > 0; });
+    return (top.length ? 'Hạng 1: ' + top.map(function (r) { return r.name + ' (' + r.won + '/' + r.size + ')'; }).join(', ') + '. ' : '')
+      + (e.finish.length ? e.finish.length + ' số về đích.' : 'Không có số nào về đích.');
+  }
+  return e.finish.length ? e.finish.length + ' số về đích. Nhanh nhất: số ' + e.finish[0][0] + ' (' + e.finish[0][1] + ' bước).'
+    : 'Không có số nào về đích.';
+}
+function subLine(text) { const s = document.createElement('span'); s.className = 'sub'; s.textContent = text; return s; }
+
+function refreshLogSelection() {
+  const n = logSel.size, total = logEntries.length;
+  el.logAll.checked = total > 0 && n === total;
+  el.logAll.indeterminate = n > 0 && n < total;
+  el.btnLogLoad.disabled = n !== 1;
+  el.btnLogDel.disabled = n === 0;
+  el.btnLogClear.disabled = total === 0;
+  el.btnLogSave.disabled = total === 0;
+  el.logBadge.textContent = String(total);
+  el.logCount.textContent = total + ' lần chơi, đã chọn ' + n;
+}
+function renderLog() {
+  el.logBody.textContent = '';
+  el.logEmpty.hidden = logEntries.length > 0;
+  el.logWrap.hidden = logEntries.length === 0;
+  logEntries.slice().reverse().forEach(function (e) {              // lần mới nhất ở trên cùng
+    const tr = document.createElement('tr');
+    tr.className = logSel.has(e.id) ? 'sel' : '';
+    const c0 = document.createElement('td');
+    const cb = document.createElement('input');
+    cb.type = 'checkbox'; cb.id = 'logsel' + e.id; cb.checked = logSel.has(e.id);
+    cb.setAttribute('aria-label', 'Chọn lần chơi #' + e.id);
+    cb.addEventListener('change', function () {
+      if (cb.checked) logSel.add(e.id); else logSel.delete(e.id);
+      tr.className = cb.checked ? 'sel' : '';
+      disarmLog(); refreshLogSelection();
+    });
+    c0.appendChild(cb);
+    const c1 = textCell('td', '#' + e.id);
+    const c2 = textCell('td', fmtTime(e.t));
+    const c3 = textCell('td', e.K + ' lối thông'); c3.appendChild(subLine('Mã: ' + e.seed));
+    const c4 = textCell('td', e.mode === 'group' ? 'Theo nhóm · ' + e.players.length + ' số' : 'Cá nhân · ' + e.players.length + ' số');
+    if (e.mode === 'group') c4.appendChild(subLine(e.groups.map(function (g) { return g.name; }).join(', ')));
+    const c5 = textCell('td', logSummary(e)); c5.className = 'sum';
+    tr.appendChild(c0); tr.appendChild(c1); tr.appendChild(c2); tr.appendChild(c3); tr.appendChild(c4); tr.appendChild(c5);
+    el.logBody.appendChild(tr);
+  });
+  refreshLogSelection();
+}
+
+/* Nút nạp thay nhóm, xóa đã chọn, xóa tất cả: bấm lần đầu để xác nhận, bấm lần hai trong 4 giây để làm */
+function disarmLog() {
+  clearTimeout(logArmTimer);
+  logArm.load = 0; logArm.del = false; logArm.all = false;
+  el.btnLogLoad.textContent = 'Nạp lại lần chơi đã chọn';
+  el.btnLogDel.textContent = 'Xóa các lần chơi đã chọn';
+  el.btnLogClear.textContent = 'Xóa tất cả';
+}
+function armLog(kind, btn, text, value) {
+  disarmLog();
+  logArm[kind] = value === undefined ? true : value;
+  btn.textContent = text;
+  logArmTimer = setTimeout(disarmLog, 4000);
+}
+function groupSig(list) {
+  return list.filter(function (g) { return g.nums.length > 0; })
+    .map(function (g) { return g.name + ':' + g.nums.join(','); }).sort().join('|');
+}
+/* Nạp một lần chơi nhóm sẽ thay các nhóm đang có; chỉ hỏi lại khi nhóm đang có khác nhóm của lần chơi đó */
+function needsLoadConfirm(e) {
+  if (e.mode !== 'group') return false;
+  const cur = groups.map(function (g) { return { name: g.name, nums: listOf(g.nums) }; });
+  if (!cur.some(function (g) { return g.nums.length > 0; })) return false;
+  return groupSig(cur) !== groupSig(e.groups);
+}
+
+/* Nạp lại: dựng lại đúng mê cung (số lối + mã), đặt lại cách chơi, nhóm, các số tham gia rồi hiện kết quả.
+   Không ghi thêm một lần chơi mới vào nhật ký. */
+function applyEntry(e) {
+  showTab('choi');
+  playing = false;
+  el.kNum.value = String(e.K); el.kRange.value = String(e.K); el.kNum.removeAttribute('aria-invalid');
+  el.seed.value = e.seed;
+  let ok = true;
+  suppressLog = true;
+  try {
+    generate();
+    if (!maze || maze.K !== e.K || maze.seed !== e.seed) { ok = false; return; }
+    if (e.mode === 'group') {
+      const used = [];
+      groups = e.groups.map(function (g) {
+        const color = g.color && used.indexOf(g.color) < 0 ? g.color : GROUP_COLORS.find(function (c) { return used.indexOf(c) < 0; });
+        used.push(color);
+        return { id: ++groupSeq, name: g.name, color: color, nums: flagsOf(g.nums), ui: null };
+      });
+      if (playMode !== 'group') { soloSaved = participants.slice(); playMode = 'group'; }
+      activeGroupId = groups.length ? groups[0].id : 0;
+      clearTimeout(armTimer); armedGroupId = 0;
+      rebuildGroupOf();
+      for (let i = 0; i < TOTAL; i++) participants[i] = groupOf[i] >= 0;
+      renderGroups();
+    } else {
+      playMode = 'solo';
+      for (let i = 0; i < TOTAL; i++) participants[i] = e.players.indexOf(i + 1) >= 0;
+    }
+    groupVer++;
+    applyModeUI();
+    saveState();
+    participantsChanged();
+    skipToEnd();
+  } finally {
+    suppressLog = false;
+  }
+  if (!ok) { setLogStatus('Không dựng lại được mê cung của lần chơi #' + e.id + '.', 'error'); return; }
+  if (countParticipants() === 0) { setLogStatus('Lần chơi #' + e.id + ' không có số tham gia nên không có gì để hiện.', 'error'); return; }
+  const got = finishOrder.map(function (f) { return (f.i + 1) + ':' + f.steps; }).join();
+  const want = e.finish.map(function (p) { return p[0] + ':' + p[1]; }).join();
+  if (got === want) setLogStatus('Đã nạp lại lần chơi #' + e.id + ': mê cung, người chơi và kết quả như lúc ghi.', 'ok');
+  else setLogStatus('Đã nạp lại lần chơi #' + e.id + ' nhưng kết quả tính lại khác bản ghi (mê cung dựng lại khác, có thể do app đã đổi phiên bản). Màn hình đang hiện kết quả mới.', 'error');
+  if (el.canvas.scrollIntoView) el.canvas.scrollIntoView({ block: 'start' });
+}
+
+function loadSelected() {
+  if (logSel.size !== 1) { setLogStatus(logSel.size ? 'Hãy chọn đúng một lần chơi để nạp lại.' : 'Hãy chọn một lần chơi để nạp lại.', 'error'); return; }
+  const id = Array.from(logSel)[0];
+  const e = logEntries.find(function (x) { return x.id === id; });
+  if (!e) return;
+  if (needsLoadConfirm(e) && logArm.load !== e.id) {
+    armLog('load', el.btnLogLoad, 'Bấm lần nữa để thay nhóm hiện tại', e.id);
+    setLogStatus('Nạp lần chơi #' + e.id + ' sẽ thay các nhóm đang có bằng nhóm của lần chơi đó. Bấm lần nữa để nạp, hoặc chờ vài giây để hủy.', 'error');
+    return;
+  }
+  disarmLog();
+  applyEntry(e);
+}
+function deleteSelected() {
+  const n = logSel.size;
+  if (!n) return;
+  if (!logArm.del) {
+    armLog('del', el.btnLogDel, 'Bấm lần nữa để xóa ' + n + ' lần chơi');
+    setLogStatus('Sắp xóa ' + n + ' lần chơi đã chọn. Bấm lần nữa để xóa, hoặc chờ vài giây để hủy.', 'error');
+    return;
+  }
+  disarmLog();
+  logEntries = logEntries.filter(function (e) { return !logSel.has(e.id); });
+  logSel.clear();
+  const ok = saveLog();
+  renderLog();
+  setLogStatus(ok ? 'Đã xóa ' + n + ' lần chơi.' : 'Đã xóa ' + n + ' lần chơi trên trang nhưng chưa lưu được vào trình duyệt.', ok ? 'ok' : 'error');
+}
+function clearLog() {
+  const n = logEntries.length;
+  if (!n) return;
+  if (!logArm.all) {
+    armLog('all', el.btnLogClear, 'Bấm lần nữa để xóa tất cả ' + n + ' lần chơi');
+    setLogStatus('Sắp xóa toàn bộ ' + n + ' lần chơi trong nhật ký. Bấm lần nữa để xóa, hoặc chờ vài giây để hủy.', 'error');
+    return;
+  }
+  disarmLog();
+  logEntries = []; logSel.clear(); logSeq = 0;
+  const ok = saveLog();
+  renderLog();
+  setLogStatus(ok ? 'Đã xóa tất cả ' + n + ' lần chơi. Nhật ký trống.' : 'Đã xóa tất cả trên trang nhưng chưa lưu được vào trình duyệt.', ok ? 'ok' : 'error');
+}
+
+/* ---------- Tab ---------- */
+function showTab(name) {
+  const log = name === 'nhat-ky';
+  el.panelPlay.hidden = log; el.panelLog.hidden = !log;
+  el.tabPlay.setAttribute('aria-selected', log ? 'false' : 'true'); el.tabPlay.tabIndex = log ? -1 : 0;
+  el.tabLog.setAttribute('aria-selected', log ? 'true' : 'false'); el.tabLog.tabIndex = log ? 0 : -1;
+  if (!log) { setupCanvas(); draw(); }          // canvas bị ẩn thì không đo được kích thước, phải vẽ lại khi hiện
+  try { if (location.hash !== '#' + name) history.replaceState(null, '', '#' + name); } catch (e) { /* trang nhúng: bỏ qua */ }
+}
+function tabFromHash() { return location.hash === '#nhat-ky' ? 'nhat-ky' : 'choi'; }
+
+/* ---------- Lưu / mở file JSON ---------- */
+const FILE_TYPE = 'web_me_cung_hs.nhat_ky';
+function logSig(e) { return JSON.stringify([e.t, e.seed, e.K, e.mode, e.players, e.finish]); }
+function buildExport() {
+  return JSON.stringify({ app: 'web_me_cung_hs', type: FILE_TYPE, v: 1, exportedAt: new Date().toISOString(), seq: logSeq, entries: logEntries }, null, 1);
+}
+/* Gộp các lần chơi đọc từ file vào nhật ký: bỏ bản trùng (cùng thời điểm, mê cung, người chơi, kết quả), cấp số thứ tự mới nếu trùng số.
+   Trả về {added, dup, bad, dropped, error}. Không xóa lần chơi nào đang có (trừ khi vượt 200 thì bỏ lần cũ nhất). */
+function mergeImported(text) {
+  let data;
+  try { data = JSON.parse(text); } catch (e) { return { error: 'File không phải JSON hợp lệ (' + e.message + ').' }; }
+  const list = Array.isArray(data) ? data : (data && Array.isArray(data.entries) ? data.entries : null);
+  if (!list) return { error: 'File JSON này không có danh sách lần chơi («entries»). Hãy chọn file đã lưu từ nhật ký này.' };
+  if (data && !Array.isArray(data) && data.type !== undefined && data.type !== FILE_TYPE) return { error: 'File JSON này không phải file nhật ký mê cung.' };
+  const have = {}, ids = {};
+  logEntries.forEach(function (e) { have[logSig(e)] = true; ids[e.id] = true; });
+  const fresh = [];
+  let dup = 0, bad = 0;
+  list.forEach(function (raw) {
+    const e = sanitizeEntry(raw);
+    if (!e) { bad++; return; }
+    const s = logSig(e);
+    if (have[s]) { dup++; return; }
+    have[s] = true; fresh.push(e);
+  });
+  fresh.sort(function (a, b) { return a.t - b.t; });
+  fresh.forEach(function (e) { e.id = ++logSeq; });   // luôn cấp số mới để không đụng số đang có
+  logEntries = logEntries.concat(fresh).sort(function (a, b) { return a.t - b.t || a.id - b.id; });
+  let dropped = 0;
+  while (logEntries.length > MAX_LOG) { logSel.delete(logEntries.shift().id); dropped++; }
+  return { added: fresh.length, dup: dup, bad: bad, dropped: dropped };
+}
+function importText(text, name) {
+  const r = mergeImported(text);
+  disarmLog();
+  if (r.error) { setLogStatus(r.error, 'error'); return r; }
+  const ok = r.added ? saveLog() : true;
+  renderLog();
+  const parts = ['Đã thêm ' + r.added + ' lần chơi từ «' + name + '»'];
+  if (r.dup) parts.push(r.dup + ' lần đã có sẵn nên bỏ qua');
+  if (r.bad) parts.push(r.bad + ' bản ghi hỏng bị bỏ qua');
+  if (r.dropped) parts.push('nhật ký đầy nên ' + r.dropped + ' lần cũ nhất bị xóa');
+  let msg = parts.join('; ') + '.';
+  if (!ok) msg += ' Chưa lưu được vào trình duyệt.';
+  setLogStatus(msg, ok && r.added ? 'ok' : (ok ? '' : 'error'));
+  return r;
+}
+function readPickedFile(file) {
+  if (!file) return;
+  if (file.size > 20 * 1024 * 1024) { setLogStatus('File quá lớn (hơn 20 MB), không phải file nhật ký.', 'error'); return; }
+  const fr = new FileReader();
+  fr.onerror = function () { setLogStatus('Không đọc được file «' + file.name + '».', 'error'); };
+  fr.onload = function () { importText(String(fr.result).replace(/^﻿/, ''), file.name); };
+  fr.readAsText(file, 'utf-8');
+}
+function stamp() {
+  const d = new Date();
+  return d.getFullYear() + pad2(d.getMonth() + 1) + pad2(d.getDate()) + '-' + pad2(d.getHours()) + pad2(d.getMinutes());
+}
+/* Lưu file: trong Claude dùng khả năng «downloads» (người xem xác nhận); chạy độc lập thì tải trực tiếp bằng Blob */
+async function saveLogFile() {
+  if (!logEntries.length) { setLogStatus('Nhật ký đang trống, chưa có gì để lưu.', 'error'); return; }
+  const filename = 'nhat-ky-me-cung-' + stamp() + '.json';
+  const text = buildExport();
+  const n = logEntries.length;
+  try {
+    if (window.claude && typeof window.claude.use === 'function') {
+      const dl = await window.claude.use('downloads');
+      if (!dl) { setLogStatus('Trang này không được phép lưu file ở đây. Hãy mở bản HTML tải về để lưu file JSON.', 'error'); return; }
+      await dl.save({ filename: filename, data: text });
+      setLogStatus('Đã lưu ' + n + ' lần chơi vào file ' + filename + '.', 'ok');
+      return;
+    }
+    const url = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
+    const a = document.createElement('a');
+    a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+    setLogStatus('Đã tạo file ' + filename + ' (' + n + ' lần chơi). Xem trong thư mục Tải xuống của trình duyệt.', 'ok');
+  } catch (err) {
+    const code = err && err.code;
+    setLogStatus(code === 'declined' ? 'Đã hủy, chưa lưu file.'
+      : code === 'rate_limited' ? 'Đang có hộp thoại lưu file khác, hãy thử lại sau vài giây.'
+      : 'Không lưu được file' + (err && err.message ? ': ' + err.message : '.'), 'error');
+  }
+}
+
+/* ---------- Sự kiện ---------- */
+el.tabPlay.addEventListener('click', function () { showTab('choi'); });
+el.tabLog.addEventListener('click', function () { showTab('nhat-ky'); });
+[el.tabPlay, el.tabLog].forEach(function (t) {
+  t.addEventListener('keydown', function (ev) {
+    if (ev.key !== 'ArrowLeft' && ev.key !== 'ArrowRight') return;
+    const goLog = t === el.tabPlay;
+    showTab(goLog ? 'nhat-ky' : 'choi');
+    (goLog ? el.tabLog : el.tabPlay).focus();
+  });
+});
+window.addEventListener('hashchange', function () { showTab(tabFromHash()); });
+el.btnLogSave.addEventListener('click', saveLogFile);
+el.btnLogOpen.addEventListener('click', function () { el.logFile.value = ''; el.logFile.click(); });
+el.logFile.addEventListener('change', function () { readPickedFile(el.logFile.files && el.logFile.files[0]); });
+el.btnLogLoad.addEventListener('click', loadSelected);
+el.btnLogDel.addEventListener('click', deleteSelected);
+el.btnLogClear.addEventListener('click', clearLog);
+el.logAll.addEventListener('change', function () {
+  logSel.clear();
+  if (el.logAll.checked) logEntries.forEach(function (e) { logSel.add(e.id); });
+  disarmLog(); renderLog();
+});
+el.playSolo.addEventListener('change', function () { if (el.playSolo.checked) setPlayMode('solo'); });
+el.playGroup.addEventListener('change', function () { if (el.playGroup.checked) setPlayMode('group'); });
+el.groupAddForm.addEventListener('submit', function (ev) { ev.preventDefault(); addGroup(el.groupName.value); });
+el.pickForm.addEventListener('submit', function (ev) {
+  ev.preventDefault();
+  const res = parsePick(el.pick.value);
+  if (res.error) { el.pick.setAttribute('aria-invalid', 'true'); setStatus(res.error, 'error'); return; }
+  el.pick.removeAttribute('aria-invalid');
+  setParticipants(res.flags, function (n) { return 'Đã chọn ' + n + ' số tham gia.'; });
+});
+el.btnAll.addEventListener('click', function () {
+  el.pick.removeAttribute('aria-invalid');
+  setParticipants(new Array(TOTAL).fill(true), function (n) { return 'Đã chọn tất cả ' + n + ' số.'; });
+});
+el.btnNone.addEventListener('click', function () {
+  el.pick.removeAttribute('aria-invalid');
+  setParticipants(new Array(TOTAL).fill(false), function () { return 'Đã bỏ chọn hết. Hãy chọn ít nhất một số để chạy.'; });
+});
+el.modeJoin.addEventListener('change', function () { if (el.modeJoin.checked) pickMode = 'join'; });
+el.modeView.addEventListener('change', function () { if (el.modeView.checked) pickMode = 'view'; });
+el.form.addEventListener('submit', function (ev) { ev.preventDefault(); generate(); });
+el.kRange.addEventListener('input', function () { el.kNum.value = el.kRange.value; el.kNum.removeAttribute('aria-invalid'); });
+el.kNum.addEventListener('input', function () {
+  const raw = el.kNum.value.trim();
+  if (/^\d+$/.test(raw) && Number(raw) <= TOTAL) { el.kRange.value = raw; el.kNum.removeAttribute('aria-invalid'); }
+});
+el.btnRun.addEventListener('click', play);
+el.btnSkip.addEventListener('click', skipToEnd);
+el.btnReset.addEventListener('click', resetRun);
+el.speed.addEventListener('input', function () {
+  speed = Number(el.speed.value);
+  el.speedOut.textContent = speed + ' bước/giây';
+});
+el.chkSolution.addEventListener('change', draw);
+el.chips.addEventListener('click', function (ev) {
+  const b = ev.target.closest ? ev.target.closest('.chip') : null;
+  if (b) numberClicked(Number(b.dataset.i));
+});
+el.canvas.addEventListener('click', function (ev) {
+  if (!maze) return;
+  const rect = el.canvas.getBoundingClientRect();
+  const x = (ev.clientX - rect.left) * (geom.size / rect.width);
+  const y = (ev.clientY - rect.top) * (geom.size / rect.height);
+  let best = -1, bd = geom.s * 0.6;
+  for (let i = 0; i < TOTAL; i++) {
+    const p = labelPos(i), d = Math.hypot(p[0] - x, p[1] - y);
+    if (d < bd) { bd = d; best = i; }
+  }
+  if (best >= 0) numberClicked(best);
+});
+window.addEventListener('resize', function () { setupCanvas(); draw(); });
+if (window.matchMedia) {
+  const mq = window.matchMedia('(prefers-color-scheme: dark)');
+  if (mq.addEventListener) mq.addEventListener('change', draw);
+}
+
+/* ---------- Khởi động ---------- */
+for (let i = 0; i < TOTAL; i++) {
+  const b = document.createElement('button');
+  b.type = 'button'; b.className = 'chip chip--idle'; b.textContent = String(i + 1);
+  b.dataset.i = String(i); b.setAttribute('aria-label', 'Số ' + (i + 1));
+  el.chips.appendChild(b);
+}
+setupCanvas();
+loadState();
+loadLog();
+renderLog();
+renderGroups();
+applyModeUI();
+generate();
+if (tabFromHash() === 'nhat-ky') showTab('nhat-ky');
+// ==== UI:END ====
+})();
+</script>
+</body>
+</html>
